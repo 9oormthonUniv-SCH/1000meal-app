@@ -65,3 +65,109 @@ lib/
 │
 └── 📄 main.dart                # 앱 진입점 (Provider 등록, 테마 설정)
 ```
+
+## 🌿 Git 협업 규칙 (Branch / Commit / Issue / PR)
+
+### 1) 브랜치 전략
+- 기본 브랜치
+  - `main`: **배포/릴리즈용 안정 브랜치**
+  - `develop`: **다음 릴리즈 개발 통합 브랜치**
+- 작업 브랜치 생성 규칙: **반드시 `develop`에서 분기**
+- 머지 규칙
+  - 작업 브랜치 → `develop` : PR로 머지
+  - `develop` → `main` : 릴리즈 PR로 머지(릴리즈 노트/버전 포함)
+
+### 2) 브랜치 네이밍
+- `feat/{issue번호}-{간단설명}`: 기능 추가
+- `fix/{issue번호}-{간단설명}`: 버그 수정
+- `refactor/{issue번호}-{간단설명}`: 리팩토링(동작 변경 최소)
+- `chore/{issue번호}-{간단설명}`: 설정/의존성/빌드/문서
+- `docs/{issue번호}-{간단설명}`: 문서
+- `test/{issue번호}-{간단설명}`: 테스트
+
+예)
+- `feat/123-login-webview`
+- `fix/87-token-refresh`
+
+### 3) 커밋 메시지 컨벤션 (Conventional Commits)
+형식:
+- `type(scope): subject`
+- `type: subject` (scope 생략 가능)
+
+type 예시:
+- `feat`: 기능
+- `fix`: 버그
+- `refactor`: 리팩토링
+- `chore`: 설정/빌드/의존성
+- `docs`: 문서
+- `test`: 테스트
+- `style`: 포맷/세미콜론 등(로직 변경 없음)
+
+규칙:
+- subject는 **현재형/명령문**, 마침표 생략, 50자 내 권장
+- 관련 이슈가 있으면 본문/푸터에 `Refs #이슈번호` 또는 `Closes #이슈번호`
+
+예)
+- `feat(auth): add login screen`
+- `fix(api): handle 401 refresh`
+- `docs: add git workflow`
+- `refactor(store): split menu model`
+
+### 4) 작업 흐름 (권장)
+1. 이슈 생성(기능/버그/리팩토링/문서)
+2. `develop` 최신화 후 브랜치 생성
+3. 작업 & 커밋(작게, 논리 단위로)
+4. 푸시 후 PR 생성 → 리뷰/수정 → 머지
+
+### 5) 이슈 작성 가이드
+이슈 제목 예:
+- `[FEAT] 로그인 화면 구현`
+- `[FIX] iOS에서 WebView 뒤로가기 불가`
+- `[REFACTOR] Dio 인터셉터 구조 정리`
+
+이슈 본문 포함 권장:
+- 배경/목표
+- 요구사항(체크리스트)
+- 참고 링크/스크린샷
+- 완료 조건(Definition of Done)
+
+### 6) PR(Pull Request) 규칙
+- PR은 **가능하면 작게**(리뷰 가능한 크기) 유지
+- PR 제목 형식(권장):
+  - `[FEAT] ...`, `[FIX] ...`, `[REFACTOR] ...`, `[CHORE] ...`, `[DOCS] ...`
+- 머지 방식: **Squash merge 권장**(커밋 히스토리 정리)
+
+#### PR 템플릿(본문에 복붙)
+- **요약**:
+  - 
+- **변경 내용**:
+  - 
+- **스크린샷/영상(선택)**:
+  - 
+- **테스트 방법**:
+  - `flutter run` / 재현 절차
+- **관련 이슈**:
+  - Closes #
+- **체크리스트**:
+  - [ ] `flutter format .` 적용
+  - [ ] `flutter analyze` 에러 없음
+  - [ ] 주요 플로우 수동 테스트 완료
+  - [ ] (해당 시) 테스트 코드 추가/수정
+
+### 7) 푸시/리뷰 원칙
+- 본인 PR은 **최소 1명 리뷰 승인 후 머지**(권장)
+- 리뷰어가 보기 쉽게:
+  - 파일/모듈 단위로 커밋 쪼개기
+  - 불필요한 포맷 변경 최소화
+  - “왜 바꿨는지”를 PR에 설명
+
+### 8) 릴리즈/태그(선택 운영)
+- `main` 머지 시 릴리즈로 간주
+- 버전은 `pubspec.yaml`의 `version:`을 기준으로 관리
+- 태그 예: `v1.0.0`
+
+### 9) 로컬 체크(권장 명령)
+flutter pub get
+flutter format .
+flutter analyze
+flutter test
