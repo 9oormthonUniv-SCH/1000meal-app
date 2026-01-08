@@ -42,6 +42,9 @@ dependencies:
   shared_preferences: ^2.5.4
   webview_flutter: ^4.13.0
   url_launcher: ^6.3.2
+  google_fonts: ^6.3.3
+  flutter_svg: ^2.2.3
+  kakao_map_plugin: ^0.3.7
 
 dev_dependencies:
   flutter_test:
@@ -59,13 +62,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
 
   assets:
+    - assets/icon/
     - assets/env/.env
 
   # To add assets to your application, add an assets section, like this:
