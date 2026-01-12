@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../models/store_models.dart';
 
 class StoreCard extends StatelessWidget {
@@ -52,15 +53,10 @@ class StoreCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(8), // rounded-lg
               child: SizedBox(
-                width: 48,
-                height: 48,
+                width: 50,
+                height: 50,
                 child: store.imageUrl != null && store.imageUrl!.isNotEmpty
-                    ? Image.network(
-                        store.imageUrl!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildNoImage(), //이미지 없는 경우 보여주는 위젯 -> 하단 위젯 참고
-                      )
+                    ? _buildImageWidget(store.imageUrl!)
                     : _buildNoImage(),
               ),
             ),
@@ -133,5 +129,23 @@ class StoreCard extends StatelessWidget {
         style: TextStyle(fontSize: 10, color: Colors.grey[500]),
       ),
     );
+  }
+
+  // 이미지 타입에 따라 적절한 위젯 반환
+  Widget _buildImageWidget(String imageUrl) {
+    //svg 먹통 -> png 파일 추가
+    if (imageUrl.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(
+        imageUrl,
+        fit: BoxFit.contain,
+        placeholderBuilder: (context) => _buildNoImage(),
+      );
+    } else {
+      return Image.asset(
+        imageUrl,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => _buildNoImage(),
+      );
+    }
   }
 }

@@ -60,6 +60,7 @@ class FakeStoreRepository implements StoreRepository {
         lat: 37.5665,
         lng: 126.9780,
         open: true,
+        imageUrl: "assets/image/dorm_1.png",
         todayMenu: TodayMenu(
           id: 1,
           date: "2024-01-10",
@@ -79,6 +80,7 @@ class FakeStoreRepository implements StoreRepository {
         lat: 37.5666,
         lng: 126.9781,
         open: true,
+        imageUrl: "assets/image/grazie_outside.png",
         todayMenu: TodayMenu(
           id: 2,
           date: "2024-01-10",
@@ -98,6 +100,7 @@ class FakeStoreRepository implements StoreRepository {
         lat: 37.5667,
         lng: 126.9782,
         open: true,
+        imageUrl: "assets/image/bakery_kyung.png",
         todayMenu: TodayMenu(
           id: 3,
           date: "2024-01-10",
@@ -117,6 +120,7 @@ class FakeStoreRepository implements StoreRepository {
         lat: 37.5668,
         lng: 126.9783,
         open: false, // 영업 종료
+        imageUrl: "assets/image/dorm_1.png", // 이미지 재사용
         todayMenu: TodayMenu(
           id: 4,
           date: "2024-01-10",
