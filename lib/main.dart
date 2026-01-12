@@ -26,6 +26,7 @@ import 'features/signup/screens/signup_credentials_screen.dart';
 import 'features/signup/screens/signup_id_screen.dart';
 import 'features/signup/screens/signup_terms_screen.dart';
 import 'providers/auth_provider.dart';
+import 'package:meal_app/main_screen.dart';
 import 'widgets/HomePage.dart';
 
 Future<void> main() async {
@@ -76,6 +77,7 @@ class MyApp extends StatelessWidget {
         title: '1000meal App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(useMaterial3: true),
+<<<<<<< HEAD
         initialRoute: LoginScreen.routeName,
         routes: {
           LoginScreen.routeName: (_) => const LoginScreen(),

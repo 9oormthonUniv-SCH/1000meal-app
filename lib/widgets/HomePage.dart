@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:meal_app/widgets/WebView.dart';
-import 'package:meal_app/widgets/KakaoMapWidget.dart';
 import 'package:meal_app/widgets/StoreSection.dart';
 
 class HomePage extends StatelessWidget {
@@ -57,10 +55,6 @@ class HomePage extends StatelessWidget {
           double remainingHeight = constraints.maxHeight - mapHeight;
           return Column(
             children: [
-              // 1. 지도 (고정 높이)
-              SizedBox(height: 260, child: KakaoMapScreen()),
-
-              // 2. 나머지 영역 (전체 스크롤)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
                 child: Row(
