@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:meal_app/features/home/screens/home_view_model.dart';
 import 'package:meal_app/features/map/widgets/KakaoMapWidget.dart';
-import 'package:meal_app/features/store/widgets/StoreSection.dart';
+import 'package:meal_app/features/store/widgets/store_section.dart';
+import 'package:meal_app/features/store/viewmodels/store_view_model.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -29,6 +32,7 @@ class HomePage extends StatelessWidget {
           IconButton(
             onPressed: () {
               print("알림 클릭");
+              // Navigator.push(-> AlarmPage)
             },
             icon: SvgPicture.asset(
               'assets/icon/alarm.svg',
@@ -40,6 +44,7 @@ class HomePage extends StatelessWidget {
           IconButton(
             onPressed: () {
               print("프로필 클릭");
+              // Navigator.push(-> MyPage)
             },
             icon: SvgPicture.asset(
               'assets/icon/profile.svg',
@@ -53,18 +58,18 @@ class HomePage extends StatelessWidget {
       body: LayoutBuilder(
         // 화면 크기에 따라 레이아웃 조정
         builder: (context, constraints) {
-          double mapHeight = 260;
-          double remainingHeight = constraints.maxHeight - mapHeight;
           return Column(
             children: [
-              // 1. 지도 (고정 높이)
+              /* // 1. 지도 (고정 높이)
               SizedBox(
                 height: 260,
                 child: KakaoMapWidget(onMapCreated: (KakaoMapController p1) {}),
-              ),
-
-              // 2. 나머지 영역 (전체 스크롤)
-              Padding(
+              ), */
+              _buildHeaderSection(context),
+              Expanded(
+                child: StoreSection(),
+                // 2. 나머지 영역 (전체 스크롤)
+                /* Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,7 +98,7 @@ class HomePage extends StatelessWidget {
                   child: Column(
                     children: [StoreSection(), SizedBox(height: 20)],
                   ),
-                ),
+                ), */
               ),
             ],
           );
@@ -101,4 +106,31 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+}
+
+// 헤더를 별도 메서드로 분리
+Widget _buildHeaderSection(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          '오늘의 천밥',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        IconButton(
+          onPressed: () => context.read<StoreViewModel>().refreshStores(),
+          icon: const Icon(Icons.refresh, color: Colors.grey),
+          highlightColor: Colors.orange.withValues(alpha: 0.2),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+      ],
+    ),
+  );
 }

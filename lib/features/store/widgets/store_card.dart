@@ -1,39 +1,24 @@
 import 'package:flutter/material.dart';
-
-// 1. 데이터 모델 정의 (React의 StoreListItem 대응)
-class Store {
-  final int id;
-  final String name;
-  final String? imageUrl;
-  final List<String> menus; // todayMenu.menus 대신 단순화
-  final int remain;
-
-  Store({
-    required this.id,
-    required this.name,
-    this.imageUrl,
-    required this.menus,
-    required this.remain,
-  });
-}
+import '../models/store_models.dart';
 
 class StoreCard extends StatelessWidget {
-  final Store store;
+  final StoreListItem store;
   final bool isSelected;
   final VoidCallback? onTap;
 
   const StoreCard({
     super.key,
     required this.store,
-    this.isSelected = false, // 기본값 false
+    this.isSelected = false,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    // 메뉴 텍스트 로직 (join)
-    final String menusText = store.menus.isNotEmpty
-        ? store.menus.join(', ')
+    // 메뉴 텍스트 로직
+    final String menusText =
+        store.todayMenu != null && store.todayMenu!.menus.isNotEmpty
+        ? store.todayMenu!.menus.join(', ')
         : '메뉴 정보 없음';
 
     return GestureDetector(
@@ -54,7 +39,7 @@ class StoreCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               spreadRadius: 1,
               offset: const Offset(0, 2),
