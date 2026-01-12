@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:meal_app/features/home/screens/home_view_model.dart';
 import 'package:meal_app/features/map/widgets/KakaoMapWidget.dart';
 import 'package:meal_app/features/store/widgets/store_section.dart';

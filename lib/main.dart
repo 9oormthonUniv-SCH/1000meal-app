@@ -10,13 +10,12 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 // ignore: depend_on_referenced_packages
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
-
 // 📂 내 파일들 import
 import 'package:meal_app/features/auth/providers/auth_provider.dart';
 import 'package:meal_app/features/home/screens/home_view_model.dart';
-import 'package:meal_app/features/home/screens/home_page.dart'; // 혹은 store_screen.dart로 변경 가능
 import 'package:meal_app/features/store/repositories/store_repository.dart';
 import 'package:meal_app/features/store/viewmodels/store_view_model.dart';
+import 'package:meal_app/main_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,7 +80,7 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: Colors.white,
         ),
         // 테스트할 때는 StoreScreen을 바로 띄워보거나, HomePage 안에 넣어서 확인
-        home: const HomePage(),
+        home: MainScreen(),
       ),
     );
   }
