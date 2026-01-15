@@ -105,25 +105,62 @@ class _RoleTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _RoleTabButton(
-            label: '일반',
-            active: role == Role.student,
-            activeColor: const Color(0xFFF97316),
-            onTap: onChanged == null ? null : () => onChanged!(Role.student),
-          ),
-        ),
-        Expanded(
-          child: _RoleTabButton(
-            label: '관리자',
-            active: role == Role.admin,
-            activeColor: const Color(0xFF60A5FA),
-            onTap: onChanged == null ? null : () => onChanged!(Role.admin),
-          ),
-        ),
-      ],
+    // Next.js(framaer-motion)의 layoutId="underline" 느낌을 Flutter에서 구현:
+    //  - 탭 전체 폭 밑줄이 left<->right로 이동(AnimatedAlign)
+    //  - 색상도 role에 맞춰 전환(AnimatedContainer)
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tabWidth = constraints.maxWidth / 2;
+        final isStudent = role == Role.student;
+        final underlineColor = isStudent ? const Color(0xFFF97316) : const Color(0xFF60A5FA);
+
+        return Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _RoleTabButton(
+                    label: '일반',
+                    active: isStudent,
+                    onTap: onChanged == null ? null : () => onChanged!(Role.student),
+                  ),
+                ),
+                Expanded(
+                  child: _RoleTabButton(
+                    label: '관리자',
+                    active: !isStudent,
+                    onTap: onChanged == null ? null : () => onChanged!(Role.admin),
+                  ),
+                ),
+              ],
+            ),
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SizedBox(height: 1, child: DecoratedBox(decoration: BoxDecoration(color: Color(0xFFE5E7EB)))),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutCubic,
+                alignment: isStudent ? Alignment.bottomLeft : Alignment.bottomRight,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  width: tabWidth,
+                  height: 2,
+                  decoration: BoxDecoration(color: underlineColor),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -131,13 +168,11 @@ class _RoleTabs extends StatelessWidget {
 class _RoleTabButton extends StatelessWidget {
   final String label;
   final bool active;
-  final Color activeColor;
   final VoidCallback? onTap;
 
   const _RoleTabButton({
     required this.label,
     required this.active,
-    required this.activeColor,
     required this.onTap,
   });
 
@@ -147,29 +182,16 @@ class _RoleTabButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
-        ),
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            Center(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: active ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
-                ),
-              ),
+        child: Center(
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: active ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
             ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              height: 2,
-              width: active ? 80 : 0,
-              margin: const EdgeInsets.only(top: 26),
-              decoration: BoxDecoration(color: active ? activeColor : Colors.transparent),
-            ),
-          ],
+            child: Text(label),
+          ),
         ),
       ),
     );
@@ -183,25 +205,35 @@ class _HeroCopy extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isAdmin = role == Role.admin;
-    return Column(
-      crossAxisAlignment: isAdmin ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-      children: [
-        Text(
-          isAdmin ? '당신의 준비가\n늘 편리하도록,' : '당신의 걸음이\n헛되지 않도록,',
-          textAlign: isAdmin ? TextAlign.right : TextAlign.left,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, height: 1.25),
-        ),
-        const SizedBox(height: 10),
-        // 웹은 Textlogo.png를 쓰지만, 앱 레포에 동일 에셋이 아직 없어서 1차는 텍스트로 대체.
-        Text(
-          '오늘순밥',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: isAdmin ? const Color(0xFF111827) : const Color(0xFF111827),
+    // Next.js의 AnimatePresence + opacity 전환을 Flutter AnimatedSwitcher로 구현
+    return SizedBox(
+      height: 112,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 250),
+        switchInCurve: Curves.easeIn,
+        switchOutCurve: Curves.easeOut,
+        transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+        child: Align(
+          key: ValueKey<Role>(role),
+          alignment: isAdmin ? Alignment.topRight : Alignment.topLeft,
+          child: Column(
+            crossAxisAlignment: isAdmin ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              Text(
+                isAdmin ? '당신의 준비가\n늘 편리하도록,' : '당신의 걸음이\n헛되지 않도록,',
+                textAlign: isAdmin ? TextAlign.right : TextAlign.left,
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, height: 1.25),
+              ),
+              const SizedBox(height: 10),
+              // 웹은 Textlogo.png를 쓰지만, 앱 레포에 동일 에셋이 아직 없어서 1차는 텍스트로 대체.
+              const Text(
+                '오늘순밥',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
