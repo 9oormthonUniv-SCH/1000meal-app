@@ -70,7 +70,7 @@ class StoreSection extends StatelessWidget {
 
   void _handleStoreTap(BuildContext context, store) {
     print("${store.name} 클릭됨");
-    // TODO: 매장 상세 페이지로 네비게이션
+    // 매장 상세 페이지로 네비게이션
     // Navigator.push(context, MaterialPageRoute(
     //   builder: (context) => StoreDetailPage(storeId: store.id),
     // ));

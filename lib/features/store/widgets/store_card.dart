@@ -16,7 +16,6 @@ class StoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 메뉴 텍스트 로직
     final String menusText =
         store.todayMenu != null && store.todayMenu!.menus.isNotEmpty
         ? store.todayMenu!.menus.join(', ')

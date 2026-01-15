@@ -1,5 +1,3 @@
-// lib/features/store/models/store_models.dart
-
 import 'package:flutter/material.dart';
 
 // Enums
@@ -13,7 +11,7 @@ enum DayOfWeek {
   sunday,
 }
 
-// API Response Wrapper
+// 제네릭을 활용하여 재사용 가능한 API 응답 래퍼 클래스
 class ApiEnvelope<T> {
   final T data;
   final ApiResult result;
@@ -59,7 +57,6 @@ class ApiResult {
   }
 }
 
-// Store List Item Model
 class StoreListItem {
   final int id;
   final String? imageUrl;
@@ -164,7 +161,6 @@ class TodayMenu {
   }
 }
 
-// Store Detail Model
 class StoreDetail {
   final int id;
   final String? imageUrl;

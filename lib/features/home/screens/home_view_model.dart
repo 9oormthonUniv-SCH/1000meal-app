@@ -14,7 +14,6 @@ class HomeViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
-  // Getters
   List<StoreListItem> get stores => _stores;
   bool get isLoading => _isLoading;
   String? get error => _error;

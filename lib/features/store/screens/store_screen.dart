@@ -39,7 +39,7 @@ class _StoreScreenState extends State<StoreScreen> {
         ],
       ),
       body: RefreshIndicator(
-        // 당겨서 새로고침 기능
+        // 당겨서 새로고침 기능 (애매한 경우 추후에 삭제 가능)
         onRefresh: () async {
           await context.read<StoreViewModel>().refreshStores();
         },
@@ -48,7 +48,6 @@ class _StoreScreenState extends State<StoreScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 상단 안내 문구 등 (필요 시 추가)
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Text(
@@ -57,7 +56,6 @@ class _StoreScreenState extends State<StoreScreen> {
                 ),
               ),
 
-              // 여기가 핵심! 아까 만든 StoreSection을 그대로 가져옵니다.
               const StoreSection(),
 
               const SizedBox(height: 50), // 하단 여백

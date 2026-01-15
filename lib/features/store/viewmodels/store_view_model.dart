@@ -1,4 +1,3 @@
-// lib/features/store/viewmodels/store_view_model.dart
 import 'package:flutter/material.dart';
 import '../models/store_models.dart';
 import '../repositories/store_repository.dart';
@@ -14,7 +13,6 @@ class StoreViewModel extends ChangeNotifier {
   String? _error;
   StoreDetail? _selectedStore;
 
-  // Getters
   List<StoreListItem> get stores => _stores;
   bool get isLoading => _isLoading;
   String? get error => _error;
