@@ -1,6 +1,7 @@
 import '../../../common/dio/dio_client.dart';
 import '../../users/models/me_response.dart';
 import '../models/login_models.dart';
+import '../models/signup_models.dart';
 
 class AuthApi {
   final DioClient _client;
@@ -28,6 +29,52 @@ class AuthApi {
       headers: {'Authorization': 'Bearer $token'},
     );
     return MeResponse.fromJson(_unwrapData(root));
+  }
+
+  Future<VerifyIdResponse> verifyId(String userId) async {
+    final root = await _client.post<Map<String, dynamic>>(
+      '/signup/user/validate-id',
+      data: {'userId': userId},
+    );
+    return VerifyIdResponse.fromJson(_unwrapData(root));
+  }
+
+  Future<void> signUp(SignUpRequest request) async {
+    await _client.post<Object>(
+      '/auth/signup',
+      data: request.toJson(),
+    );
+  }
+
+  Future<bool> getSignupEmailStatus(String email) async {
+    final root = await _client.get<Map<String, dynamic>>(
+      '/auth/email/status',
+      queryParameters: {'email': email},
+    );
+    // 서버가 data에 bool을 주거나, data에 { verified: bool } 형태를 줄 수 있음
+    final data = root['data'];
+    if (data is bool) return data;
+    if (data is String) return data.toLowerCase() == 'true';
+
+    final unwrapped = _unwrapData(root);
+    final v = unwrapped['verified'];
+    if (v is bool) return v;
+    if (v is String) return v.toLowerCase() == 'true';
+    return false;
+  }
+
+  Future<void> sendEmailVerification(String email) async {
+    await _client.post<Object>(
+      '/auth/email/send',
+      data: {'email': email},
+    );
+  }
+
+  Future<void> verifyEmail({required String email, required String code}) async {
+    await _client.post<Object>(
+      '/auth/email/verify',
+      data: {'email': email, 'code': code},
+    );
   }
 }
 

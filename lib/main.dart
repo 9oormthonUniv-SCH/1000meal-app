@@ -8,7 +8,11 @@ import 'features/auth/data/auth_api.dart';
 import 'features/auth/repositories/auth_repository.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/viewmodels/login_view_model.dart';
+import 'features/auth/viewmodels/signup_view_model.dart';
 import 'features/common/screens/placeholder_screen.dart';
+import 'features/signup/screens/signup_credentials_screen.dart';
+import 'features/signup/screens/signup_id_screen.dart';
+import 'features/signup/screens/signup_terms_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +35,7 @@ class MyApp extends StatelessWidget {
       providers: [
         Provider.value(value: authRepo),
         ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo)),
+        ChangeNotifierProvider(create: (_) => SignupViewModel(authRepo)),
       ],
       child: MaterialApp(
         title: '1000meal App',
@@ -41,8 +46,16 @@ class MyApp extends StatelessWidget {
           LoginScreen.routeName: (_) => const LoginScreen(),
           '/': (_) => const PlaceholderScreen(title: '/ (메인)'),
           '/admin': (_) => const PlaceholderScreen(title: '/admin'),
-          // 아래 라우트들은 다음 단계에서 구현 예정(지금은 네비게이션만 막지 않기 위해 placeholder)
-          '/signup': (_) => const PlaceholderScreen(title: '/signup'),
+          // signup
+          '/signup': (_) => const SignupIdScreen(),
+          SignupIdScreen.routeName: (_) => const SignupIdScreen(),
+          SignupCredentialsScreen.routeName: (_) => const SignupCredentialsScreen(),
+          // 약관(웹은 query param doc=tos|privacy)
+          SignupTermsScreen.routeName: (context) {
+            final args = ModalRoute.of(context)?.settings.arguments;
+            final doc = args is String ? args : 'tos';
+            return SignupTermsScreen(doc: doc);
+          },
           '/find-account': (_) => const PlaceholderScreen(title: '/find-account'),
         },
       ),
