@@ -6,7 +6,9 @@ import 'common/dio/dio_client.dart';
 import 'common/storage/token_storage.dart';
 import 'features/auth/data/auth_api.dart';
 import 'features/auth/repositories/auth_repository.dart';
+import 'features/auth/screens/find_account_screen.dart';
 import 'features/auth/screens/login_screen.dart';
+import 'features/auth/viewmodels/find_account_view_model.dart';
 import 'features/auth/viewmodels/login_view_model.dart';
 import 'features/auth/viewmodels/signup_view_model.dart';
 import 'features/common/screens/placeholder_screen.dart';
@@ -36,6 +38,7 @@ class MyApp extends StatelessWidget {
         Provider.value(value: authRepo),
         ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => SignupViewModel(authRepo)),
+        ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
       ],
       child: MaterialApp(
         title: '1000meal App',
@@ -56,7 +59,7 @@ class MyApp extends StatelessWidget {
             final doc = args is String ? args : 'tos';
             return SignupTermsScreen(doc: doc);
           },
-          '/find-account': (_) => const PlaceholderScreen(title: '/find-account'),
+          FindAccountScreen.routeName: (_) => const FindAccountScreen(),
         },
       ),
     );

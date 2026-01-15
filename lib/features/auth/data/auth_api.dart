@@ -1,6 +1,7 @@
 import '../../../common/dio/dio_client.dart';
 import '../../users/models/me_response.dart';
 import '../models/login_models.dart';
+import '../models/account_recovery_models.dart';
 import '../models/signup_models.dart';
 
 class AuthApi {
@@ -74,6 +75,28 @@ class AuthApi {
     await _client.post<Object>(
       '/auth/email/verify',
       data: {'email': email, 'code': code},
+    );
+  }
+
+  Future<FindUserIdResponse> findUserId(FindUserIdRequest request) async {
+    final root = await _client.post<Map<String, dynamic>>(
+      '/auth/find-id',
+      data: request.toJson(),
+    );
+    return FindUserIdResponse.fromJson(_unwrapData(root));
+  }
+
+  Future<void> resetPasswordRequest(String email) async {
+    await _client.post<Object>(
+      '/auth/password/reset/request',
+      data: {'email': email},
+    );
+  }
+
+  Future<void> resetPasswordConfirm(ResetPasswordConfirmRequest request) async {
+    await _client.post<Object>(
+      '/auth/password/reset/confirm',
+      data: request.toJson(),
     );
   }
 }
