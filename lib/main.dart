@@ -12,6 +12,10 @@ import 'features/auth/viewmodels/find_account_view_model.dart';
 import 'features/auth/viewmodels/login_view_model.dart';
 import 'features/auth/viewmodels/signup_view_model.dart';
 import 'features/common/screens/placeholder_screen.dart';
+import 'features/mypage/screens/change_email_screen.dart';
+import 'features/mypage/screens/mypage_screen.dart';
+import 'features/mypage/viewmodels/change_email_view_model.dart';
+import 'features/mypage/viewmodels/mypage_view_model.dart';
 import 'features/signup/screens/signup_credentials_screen.dart';
 import 'features/signup/screens/signup_id_screen.dart';
 import 'features/signup/screens/signup_terms_screen.dart';
@@ -39,6 +43,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => SignupViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
+        ChangeNotifierProvider(create: (_) => MyPageViewModel(authRepo)),
+        ChangeNotifierProvider(create: (_) => ChangeEmailViewModel(authRepo)),
       ],
       child: MaterialApp(
         title: '1000meal App',
@@ -49,6 +55,8 @@ class MyApp extends StatelessWidget {
           LoginScreen.routeName: (_) => const LoginScreen(),
           '/': (_) => const PlaceholderScreen(title: '/ (메인)'),
           '/admin': (_) => const PlaceholderScreen(title: '/admin'),
+          MyPageScreen.routeName: (_) => const MyPageScreen(),
+          ChangeEmailScreen.routeName: (_) => const ChangeEmailScreen(),
           // signup
           '/signup': (_) => const SignupIdScreen(),
           SignupIdScreen.routeName: (_) => const SignupIdScreen(),
