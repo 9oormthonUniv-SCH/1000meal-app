@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/utils/external_link.dart';
 import '../viewmodels/find_account_view_model.dart';
 
 class FindAccountScreen extends StatefulWidget {
@@ -229,9 +230,12 @@ class _ResetPasswordForm extends StatelessWidget {
             onChanged: vm.setToken,
           ),
           const SizedBox(height: 8),
-          Text(
-            mailLinkText,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF2563EB), decoration: TextDecoration.underline),
+          InkWell(
+            onTap: () => openExternalUrl(domain.isNotEmpty ? 'https://mail.$domain' : 'https://mail.sch.ac.kr'),
+            child: Text(
+              mailLinkText,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF2563EB), decoration: TextDecoration.underline),
+            ),
           ),
         ],
         const SizedBox(height: 18),

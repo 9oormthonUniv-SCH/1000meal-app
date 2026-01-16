@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../auth/models/role.dart';
+import '../../auth/repositories/auth_repository.dart';
 import '../viewmodels/mypage_view_model.dart';
 
 class MyPageScreen extends StatefulWidget {
@@ -22,6 +23,18 @@ class _MyPageScreenState extends State<MyPageScreen> {
     if (_loaded) return;
     _loaded = true;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 진입 가드: 이전 세션 캐시(me)가 남아있더라도,
+      // 토큰이 없으면 마이페이지를 "그리기 전에" 로그인으로 보냄.
+      final repo = context.read<AuthRepository>();
+      final token = await repo.getAccessToken();
+      if (!mounted) return;
+      if (token == null || token.isEmpty) {
+        await context.read<MyPageViewModel>().logout();
+        if (!mounted) return;
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
+        return;
+      }
+
       await context.read<MyPageViewModel>().load();
       if (!mounted) return;
       final vm = context.read<MyPageViewModel>();
@@ -37,6 +50,14 @@ class _MyPageScreenState extends State<MyPageScreen> {
   Widget build(BuildContext context) {
     final vm = context.watch<MyPageViewModel>();
 
+    // UX: 인증/프로필 로딩 전에는 AppBar(마이페이지)를 노출하지 않아
+    // "잠깐 마이페이지 갔다가 로그인으로 튕기는" 느낌을 줄임.
+    if (vm.me == null) {
+      return const Scaffold(
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('마이페이지'),
@@ -46,9 +67,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),
-      body: vm.loading && vm.me == null
-          ? const Center(child: CircularProgressIndicator())
-          : _Body(vm: vm),
+      body: _Body(vm: vm),
     );
   }
 }

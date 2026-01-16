@@ -40,6 +40,12 @@ class MyPageViewModel extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    // 로그아웃 직후에도 "이전 me 캐시"가 남아있으면
+    // 다음 진입에서 마이페이지가 잠깐 보였다가 튕기는 UX가 발생할 수 있어 즉시 초기화.
+    me = null;
+    errorMessage = null;
+    shouldRelogin = false;
+    notifyListeners();
     await _repo.logout();
   }
 

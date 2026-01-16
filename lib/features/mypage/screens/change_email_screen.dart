@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/utils/external_link.dart';
 import '../viewmodels/change_email_view_model.dart';
 
 class ChangeEmailScreen extends StatefulWidget {
@@ -151,12 +152,15 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
                 ],
                 if (vm.step2Done) ...[
                   const SizedBox(height: 10),
-                  const Text(
-                    '메일함 열기 (mail.sch.ac.kr)',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF2563EB),
-                      decoration: TextDecoration.underline,
+                  InkWell(
+                    onTap: () => openExternalUrl('https://mail.sch.ac.kr'),
+                    child: const Text(
+                      '메일함 열기 (mail.sch.ac.kr)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF2563EB),
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 18),
