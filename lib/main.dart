@@ -8,9 +8,13 @@ import 'features/auth/data/auth_api.dart';
 import 'features/auth/repositories/auth_repository.dart';
 import 'features/auth/screens/find_account_screen.dart';
 import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/role_guard.dart';
 import 'features/auth/viewmodels/find_account_view_model.dart';
 import 'features/auth/viewmodels/login_view_model.dart';
 import 'features/auth/viewmodels/signup_view_model.dart';
+import 'features/admin/screens/admin_home_screen.dart';
+import 'features/admin/viewmodels/admin_home_view_model.dart';
+import 'features/auth/models/role.dart';
 import 'features/common/screens/placeholder_screen.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
@@ -45,6 +49,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => MyPageViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => ChangeEmailViewModel(authRepo)),
+        ChangeNotifierProvider(create: (_) => AdminHomeViewModel(authRepo)),
       ],
       child: MaterialApp(
         title: '1000meal App',
@@ -54,8 +59,8 @@ class MyApp extends StatelessWidget {
         routes: {
           LoginScreen.routeName: (_) => const LoginScreen(),
           '/': (_) => const PlaceholderScreen(title: '/ (메인)'),
-          '/admin': (_) => const PlaceholderScreen(title: '/admin'),
-          MyPageScreen.routeName: (_) => const MyPageScreen(),
+          AdminHomeScreen.routeName: (_) => const RoleGuard(targetRole: Role.admin, child: AdminHomeScreen()),
+          MyPageScreen.routeName: (_) => const RoleGuard(targetRole: Role.student, child: MyPageScreen()),
           ChangeEmailScreen.routeName: (_) => const ChangeEmailScreen(),
           // signup
           '/signup': (_) => const SignupIdScreen(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../auth/repositories/auth_repository.dart';
+import '../../auth/models/role.dart';
 import 'package:provider/provider.dart';
 
 class PlaceholderScreen extends StatelessWidget {
@@ -32,9 +33,9 @@ class PlaceholderScreen extends StatelessWidget {
                   // 만료/무효 토큰일 때 `/mypage` -> `/login`으로 튕기며 깜빡임이 생김.
                   // 사전 검증(getMe)로 성공일 때만 마이페이지로 이동.
                   try {
-                    await repo.getMe();
+                    final me = await repo.getMe();
                     if (!context.mounted) return;
-                    Navigator.of(context).pushNamed('/mypage');
+                    Navigator.of(context).pushNamed(me.role == Role.admin ? '/admin' : '/mypage');
                   } catch (_) {
                     await repo.logout();
                     if (!context.mounted) return;
