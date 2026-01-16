@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/utils/external_link.dart';
 import '../../auth/viewmodels/signup_view_model.dart';
 import 'signup_terms_screen.dart';
 
@@ -389,10 +390,7 @@ class _InputEmail extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           InkWell(
-            onTap: () {
-              // iOS/Android에서 기본 브라우저로 열기(간단히 시스템 처리)
-              // 실제로는 url_launcher를 쓰는 게 정석이지만, 현재 의존성 추가 없이 UI만 먼저 맞춤.
-            },
+            onTap: () => openExternalUrl('https://mail.sch.ac.kr'),
             child: const Text(
               '메일함 열기 (mail.sch.ac.kr)',
               style: TextStyle(fontSize: 12, color: Color(0xFF2563EB), decoration: TextDecoration.underline),

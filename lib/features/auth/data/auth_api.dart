@@ -2,6 +2,7 @@ import '../../../common/dio/dio_client.dart';
 import '../../users/models/me_response.dart';
 import '../models/login_models.dart';
 import '../models/account_recovery_models.dart';
+import '../models/email_change_models.dart';
 import '../models/signup_models.dart';
 
 class AuthApi {
@@ -98,6 +99,52 @@ class AuthApi {
       '/auth/password/reset/confirm',
       data: request.toJson(),
     );
+  }
+
+  Future<void> deleteAccount({required String token, required String currentPassword, required bool agree}) async {
+    await _client.post<Object>(
+      '/auth/delete-account',
+      headers: {'Authorization': 'Bearer $token'},
+      data: {
+        'currentPassword': currentPassword,
+        'agree': agree,
+      },
+    );
+  }
+
+  Future<StartEmailChangeResponse> startEmailChange({
+    required String token,
+    required StartEmailChangeRequest request,
+  }) async {
+    final root = await _client.post<Map<String, dynamic>>(
+      '/account/email/start',
+      headers: {'Authorization': 'Bearer $token'},
+      data: request.toJson(),
+    );
+    return StartEmailChangeResponse.fromJson(_unwrapData(root));
+  }
+
+  Future<void> sendEmailChangeCode({
+    required String token,
+    required SendEmailChangeCodeRequest request,
+  }) async {
+    await _client.post<Object>(
+      '/account/email/code',
+      headers: {'Authorization': 'Bearer $token'},
+      data: request.toJson(),
+    );
+  }
+
+  Future<VerifyEmailChangeResponse> verifyEmailChange({
+    required String token,
+    required VerifyEmailChangeRequest request,
+  }) async {
+    final root = await _client.post<Map<String, dynamic>>(
+      '/account/email/verify',
+      headers: {'Authorization': 'Bearer $token'},
+      data: request.toJson(),
+    );
+    return VerifyEmailChangeResponse.fromJson(_unwrapData(root));
   }
 }
 
