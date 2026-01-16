@@ -61,6 +61,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => MyPageViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => ChangeEmailViewModel(authRepo)),
+<<<<<<< HEAD
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AdminHomeViewModel(authRepo)),
       ],
