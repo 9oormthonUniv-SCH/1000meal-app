@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -48,7 +47,6 @@ Future<void> main() async {
   await dotenv.load(fileName: "assets/env/.env");
   String key = dotenv.env['KAKAO_MAP_JS_KEY'] ?? '키 없음';
   print("내 키 확인: $key");
-  AuthRepository.initialize(appKey: dotenv.env['KAKAO_MAP_JS_KEY'] ?? '');
 
   runApp(const MyApp());
 }
@@ -77,12 +75,11 @@ class MyApp extends StatelessWidget {
         title: '1000meal App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(useMaterial3: true),
-<<<<<<< HEAD
         initialRoute: LoginScreen.routeName,
         routes: {
           LoginScreen.routeName: (_) => const LoginScreen(),
           '/': (_) => const PlaceholderScreen(title: '/ (메인)'),
-          '/home': (_) => HomePage(),
+          '/home': (_) => const MainScreen(),
           '/admin': (_) => const PlaceholderScreen(title: '/admin'),
           MyPageScreen.routeName: (_) => const MyPageScreen(),
           ChangeEmailScreen.routeName: (_) => const ChangeEmailScreen(),
