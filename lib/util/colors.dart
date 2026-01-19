@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   AppColors._();
-  
-  static const Color primary = Color(0xFF2563EB);
-  // static const Color primary = Color(0xFFF97316); // 순밥 오렌지 (Orange-500)
+
+  static const Color primary = Color(0xFFFF6E3F);
 
   static const Color background = Color(0xFFF3F4F6);
   static const Color white = Colors.white;
 
   // 3. Text Colors
-  static const Color textMain = Color(0xFF1F2937);
-  static const Color textSub = Color(0xFF6B7280);
+  static const Color textMain = Color(0xFF1A1A1A);
+  static const Color textSub = Color(0xFF767676);
 
   // 4. Etc
   static const Color error = Color(0xFFEF4444);
