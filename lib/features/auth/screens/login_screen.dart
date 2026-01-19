@@ -225,10 +225,10 @@ class _HeroCopy extends StatelessWidget {
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, height: 1.25),
               ),
               const SizedBox(height: 10),
-              // 웹은 Textlogo.png를 쓰지만, 앱 레포에 동일 에셋이 아직 없어서 1차는 텍스트로 대체.
-              const Text(
-                '오늘순밥',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
+              Image.asset(
+                'assets/icon/Textlogo.png',
+                width: 120,
+                fit: BoxFit.contain, // 그림 비율 유지하며 잘리기 방지
               ),
             ],
           ),
