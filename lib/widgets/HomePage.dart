@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:meal_app/widgets/StoreSection.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 import '../features/auth/models/role.dart';
 import '../features/auth/repositories/auth_repository.dart';
@@ -32,12 +33,13 @@ class HomePage extends StatelessWidget {
       }
     } catch (e) {
       // 토큰이 만료/무효인 경우 등: 토큰 클리어 후 로그인으로
-      await repo.logout();
       if (!context.mounted) return;
       if (kDebugMode) {
         debugPrint('프로필 이동 preflight(getMe) 실패: $e');
       }
       nav.pushNamedAndRemoveUntil('/login', (r) => false);
+      // best-effort logout (do not block UI / navigation)
+      unawaited(repo.logout());
     }
   }
 

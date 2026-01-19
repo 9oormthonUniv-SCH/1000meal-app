@@ -26,7 +26,16 @@ class AuthRepository {
 
   Future<String?> getAccessToken() => _tokenStorage.getAccessToken();
 
-  Future<void> logout() => _tokenStorage.clear();
+  /// Best-effort logout.
+  /// Some platforms/plugins may hang on secure storage operations in edge cases.
+  /// To prevent infinite loading UX, we harden this with timeout and ignore errors.
+  Future<void> logout() async {
+    try {
+      await _tokenStorage.clear().timeout(const Duration(seconds: 2));
+    } catch (_) {
+      // ignore
+    }
+  }
 
   Future<MeResponse> getMe() async {
     final token = await _tokenStorage.getAccessToken();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 import '../../auth/models/role.dart';
 import '../../auth/repositories/auth_repository.dart';
@@ -29,9 +30,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
       final token = await repo.getAccessToken();
       if (!mounted) return;
       if (token == null || token.isEmpty) {
-        await context.read<MyPageViewModel>().logout();
-        if (!mounted) return;
         Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
+        // best-effort logout (do not block UI / navigation)
+        unawaited(context.read<MyPageViewModel>().logout());
         return;
       }
 
@@ -39,9 +40,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
       if (!mounted) return;
       final vm = context.read<MyPageViewModel>();
       if (vm.shouldRelogin) {
-        await vm.logout();
-        if (!mounted) return;
         Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
+        // best-effort logout (do not block UI / navigation)
+        unawaited(vm.logout());
       }
     });
   }
@@ -163,9 +164,9 @@ class _Body extends StatelessWidget {
                 _MenuItem(
                   label: '로그아웃',
                   onTap: () async {
-                    await vm.logout();
-                    if (!context.mounted) return;
                     Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
+                    // best-effort logout (do not block UI / navigation)
+                    unawaited(vm.logout());
                   },
                 ),
                 const Divider(height: 1, color: Color(0xFFE5E7EB)),

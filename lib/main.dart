@@ -10,6 +10,7 @@ import 'features/auth/data/auth_api.dart';
 import 'features/auth/repositories/auth_repository.dart';
 import 'features/auth/screens/find_account_screen.dart';
 import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/role_guard.dart';
 import 'features/auth/viewmodels/find_account_view_model.dart';
 import 'features/auth/viewmodels/login_view_model.dart';
 import 'features/auth/viewmodels/signup_view_model.dart';
