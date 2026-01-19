@@ -15,8 +15,11 @@ import 'features/auth/viewmodels/find_account_view_model.dart';
 import 'features/auth/viewmodels/login_view_model.dart';
 import 'features/auth/viewmodels/signup_view_model.dart';
 import 'features/admin/data/admin_api.dart';
+import 'features/admin/repositories/admin_repository.dart';
 import 'features/admin/screens/admin_home_screen.dart';
+import 'features/admin/screens/admin_inventory_screen.dart';
 import 'features/admin/viewmodels/admin_home_view_model.dart';
+import 'features/admin/viewmodels/admin_inventory_view_model.dart';
 import 'features/auth/models/role.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
@@ -54,11 +57,13 @@ class MyApp extends StatelessWidget {
     final authApi = AuthApi(dioClient);
     final adminApi = AdminApi(dioClient);
     final authRepo = AuthRepository(api: authApi, tokenStorage: tokenStorage);
+    final adminRepo = AdminRepository(authRepo: authRepo, api: adminApi);
 
     return MultiProvider(
       providers: [
         Provider.value(value: authRepo),
         Provider.value(value: adminApi),
+        Provider.value(value: adminRepo),
         ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => SignupViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
@@ -66,6 +71,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ChangeEmailViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AdminHomeViewModel(authRepo, adminApi)),
+        ChangeNotifierProvider(create: (_) => AdminInventoryViewModel(adminRepo)),
       ],
       child: MaterialApp(
         title: '1000meal App',
@@ -82,6 +88,10 @@ class MyApp extends StatelessWidget {
           AdminHomeScreen.routeName: (_) => const RoleGuard(
                 targetRole: Role.admin,
                 child: AdminHomeScreen(),
+              ),
+          AdminInventoryScreen.routeName: (_) => const RoleGuard(
+                targetRole: Role.admin,
+                child: AdminInventoryScreen(),
               ),
           MyPageScreen.routeName: (_) => const RoleGuard(
                 targetRole: Role.student,

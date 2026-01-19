@@ -93,7 +93,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   child: _SquareCard(
                     title: '재고 관리',
                     subtitle: '',
-                    onTap: () => Navigator.of(context).pushNamed('/admin/inventory'),
+                    onTap: () {
+                      Navigator.of(context).pushNamed('/admin/inventory').then((_) {
+                        if (!context.mounted) return;
+                        context.read<AdminHomeViewModel>().load();
+                      });
+                    },
                     trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 28),
                   ),
                 ),
@@ -183,8 +188,7 @@ class _OpenStatusCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 if (loading)
                   Text('처리 중...', style: TextStyle(fontSize: 12, color: fg))
-                else
-                  Text(isOpen ? '영업 상태 변경 가능' : '현재 영업 전', style: TextStyle(fontSize: 12, color: fg)),
+                
               ],
             ),
             Positioned(
