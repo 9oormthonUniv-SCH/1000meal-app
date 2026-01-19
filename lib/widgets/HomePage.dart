@@ -51,8 +51,6 @@ class HomePage extends StatelessWidget {
       body: LayoutBuilder(
         // 화면 크기에 따라 레이아웃 조정
         builder: (context, constraints) {
-          double mapHeight = 260;
-          double remainingHeight = constraints.maxHeight - mapHeight;
           return Column(
             children: [
               Padding(

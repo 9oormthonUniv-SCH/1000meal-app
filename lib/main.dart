@@ -26,7 +26,6 @@ import 'features/signup/screens/signup_id_screen.dart';
 import 'features/signup/screens/signup_terms_screen.dart';
 import 'providers/auth_provider.dart';
 import 'package:meal_app/main_screen.dart';
-import 'widgets/HomePage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
