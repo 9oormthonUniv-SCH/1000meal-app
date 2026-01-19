@@ -14,6 +14,7 @@ import 'features/auth/screens/role_guard.dart';
 import 'features/auth/viewmodels/find_account_view_model.dart';
 import 'features/auth/viewmodels/login_view_model.dart';
 import 'features/auth/viewmodels/signup_view_model.dart';
+import 'features/admin/data/admin_api.dart';
 import 'features/admin/screens/admin_home_screen.dart';
 import 'features/admin/viewmodels/admin_home_view_model.dart';
 import 'features/auth/models/role.dart';
@@ -51,18 +52,20 @@ class MyApp extends StatelessWidget {
     final tokenStorage = TokenStorage();
     final dioClient = DioClient.create();
     final authApi = AuthApi(dioClient);
+    final adminApi = AdminApi(dioClient);
     final authRepo = AuthRepository(api: authApi, tokenStorage: tokenStorage);
 
     return MultiProvider(
       providers: [
         Provider.value(value: authRepo),
+        Provider.value(value: adminApi),
         ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => SignupViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => MyPageViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => ChangeEmailViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => AdminHomeViewModel(authRepo)),
+        ChangeNotifierProvider(create: (_) => AdminHomeViewModel(authRepo, adminApi)),
       ],
       child: MaterialApp(
         title: '1000meal App',
