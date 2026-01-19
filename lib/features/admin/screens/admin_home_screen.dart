@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:provider/provider.dart';
 
 import '../../auth/repositories/auth_repository.dart';
@@ -28,7 +29,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   Widget build(BuildContext context) {
     final vm = context.watch<AdminHomeViewModel>();
 
-    final name = vm.me?.username.isNotEmpty == true ? vm.me!.username : '가게명 불러오는 중...';
+    final storeName = vm.store?.name.isNotEmpty == true
+        ? vm.store!.name
+        : (vm.me?.storeName?.isNotEmpty == true ? vm.me!.storeName! : '가게명 불러오는 중...');
 
     return Scaffold(
       appBar: AppBar(
@@ -65,7 +68,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    child: Text(storeName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -79,11 +82,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _SquareCard(
-                    title: '영업 중',
-                    subtitle: '준비중',
-                    highlight: true,
-                    onTap: () => _showToast(context, '준비중입니다'),
+                  child: _OpenStatusCard(
+                    isOpen: vm.isOpen,
+                    loading: vm.loading || vm.toggling,
+                    onToggle: vm.toggling ? null : () => vm.toggleOpen(),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -91,7 +93,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   child: _SquareCard(
                     title: '재고 관리',
                     subtitle: '',
-                    onTap: () => _showToast(context, '다음 이슈에서 구현 예정'),
+                    onTap: () {
+                      Navigator.of(context).pushNamed('/admin/inventory').then((_) {
+                        if (!context.mounted) return;
+                        context.read<AdminHomeViewModel>().load();
+                      });
+                    },
                     trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 28),
                   ),
                 ),
@@ -112,9 +119,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: () async {
-                  await context.read<AuthRepository>().logout();
-                  if (!context.mounted) return;
                   Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
+                  // best-effort logout (do not block UI / navigation)
+                  unawaited(context.read<AuthRepository>().logout());
                 },
                 child: const Text('로그아웃', style: TextStyle(fontWeight: FontWeight.w700)),
               ),
@@ -138,10 +145,86 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 }
 
+class _OpenStatusCard extends StatelessWidget {
+  final bool isOpen;
+  final bool loading;
+  final VoidCallback? onToggle;
+
+  const _OpenStatusCard({
+    required this.isOpen,
+    required this.loading,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = isOpen ? const Color(0xFF93C5FD) : Colors.white;
+    final fg = isOpen ? Colors.white : const Color(0xFF9CA3AF);
+    final toggleTrack = isOpen ? Colors.white : const Color(0xFFD1D5DB);
+    final toggleThumb = isOpen ? const Color(0xFF93C5FD) : Colors.white;
+
+    return InkWell(
+      onTap: loading ? null : onToggle,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        height: 160,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4))],
+        ),
+        child: Stack(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isOpen ? '영업 중' : '영업 종료',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: isOpen ? Colors.white : const Color(0xFF6B7280)),
+                ),
+                const SizedBox(height: 6),
+                if (loading)
+                  Text('처리 중...', style: TextStyle(fontSize: 12, color: fg))
+                
+              ],
+            ),
+            Positioned(
+              bottom: 10,
+              right: 10,
+              child: IgnorePointer(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  width: 64,
+                  height: 36,
+                  decoration: BoxDecoration(color: toggleTrack, borderRadius: BorderRadius.circular(999)),
+                  child: AnimatedAlign(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    alignment: isOpen ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      decoration: BoxDecoration(color: toggleThumb, borderRadius: BorderRadius.circular(999)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SquareCard extends StatelessWidget {
   final String title;
   final String subtitle;
-  final bool highlight;
   final VoidCallback onTap;
   final Widget? trailing;
 
@@ -149,15 +232,14 @@ class _SquareCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    this.highlight = false,
     this.trailing,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bg = highlight ? const Color(0xFF93C5FD) : Colors.white;
-    final fg = highlight ? Colors.white : const Color(0xFF111827);
-    final subFg = highlight ? const Color(0xFFEFF6FF) : const Color(0xFF9CA3AF);
+    final bg = Colors.white;
+    final fg = const Color(0xFF111827);
+    final subFg = const Color(0xFF9CA3AF);
 
     return InkWell(
       onTap: onTap,
