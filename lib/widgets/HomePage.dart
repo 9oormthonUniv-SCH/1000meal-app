@@ -1,9 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:meal_app/widgets/StoreSection.dart';
+import 'package:provider/provider.dart';
+
+import '../features/auth/models/role.dart';
+import '../features/auth/repositories/auth_repository.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
+
+  Future<void> _handleProfileTap(BuildContext context) async {
+    final repo = context.read<AuthRepository>();
+    final nav = Navigator.of(context);
+
+    final token = await repo.getAccessToken();
+    if (!context.mounted) return;
+
+    if (token == null || token.isEmpty) {
+      nav.pushNamedAndRemoveUntil('/login', (r) => false);
+      return;
+    }
+
+    try {
+      final me = await repo.getMe();
+      if (!context.mounted) return;
+      if (me.role == Role.admin) {
+        nav.pushNamed('/admin');
+      } else {
+        nav.pushNamed('/mypage');
+      }
+    } catch (e) {
+      // 토큰이 만료/무효인 경우 등: 토큰 클리어 후 로그인으로
+      await repo.logout();
+      if (!context.mounted) return;
+      if (kDebugMode) {
+        debugPrint('프로필 이동 preflight(getMe) 실패: $e');
+      }
+      nav.pushNamedAndRemoveUntil('/login', (r) => false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +62,7 @@ class HomePage extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              print("알림 클릭");
+              if (kDebugMode) debugPrint("알림 클릭");
             },
             icon: SvgPicture.asset(
               'assets/icon/alarm.svg',
@@ -36,9 +72,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {
-              print("프로필 클릭");
-            },
+            onPressed: () => _handleProfileTap(context),
             icon: SvgPicture.asset(
               'assets/icon/profile.svg',
               width: 22,
@@ -67,7 +101,9 @@ class HomePage extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => print("새로고침"),
+                      onPressed: () {
+                        if (kDebugMode) debugPrint("새로고침");
+                      },
                       icon: Icon(Icons.refresh, color: Colors.grey),
                       highlightColor: Colors.orange.withValues(alpha: 0.2),
                       padding: EdgeInsets.zero,

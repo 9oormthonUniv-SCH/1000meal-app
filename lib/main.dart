@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import 'common/config/app_config.dart';
 import 'common/dio/dio_client.dart';
@@ -16,7 +13,9 @@ import 'features/auth/screens/login_screen.dart';
 import 'features/auth/viewmodels/find_account_view_model.dart';
 import 'features/auth/viewmodels/login_view_model.dart';
 import 'features/auth/viewmodels/signup_view_model.dart';
-import 'features/common/screens/placeholder_screen.dart';
+import 'features/admin/screens/admin_home_screen.dart';
+import 'features/admin/viewmodels/admin_home_view_model.dart';
+import 'features/auth/models/role.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
 import 'features/mypage/viewmodels/change_email_view_model.dart';
@@ -33,19 +32,12 @@ Future<void> main() async {
   // AppConfig 로드
   await AppConfig.load();
 
-  // WebView 초기화
-  if (WebViewPlatform.instance == null) {
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      WebViewPlatform.instance = AndroidWebViewPlatform();
-    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      WebViewPlatform.instance = WebKitWebViewPlatform();
-    }
-  }
-
   // 카카오맵 초기화
   await dotenv.load(fileName: "assets/env/.env");
   String key = dotenv.env['KAKAO_MAP_JS_KEY'] ?? '키 없음';
-  print("내 키 확인: $key");
+  if (kDebugMode) {
+    debugPrint("내 키 확인: $key");
+  }
 
   runApp(const MyApp());
 }
@@ -69,6 +61,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MyPageViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => ChangeEmailViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AdminHomeViewModel(authRepo)),
       ],
       child: MaterialApp(
         title: '1000meal App',
@@ -77,10 +70,19 @@ class MyApp extends StatelessWidget {
         initialRoute: LoginScreen.routeName,
         routes: {
           LoginScreen.routeName: (_) => const LoginScreen(),
-          '/': (_) => const PlaceholderScreen(title: '/ (메인)'),
+          // 학생 로그인 성공 시 기본 진입(스펙: STUDENT → '/')
+          '/': (_) => const MainScreen(),
+          // (호환용) 기존 라우트 유지
           '/home': (_) => const MainScreen(),
-          '/admin': (_) => const PlaceholderScreen(title: '/admin'),
-          MyPageScreen.routeName: (_) => const MyPageScreen(),
+          // 보호 라우트
+          AdminHomeScreen.routeName: (_) => const RoleGuard(
+                targetRole: Role.admin,
+                child: AdminHomeScreen(),
+              ),
+          MyPageScreen.routeName: (_) => const RoleGuard(
+                targetRole: Role.student,
+                child: MyPageScreen(),
+              ),
           ChangeEmailScreen.routeName: (_) => const ChangeEmailScreen(),
           // signup
           '/signup': (_) => const SignupIdScreen(),
