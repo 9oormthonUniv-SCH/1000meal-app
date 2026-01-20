@@ -7,9 +7,17 @@ import 'dart:async';
 
 import '../features/auth/models/role.dart';
 import '../features/auth/repositories/auth_repository.dart';
+import 'TabBar.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  HomeTabType _selectedTab = HomeTabType.todayMeal;
 
   Future<void> _handleProfileTap(BuildContext context) async {
     final repo = context.read<AuthRepository>();
@@ -73,14 +81,7 @@ class HomePage extends StatelessWidget {
               fit: BoxFit.contain,
             ),
           ),
-          IconButton(
-            onPressed: () => _handleProfileTap(context),
-            icon: SvgPicture.asset(
-              'assets/icon/profile.svg',
-              width: 22,
-              height: 22,
-            ),
-          ),
+
           const SizedBox(width: 16),
         ],
       ),
@@ -112,6 +113,20 @@ class HomePage extends StatelessWidget {
                       constraints: const BoxConstraints(),
                     ),
                   ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: HomeSegmentedTabBar(
+                    selected: _selectedTab,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedTab = value;
+                      });
+                    },
+                  ),
                 ),
               ),
               Expanded(
