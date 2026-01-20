@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
 
 // 1. 데이터 모델 정의 (React의 StoreListItem 대응)
 class Store {
@@ -40,7 +41,7 @@ class StoreCard extends StatelessWidget {
       onTap: () {
         onTap?.call();
         // 네비게이션 로직 추가 필요
-        // Navigator.push(context, );
+        // Navigator.push(context, ); -> 각 가게 상세페이지로 이동... 라우팅 ㄱㄱ
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16), // mb-4
@@ -70,7 +71,7 @@ class StoreCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 child: store.imageUrl != null && store.imageUrl!.isNotEmpty
-                    ? Image.network(
+                    ? Image.asset(
                         store.imageUrl!,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
@@ -122,7 +123,7 @@ class StoreCard extends StatelessWidget {
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       // 색상 로직: 0개면 빨강, 아니면 주황
-                      color: store.remain == 0 ? Colors.red : Colors.orange,
+                      color: store.remain == 0 ? Colors.red : AppColors.primary,
                     ),
                   ),
                   Text(

@@ -13,28 +13,28 @@ class StoreSection extends StatelessWidget {
         name: "향설 1관",
         menus: ["현미밥", "제육볶음", "미역국", "샐러드"],
         remain: 20,
-        imageUrl: "",
+        imageUrl: "assets/icon/dorm_1.png",
       ),
       Store(
         id: 2,
         name: "야외 그라찌에",
         menus: ["소보로빵", "요거트", "우유"],
         remain: 30,
-        imageUrl: "",
+        imageUrl: "assets/icon/grazie_outside.png",
       ),
       Store(
         id: 3,
         name: "베이커리 경",
         menus: ["인절미", "쿠키", "음료 중 택 1"],
         remain: 10,
-        imageUrl: "",
+        imageUrl: "assets/icon/bakery_kyung.png",
       ),
       Store(
         id: 4,
         name: "향설 2관",
         menus: [], // 메뉴 없음
         remain: 0, // 품절 (빨간색)
-        imageUrl: "",
+        imageUrl: "assets/icon/dorm_2.png",
       ),
     ];
 
