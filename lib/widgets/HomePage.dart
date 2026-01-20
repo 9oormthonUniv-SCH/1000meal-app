@@ -95,38 +95,29 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '오늘의 천밥',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: HomeSegmentedTabBar(
+                          selected: _selectedTab,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedTab = value;
+                            });
+                          },
+                        ),
                       ),
                     ),
                     IconButton(
                       onPressed: () {
                         if (kDebugMode) debugPrint("새로고침");
                       },
-                      icon: Icon(Icons.refresh, color: Colors.grey),
+                      icon: const Icon(Icons.refresh, color: Colors.grey),
                       highlightColor: Colors.orange.withValues(alpha: 0.2),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
                   ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: HomeSegmentedTabBar(
-                    selected: _selectedTab,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedTab = value;
-                      });
-                    },
-                  ),
                 ),
               ),
               Expanded(
