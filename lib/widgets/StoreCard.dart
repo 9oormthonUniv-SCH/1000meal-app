@@ -68,15 +68,10 @@ class StoreCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(8), // rounded-lg
               child: SizedBox(
-                width: 48,
-                height: 48,
+                width: 50,
+                height: 50,
                 child: store.imageUrl != null && store.imageUrl!.isNotEmpty
-                    ? Image.asset(
-                        store.imageUrl!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildNoImage(), //이미지 없는 경우 보여주는 위젯 -> 하단 위젯 참고
-                      )
+                    ? _buildStoreImage(store.imageUrl!)
                     : _buildNoImage(),
               ),
             ),
@@ -148,6 +143,41 @@ class StoreCard extends StatelessWidget {
         "No Img",
         style: TextStyle(fontSize: 10, color: Colors.grey[500]),
       ),
+    );
+  }
+
+  Widget _buildStoreImage(String urlOrAsset) {
+    final value = urlOrAsset.trim();
+    final isNetwork =
+        value.startsWith('http://') || value.startsWith('https://');
+    if (isNetwork) {
+      return Image.network(
+        value,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                          (loadingProgress.expectedTotalBytes ?? 1)
+                    : null,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) => _buildNoImage(),
+      );
+    }
+
+    return Image.asset(
+      value,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => _buildNoImage(),
     );
   }
 }
