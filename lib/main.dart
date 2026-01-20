@@ -28,6 +28,9 @@ import 'features/admin/viewmodels/admin_menu_view_model.dart';
 import 'features/admin/viewmodels/admin_menu_edit_view_model.dart';
 import 'features/admin/viewmodels/admin_frequent_menu_view_model.dart';
 import 'features/admin/viewmodels/admin_frequent_menu_edit_view_model.dart';
+import 'features/store/data/store_api.dart';
+import 'features/store/repositories/store_repository.dart';
+import 'features/store/viewmodels/store_list_view_model.dart';
 import 'features/auth/models/role.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
@@ -66,20 +69,29 @@ class MyApp extends StatelessWidget {
     final adminApi = AdminApi(dioClient);
     final authRepo = AuthRepository(api: authApi, tokenStorage: tokenStorage);
     final adminRepo = AdminRepository(authRepo: authRepo, api: adminApi);
+    final storeApi = StoreApi(dioClient);
+    final storeRepo = StoreRepository(storeApi);
 
     return MultiProvider(
       providers: [
         Provider.value(value: authRepo),
         Provider.value(value: adminApi),
         Provider.value(value: adminRepo),
+        Provider.value(value: storeApi),
+        Provider.value(value: storeRepo),
         ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => SignupViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => MyPageViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => ChangeEmailViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => AdminHomeViewModel(authRepo, adminApi)),
-        ChangeNotifierProvider(create: (_) => AdminInventoryViewModel(adminRepo)),
+        ChangeNotifierProvider(
+          create: (_) => AdminHomeViewModel(authRepo, adminApi),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AdminInventoryViewModel(adminRepo),
+        ),
+        ChangeNotifierProvider(create: (_) => StoreListViewModel(storeRepo)),
       ],
       child: MaterialApp(
         title: '1000meal App',
@@ -93,64 +105,62 @@ class MyApp extends StatelessWidget {
           // (호환용) 기존 라우트 유지
           '/home': (_) => const MainScreen(),
           // 보호 라우트
-          AdminHomeScreen.routeName: (_) => const RoleGuard(
-                targetRole: Role.admin,
-                child: AdminHomeScreen(),
-              ),
+          AdminHomeScreen.routeName: (_) =>
+              const RoleGuard(targetRole: Role.admin, child: AdminHomeScreen()),
           AdminInventoryScreen.routeName: (_) => const RoleGuard(
-                targetRole: Role.admin,
-                child: AdminInventoryScreen(),
-              ),
+            targetRole: Role.admin,
+            child: AdminInventoryScreen(),
+          ),
           AdminMenuScreen.routeName: (context) => RoleGuard(
-                targetRole: Role.admin,
-                child: ChangeNotifierProvider(
-                  create: (_) => AdminMenuViewModel(context.read<AdminRepository>()),
-                  child: const AdminMenuScreen(),
-                ),
-              ),
+            targetRole: Role.admin,
+            child: ChangeNotifierProvider(
+              create: (_) =>
+                  AdminMenuViewModel(context.read<AdminRepository>()),
+              child: const AdminMenuScreen(),
+            ),
+          ),
           AdminMenuEditScreen.routeName: (context) => RoleGuard(
-                targetRole: Role.admin,
-                child: Builder(
-                  builder: (context) {
-                    final args = ModalRoute.of(context)?.settings.arguments;
-                    final initialDate = args is String ? args : null;
-                    return ChangeNotifierProvider(
-                      create: (_) => AdminMenuEditViewModel(
-                        context.read<AdminRepository>(),
-                        initialDate: initialDate,
-                      ),
-                      child: AdminMenuEditScreen(initialDate: initialDate),
-                    );
-                  },
-                ),
-              ),
+            targetRole: Role.admin,
+            child: Builder(
+              builder: (context) {
+                final args = ModalRoute.of(context)?.settings.arguments;
+                final initialDate = args is String ? args : null;
+                return ChangeNotifierProvider(
+                  create: (_) => AdminMenuEditViewModel(
+                    context.read<AdminRepository>(),
+                    initialDate: initialDate,
+                  ),
+                  child: AdminMenuEditScreen(initialDate: initialDate),
+                );
+              },
+            ),
+          ),
           AdminFrequentMenuScreen.routeName: (context) => RoleGuard(
-                targetRole: Role.admin,
-                child: ChangeNotifierProvider(
-                  create: (_) => AdminFrequentMenuViewModel(context.read<AdminRepository>()),
-                  child: const AdminFrequentMenuScreen(),
-                ),
-              ),
+            targetRole: Role.admin,
+            child: ChangeNotifierProvider(
+              create: (_) =>
+                  AdminFrequentMenuViewModel(context.read<AdminRepository>()),
+              child: const AdminFrequentMenuScreen(),
+            ),
+          ),
           AdminFrequentMenuEditScreen.routeName: (context) => RoleGuard(
-                targetRole: Role.admin,
-                child: Builder(
-                  builder: (context) {
-                    final args = ModalRoute.of(context)?.settings.arguments;
-                    final groupId = args is int ? args : null;
-                    return ChangeNotifierProvider(
-                      create: (_) => AdminFrequentMenuEditViewModel(
-                        context.read<AdminRepository>(),
-                        groupId: groupId,
-                      ),
-                      child: AdminFrequentMenuEditScreen(groupId: groupId),
-                    );
-                  },
-                ),
-              ),
-          MyPageScreen.routeName: (_) => const RoleGuard(
-                targetRole: Role.student,
-                child: MyPageScreen(),
-              ),
+            targetRole: Role.admin,
+            child: Builder(
+              builder: (context) {
+                final args = ModalRoute.of(context)?.settings.arguments;
+                final groupId = args is int ? args : null;
+                return ChangeNotifierProvider(
+                  create: (_) => AdminFrequentMenuEditViewModel(
+                    context.read<AdminRepository>(),
+                    groupId: groupId,
+                  ),
+                  child: AdminFrequentMenuEditScreen(groupId: groupId),
+                );
+              },
+            ),
+          ),
+          MyPageScreen.routeName: (_) =>
+              const RoleGuard(targetRole: Role.student, child: MyPageScreen()),
           ChangeEmailScreen.routeName: (_) => const ChangeEmailScreen(),
           // signup
           '/signup': (_) => const SignupIdScreen(),
