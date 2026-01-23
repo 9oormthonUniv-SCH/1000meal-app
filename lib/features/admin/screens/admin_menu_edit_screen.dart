@@ -149,12 +149,6 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                             controller: _controller,
                             onChanged: (v) => context.read<AdminMenuEditViewModel>().setInput(v),
                             onAdd: () => context.read<AdminMenuEditViewModel>().addMenu(),
-                            onTapMenu: () {
-                              // 다음 단계에서 '자주 쓰는 메뉴' 연동 예정
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('자주 쓰는 메뉴는 다음 단계에서 구현 예정'), duration: Duration(milliseconds: 900)),
-                              );
-                            },
                           ),
                           const SizedBox(height: 16),
                           _MenuList(
@@ -278,9 +272,8 @@ class _InputBar extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final VoidCallback onAdd;
-  final VoidCallback onTapMenu;
 
-  const _InputBar({required this.controller, required this.onChanged, required this.onAdd, required this.onTapMenu});
+  const _InputBar({required this.controller, required this.onChanged, required this.onAdd});
 
   @override
   Widget build(BuildContext context) {
@@ -288,20 +281,6 @@ class _InputBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
       child: Row(
         children: [
-          InkWell(
-            onTap: onTapMenu,
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              constraints: const BoxConstraints(minWidth: 40),
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE5E7EB),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.menu, color: Color(0xFF374151), size: 20),
-            ),
-          ),
-          const SizedBox(width: 8),
           Expanded(
             child: TextField(
               decoration: InputDecoration(

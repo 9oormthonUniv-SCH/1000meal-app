@@ -69,12 +69,6 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
         color: const Color(0xFFF5F6F7),
         child: Column(
           children: [
-            // "헤더로 취급"되는 영역: ActionBar까지 포함
-            _ActionBar(
-              onTapCalendar: () => _toast(context, '다음 단계에서 구현 예정'),
-              onTapFrequent: () => _toast(context, '다음 단계에서 구현 예정'),
-            ),
-
             Expanded(
               child: vm.loading && vm.weeks.isEmpty
                   ? const Center(child: CircularProgressIndicator())
@@ -142,51 +136,6 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
     );
   }
 
-  static void _toast(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), duration: const Duration(milliseconds: 900)));
-  }
-}
-
-class _ActionBar extends StatelessWidget {
-  final VoidCallback onTapCalendar;
-  final VoidCallback onTapFrequent;
-
-  const _ActionBar({required this.onTapCalendar, required this.onTapFrequent});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          TextButton.icon(
-            onPressed: onTapCalendar,
-            icon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF4B5563)),
-            label: const Text('다른 주 보기', style: TextStyle(fontSize: 13, color: Color(0xFF4B5563))),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-          ),
-          TextButton(
-            onPressed: onTapFrequent,
-            style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFFF97316),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: const Text('자주 쓰는 메뉴', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _WeekCard extends StatelessWidget {
