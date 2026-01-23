@@ -18,8 +18,10 @@ import 'features/admin/data/admin_api.dart';
 import 'features/admin/repositories/admin_repository.dart';
 import 'features/admin/screens/admin_home_screen.dart';
 import 'features/admin/screens/admin_inventory_screen.dart';
+import 'features/admin/screens/admin_menu_screen.dart';
 import 'features/admin/viewmodels/admin_home_view_model.dart';
 import 'features/admin/viewmodels/admin_inventory_view_model.dart';
+import 'features/admin/viewmodels/admin_menu_view_model.dart';
 import 'features/auth/models/role.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
@@ -72,6 +74,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AdminHomeViewModel(authRepo, adminApi)),
         ChangeNotifierProvider(create: (_) => AdminInventoryViewModel(adminRepo)),
+        ChangeNotifierProvider(create: (_) => AdminMenuViewModel(adminRepo)),
       ],
       child: MaterialApp(
         title: '1000meal App',
@@ -92,6 +95,10 @@ class MyApp extends StatelessWidget {
           AdminInventoryScreen.routeName: (_) => const RoleGuard(
                 targetRole: Role.admin,
                 child: AdminInventoryScreen(),
+              ),
+          AdminMenuScreen.routeName: (_) => const RoleGuard(
+                targetRole: Role.admin,
+                child: AdminMenuScreen(),
               ),
           MyPageScreen.routeName: (_) => const RoleGuard(
                 targetRole: Role.student,

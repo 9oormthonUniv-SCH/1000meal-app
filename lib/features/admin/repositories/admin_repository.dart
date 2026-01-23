@@ -54,5 +54,17 @@ class AdminRepository {
     final token = await _requireToken();
     await _api.updateDailyStock(menuId: menuId, stock: stock, token: token);
   }
+
+  Future<WeeklyMenuResponse> getWeeklyMenu({required String date}) async {
+    final token = await _requireToken();
+    final storeId = await _requireStoreId(token);
+    return _api.getWeeklyMenu(storeId: storeId, date: date, token: token);
+  }
+
+  Future<DailyMenuResponse> saveDailyMenu({required String date, required List<String> menus}) async {
+    final token = await _requireToken();
+    final storeId = await _requireStoreId(token);
+    return _api.saveDailyMenu(storeId: storeId, date: date, menus: menus, token: token);
+  }
 }
 

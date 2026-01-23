@@ -107,7 +107,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             const SizedBox(height: 12),
             _WideCard(
               title: '메뉴 관리',
-              onTap: () => _showToast(context, '다음 이슈에서 구현 예정'),
+              onTap: () => Navigator.of(context).pushNamed('/admin/menu'),
             ),
             const SizedBox(height: 16),
             SizedBox(
