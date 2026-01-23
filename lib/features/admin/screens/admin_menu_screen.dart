@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../common/utils/week_kst.dart';
 import '../models/admin_menu_week.dart';
+import 'admin_menu_edit_screen.dart';
 import '../viewmodels/admin_menu_view_model.dart';
 
 class AdminMenuScreen extends StatefulWidget {
@@ -115,7 +116,10 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                             key: key,
                             child: _WeekCard(
                               week: week,
-                              onTapDay: (ymd) => _toast(context, '메뉴 수정 화면은 다음 단계에서 구현 예정 ($ymd)'),
+                              onTapDay: (ymd) => Navigator.of(context).pushNamed(
+                                AdminMenuEditScreen.routeName,
+                                arguments: ymd,
+                              ),
                             ),
                           );
                         },

@@ -19,9 +19,11 @@ import 'features/admin/repositories/admin_repository.dart';
 import 'features/admin/screens/admin_home_screen.dart';
 import 'features/admin/screens/admin_inventory_screen.dart';
 import 'features/admin/screens/admin_menu_screen.dart';
+import 'features/admin/screens/admin_menu_edit_screen.dart';
 import 'features/admin/viewmodels/admin_home_view_model.dart';
 import 'features/admin/viewmodels/admin_inventory_view_model.dart';
 import 'features/admin/viewmodels/admin_menu_view_model.dart';
+import 'features/admin/viewmodels/admin_menu_edit_view_model.dart';
 import 'features/auth/models/role.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
@@ -100,6 +102,22 @@ class MyApp extends StatelessWidget {
                 child: ChangeNotifierProvider(
                   create: (_) => AdminMenuViewModel(context.read<AdminRepository>()),
                   child: const AdminMenuScreen(),
+                ),
+              ),
+          AdminMenuEditScreen.routeName: (context) => RoleGuard(
+                targetRole: Role.admin,
+                child: Builder(
+                  builder: (context) {
+                    final args = ModalRoute.of(context)?.settings.arguments;
+                    final initialDate = args is String ? args : null;
+                    return ChangeNotifierProvider(
+                      create: (_) => AdminMenuEditViewModel(
+                        context.read<AdminRepository>(),
+                        initialDate: initialDate,
+                      ),
+                      child: AdminMenuEditScreen(initialDate: initialDate),
+                    );
+                  },
                 ),
               ),
           MyPageScreen.routeName: (_) => const RoleGuard(

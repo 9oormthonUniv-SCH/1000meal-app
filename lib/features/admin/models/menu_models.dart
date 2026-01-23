@@ -1,18 +1,23 @@
 class DailyMenuResponse {
   final int id;
   final String date; // YYYY-MM-DD
-  final int stock;
+  final String dayOfWeek; // MONDAY, TUESDAY ...
+  final int? stock;
+  final List<String> menus;
   final bool open;
 
   DailyMenuResponse({
     required this.id,
     required this.date,
+    required this.dayOfWeek,
     required this.stock,
+    required this.menus,
     required this.open,
   });
 
   factory DailyMenuResponse.fromJson(Map<String, dynamic> json) {
     int toInt(dynamic v) => v is int ? v : int.tryParse((v ?? '').toString()) ?? 0;
+    int? toIntNullable(dynamic v) => v == null ? null : (v is int ? v : int.tryParse(v.toString()));
     bool toBool(dynamic v) {
       if (v is bool) return v;
       if (v is num) return v != 0;
@@ -21,10 +26,15 @@ class DailyMenuResponse {
       return s == 'true' || s == '1' || s == 'y' || s == 'yes';
     }
 
+    final rawMenus = json['menus'];
+    final menus = rawMenus is List ? rawMenus.map((e) => e.toString()).toList(growable: false) : <String>[];
+
     return DailyMenuResponse(
       id: toInt(json['id']),
       date: (json['date'] ?? '').toString(),
-      stock: toInt(json['stock'] ?? 0),
+      dayOfWeek: (json['dayOfWeek'] ?? '').toString(),
+      stock: toIntNullable(json['stock']),
+      menus: menus,
       open: toBool(json['open']),
     );
   }
@@ -33,6 +43,7 @@ class DailyMenuResponse {
 class WeeklyMenuDay {
   final int id;
   final String date; // YYYY-MM-DD
+  final String dayOfWeek; // 월, 화, ... or MONDAY...
   final int? stock;
   final List<String> menus;
   final bool open;
@@ -40,6 +51,7 @@ class WeeklyMenuDay {
   WeeklyMenuDay({
     required this.id,
     required this.date,
+    required this.dayOfWeek,
     required this.stock,
     required this.menus,
     required this.open,
@@ -62,6 +74,7 @@ class WeeklyMenuDay {
     return WeeklyMenuDay(
       id: toInt(json['id']),
       date: (json['date'] ?? '').toString(),
+      dayOfWeek: (json['dayOfWeek'] ?? '').toString(),
       stock: toIntNullable(json['stock']),
       menus: menus,
       open: toBool(json['open']),
