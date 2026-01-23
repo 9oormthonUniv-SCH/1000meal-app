@@ -74,7 +74,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AdminHomeViewModel(authRepo, adminApi)),
         ChangeNotifierProvider(create: (_) => AdminInventoryViewModel(adminRepo)),
-        ChangeNotifierProvider(create: (_) => AdminMenuViewModel(adminRepo)),
       ],
       child: MaterialApp(
         title: '1000meal App',
@@ -96,9 +95,12 @@ class MyApp extends StatelessWidget {
                 targetRole: Role.admin,
                 child: AdminInventoryScreen(),
               ),
-          AdminMenuScreen.routeName: (_) => const RoleGuard(
+          AdminMenuScreen.routeName: (context) => RoleGuard(
                 targetRole: Role.admin,
-                child: AdminMenuScreen(),
+                child: ChangeNotifierProvider(
+                  create: (_) => AdminMenuViewModel(context.read<AdminRepository>()),
+                  child: const AdminMenuScreen(),
+                ),
               ),
           MyPageScreen.routeName: (_) => const RoleGuard(
                 targetRole: Role.student,

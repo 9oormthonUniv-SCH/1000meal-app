@@ -15,6 +15,7 @@ class AdminMenuViewModel extends ChangeNotifier {
 
   bool loading = false;
   bool loadingNext = false;
+  bool loadingPrev = false;
   String? errorMessage;
 
   /// weeks[0] is the top-most week.
@@ -30,7 +31,10 @@ class AdminMenuViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       final monday = mondayOfYmd(todayYmd);
+      // iOS(특히 SE)에서는 "1주(월~금)"만으로 화면이 꽉 차서 스크롤이 안 되는 것처럼 보일 수 있어
+      // 초기 2주를 로드해서 스크롤/무한로딩 UX를 확보한다.
       await _loadWeek(baseDate: monday, direction: 'next', force: true);
+      await _loadWeek(baseDate: addWeeksYmd(monday, 1), direction: 'next', force: true);
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);
@@ -61,6 +65,31 @@ class AdminMenuViewModel extends ChangeNotifier {
       }
     } finally {
       loadingNext = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> loadPrevWeek() async {
+    if (loadingPrev || weeks.isEmpty) return false;
+    loadingPrev = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      final firstWeek = weeks.first;
+      final firstMonday = mondayOfYmd(firstWeek.first.id);
+      final prevMonday = addWeeksYmd(firstMonday, -1);
+      final before = weeks.length;
+      await _loadWeek(baseDate: prevMonday, direction: 'prev', force: false);
+      return weeks.length > before;
+    } catch (e) {
+      if (e is ApiException) {
+        errorMessage = mapErrorToMessage(e, responseData: e.details);
+      } else {
+        errorMessage = '이전 주 불러오기 실패';
+      }
+      return false;
+    } finally {
+      loadingPrev = false;
       notifyListeners();
     }
   }

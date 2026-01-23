@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/utils/week_kst.dart';
 import '../models/admin_menu_week.dart';
 import '../viewmodels/admin_menu_view_model.dart';
 
@@ -16,6 +17,7 @@ class AdminMenuScreen extends StatefulWidget {
 class _AdminMenuScreenState extends State<AdminMenuScreen> {
   final _scroll = ScrollController();
   bool _loaded = false;
+  final Map<String, GlobalKey> _weekKeys = <String, GlobalKey>{};
 
   @override
   void initState() {
@@ -63,17 +65,35 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
         color: const Color(0xFFF5F6F7),
         child: Column(
           children: [
+            // "헤더로 취급"되는 영역: ActionBar까지 포함
             _ActionBar(
               onTapCalendar: () => _toast(context, '다음 단계에서 구현 예정'),
               onTapFrequent: () => _toast(context, '다음 단계에서 구현 예정'),
             ),
+
             Expanded(
               child: vm.loading && vm.weeks.isEmpty
                   ? const Center(child: CircularProgressIndicator())
-                  : RefreshIndicator(
-                      onRefresh: () async => _toast(context, 'pull-to-prev는 다음 단계에서 구현 예정'),
+                  : RefreshIndicator.adaptive(
+                      onRefresh: () async {
+                        if (vm.weeks.isEmpty) return;
+                        final inserted = await vm.loadPrevWeek();
+
+                        // 요구사항: 갱신(이전 주 추가) 후 새로 갱신된 메뉴가 레이아웃 최상단에 위치
+                        if (inserted && _scroll.hasClients) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (!_scroll.hasClients) return;
+                            _scroll.animateTo(
+                              0,
+                              duration: const Duration(milliseconds: 220),
+                              curve: Curves.easeOut,
+                            );
+                          });
+                        }
+                      },
                       child: ListView.builder(
                         controller: _scroll,
+                        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                         itemCount: vm.weeks.length + 1,
                         itemBuilder: (context, idx) {
@@ -89,9 +109,14 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                           }
 
                           final week = vm.weeks[idx];
-                          return _WeekCard(
-                            week: week,
-                            onTapDay: (ymd) => _toast(context, '메뉴 수정 화면은 다음 단계에서 구현 예정 ($ymd)'),
+                          final monday = mondayOfYmd(week.first.id);
+                          final key = _weekKeys.putIfAbsent(monday, () => GlobalKey());
+                          return KeyedSubtree(
+                            key: key,
+                            child: _WeekCard(
+                              week: week,
+                              onTapDay: (ymd) => _toast(context, '메뉴 수정 화면은 다음 단계에서 구현 예정 ($ymd)'),
+                            ),
                           );
                         },
                       ),
