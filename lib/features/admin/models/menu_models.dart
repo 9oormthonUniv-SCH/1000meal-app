@@ -111,3 +111,38 @@ class WeeklyMenuResponse {
   }
 }
 
+class FavoriteGroup {
+  final int groupId;
+  final List<String> menu;
+
+  FavoriteGroup({
+    required this.groupId,
+    required this.menu,
+  });
+
+  factory FavoriteGroup.fromJson(Map<String, dynamic> json) {
+    final rawMenus = json['menu'];
+    final menus = rawMenus is List ? rawMenus.map((e) => e.toString()).toList(growable: false) : <String>[];
+
+    return FavoriteGroup(
+      groupId: json['groupId'] as int,
+      menu: menus,
+    );
+  }
+}
+
+class FavoritesResponse {
+  final List<FavoriteGroup> groups;
+
+  FavoritesResponse({required this.groups});
+
+  factory FavoritesResponse.fromJson(Map<String, dynamic> json) {
+    final list = json['groups'];
+    final groups = list is List
+        ? list.whereType<Map>().map((e) => FavoriteGroup.fromJson(e.cast<String, dynamic>())).toList(growable: false)
+        : <FavoriteGroup>[];
+
+    return FavoritesResponse(groups: groups);
+  }
+}
+

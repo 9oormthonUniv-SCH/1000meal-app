@@ -4,6 +4,7 @@ import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
 import '../../../common/utils/kst_date.dart';
 import '../../../common/utils/week_kst.dart';
+import '../models/menu_models.dart';
 import '../repositories/admin_repository.dart';
 
 class AdminMenuEditViewModel extends ChangeNotifier {
@@ -25,6 +26,8 @@ class AdminMenuEditViewModel extends ChangeNotifier {
   List<String> menus = [];
 
   bool showSavedToast = false;
+  bool showFrequentMenu = false;
+  List<FavoriteGroup> frequentMenus = [];
 
   Future<void> load() async {
     loading = true;
@@ -93,6 +96,49 @@ class AdminMenuEditViewModel extends ChangeNotifier {
   void hideToast() {
     if (!showSavedToast) return;
     showSavedToast = false;
+    notifyListeners();
+  }
+
+  Future<bool> loadFrequentMenus() async {
+    try {
+      final res = await _repo.getFavorites();
+      frequentMenus = res.groups;
+      notifyListeners();
+      return res.groups.isNotEmpty;
+    } catch (e) {
+      // 에러는 무시 (자주 쓰는 메뉴는 선택사항)
+      return false;
+    }
+  }
+
+  Future<bool> toggleFrequentMenu() async {
+    if (!showFrequentMenu) {
+      // 열 때: 목록이 비어있으면 로드
+      if (frequentMenus.isEmpty) {
+        final hasMenus = await loadFrequentMenus();
+        if (!hasMenus) {
+          // 목록이 없으면 toast 표시를 위해 false 반환
+          showFrequentMenu = false;
+          notifyListeners();
+          return false; // 목록이 없음을 알림
+        }
+      }
+      // 목록이 있으면 드롭다운 표시
+      showFrequentMenu = true;
+      notifyListeners();
+      return true;
+    } else {
+      // 닫을 때
+      showFrequentMenu = false;
+      notifyListeners();
+      return true;
+    }
+  }
+
+  void selectFrequentMenu(FavoriteGroup group) {
+    menus = [...menus, ...group.menu];
+    dirty = true;
+    showFrequentMenu = false;
     notifyListeners();
   }
 

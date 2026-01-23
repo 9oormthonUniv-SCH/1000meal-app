@@ -66,5 +66,34 @@ class AdminRepository {
     final storeId = await _requireStoreId(token);
     return _api.saveDailyMenu(storeId: storeId, date: date, menus: menus, token: token);
   }
+
+  // 자주 쓰는 메뉴 API
+  Future<FavoritesResponse> getFavorites() async {
+    final token = await _requireToken();
+    final storeId = await _requireStoreId(token);
+    return _api.getFavorites(storeId: storeId, token: token);
+  }
+
+  Future<FavoritesResponse> getFavoriteGroup({required int groupId}) async {
+    final token = await _requireToken();
+    return _api.getFavoriteGroup(groupId: groupId, token: token);
+  }
+
+  Future<void> createFavorite({required List<String> menus}) async {
+    final token = await _requireToken();
+    final storeId = await _requireStoreId(token);
+    await _api.createFavorite(storeId: storeId, menus: menus, token: token);
+  }
+
+  Future<void> updateFavorite({required int groupId, required List<String> menus}) async {
+    final token = await _requireToken();
+    await _api.updateFavorite(groupId: groupId, menus: menus, token: token);
+  }
+
+  Future<void> deleteFavorites({required List<int> groupIds}) async {
+    final token = await _requireToken();
+    final storeId = await _requireStoreId(token);
+    await _api.deleteFavorites(storeId: storeId, groupIds: groupIds, token: token);
+  }
 }
 

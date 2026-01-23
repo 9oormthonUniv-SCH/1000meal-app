@@ -64,6 +64,23 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
           onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/admin', (r) => false),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: TextButton(
+              onPressed: () => Navigator.of(context).pushNamed('/admin/menu/frequent'),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFFF97316),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Text('자주 쓰는 메뉴', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ],
       ),
       body: Container(
         color: const Color(0xFFF5F6F7),

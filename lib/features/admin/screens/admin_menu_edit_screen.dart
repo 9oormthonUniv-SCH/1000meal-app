@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/utils/week_kst.dart';
+import '../models/menu_models.dart';
 import '../viewmodels/admin_menu_edit_view_model.dart';
 
 class AdminMenuEditScreen extends StatefulWidget {
@@ -142,19 +143,88 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                     const Expanded(child: Center(child: CircularProgressIndicator()))
                   else
                     Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.all(16),
+                      child: Stack(
+                        clipBehavior: Clip.none,
                         children: [
-                          _InputBar(
-                            controller: _controller,
-                            onChanged: (v) => context.read<AdminMenuEditViewModel>().setInput(v),
-                            onAdd: () => context.read<AdminMenuEditViewModel>().addMenu(),
+                          ListView(
+                            padding: const EdgeInsets.all(16),
+                            children: [
+                              _InputBar(
+                                controller: _controller,
+                                onChanged: (v) => context.read<AdminMenuEditViewModel>().setInput(v),
+                                onAdd: () => context.read<AdminMenuEditViewModel>().addMenu(),
+                                onTapMenu: () async {
+                                  final hasMenus = await context.read<AdminMenuEditViewModel>().toggleFrequentMenu();
+                                  if (!hasMenus && mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('자주 쓰는 메뉴가 없습니다'),
+                                        duration: Duration(milliseconds: 1500),
+                                      ),
+                                    );
+                                  }
+                                },
+                                showFrequentMenu: vm.showFrequentMenu,
+                                frequentMenus: vm.frequentMenus,
+                                onSelectFrequentMenu: (group) => context.read<AdminMenuEditViewModel>().selectFrequentMenu(group),
+                              ),
+                              const SizedBox(height: 16),
+                              _MenuList(
+                                menus: vm.menus,
+                                onRemove: (i) => context.read<AdminMenuEditViewModel>().removeMenu(i),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 16),
-                          _MenuList(
-                            menus: vm.menus,
-                            onRemove: (i) => context.read<AdminMenuEditViewModel>().removeMenu(i),
-                          ),
+                          // 드롭다운을 Stack의 최상위에 배치
+                          if (vm.showFrequentMenu && vm.frequentMenus.isNotEmpty)
+                            Positioned(
+                              top: 72, // ListView padding(16) + InputBar padding(4) + InputBar height(40) + spacing(12)
+                              left: 20, // ListView padding(16) + InputBar padding(4)
+                              child: Material(
+                                elevation: 8,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  width: 285,
+                                  constraints: const BoxConstraints(maxHeight: 300),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+                                  ),
+                                  child: ListView(
+                                    shrinkWrap: true,
+                                    children: [
+                                      for (int i = 0; i < vm.frequentMenus.length; i++)
+                                        InkWell(
+                                          onTap: () => context.read<AdminMenuEditViewModel>().selectFrequentMenu(vm.frequentMenus[i]),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            decoration: BoxDecoration(
+                                              border: i < vm.frequentMenus.length - 1
+                                                  ? const Border(bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1))
+                                                  : null,
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    vm.frequentMenus[i].menu.join(', '),
+                                                    style: const TextStyle(fontSize: 14, color: Color(0xFF374151)),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 16),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -272,16 +342,45 @@ class _InputBar extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final VoidCallback onAdd;
+  final VoidCallback onTapMenu;
+  final bool showFrequentMenu;
+  final List<FavoriteGroup> frequentMenus;
+  final ValueChanged<FavoriteGroup> onSelectFrequentMenu;
 
-  const _InputBar({required this.controller, required this.onChanged, required this.onAdd});
+  const _InputBar({
+    required this.controller,
+    required this.onChanged,
+    required this.onAdd,
+    required this.onTapMenu,
+    required this.showFrequentMenu,
+    required this.frequentMenus,
+    required this.onSelectFrequentMenu,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
-      child: Row(
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Expanded(
+          Row(
+            children: [
+              InkWell(
+                onTap: onTapMenu,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  constraints: const BoxConstraints(minWidth: 40),
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.menu, color: Color(0xFF374151), size: 20),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
             child: TextField(
               decoration: InputDecoration(
                 hintText: '메뉴 입력',
@@ -318,7 +417,9 @@ class _InputBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               minimumSize: const Size(60, 40),
             ),
-            child: const Text('입력', style: TextStyle(fontSize: 14)),
+              child: const Text('입력', style: TextStyle(fontSize: 14)),
+          ),
+            ],
           ),
         ],
       ),
