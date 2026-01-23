@@ -55,10 +55,13 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('메뉴 관리'),
+        toolbarHeight: 48,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text('메뉴 관리', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
           onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/admin', (r) => false),
         ),
       ),
@@ -154,24 +157,31 @@ class _ActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TextButton.icon(
             onPressed: onTapCalendar,
-            icon: const Icon(Icons.calendar_today, size: 18, color: Color(0xFF4B5563)),
-            label: const Text('다른 주 보기', style: TextStyle(color: Color(0xFF4B5563))),
+            icon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF4B5563)),
+            label: const Text('다른 주 보기', style: TextStyle(fontSize: 13, color: Color(0xFF4B5563))),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
           ),
           TextButton(
             onPressed: onTapFrequent,
             style: TextButton.styleFrom(
               backgroundColor: const Color(0xFFF97316),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text('자주 쓰는 메뉴', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            child: const Text('자주 쓰는 메뉴', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
           ),
         ],
       ),

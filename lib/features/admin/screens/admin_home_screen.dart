@@ -35,15 +35,18 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 48,
+        backgroundColor: Colors.white,
+        elevation: 0,
         title: const Text(''),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
           onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false),
         ),
         actions: [
           IconButton(
             onPressed: () => _showToast(context, '준비중입니다'),
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings, color: Color(0xFF111827)),
           ),
         ],
       ),

@@ -80,10 +80,13 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
       onWillPop: () => _confirmDiscardIfDirty(vm),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('메뉴 수정'),
+          toolbarHeight: 48,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: const Text('메뉴 수정', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
           centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
             onPressed: () async {
               final ok = await _confirmDiscardIfDirty(vm);
               if (!ok) return;
@@ -102,8 +105,9 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  minimumSize: const Size(40, 20),
                 ),
-                child: Text(vm.saving ? '저장중...' : '저장', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                child: Text('저장', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -203,7 +207,7 @@ class _WeekNavigator extends StatelessWidget {
   Widget build(BuildContext context) {
     const weekdayLabels = ['월', '화', '수', '목', '금', '토', '일'];
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
@@ -212,9 +216,9 @@ class _WeekNavigator extends StatelessWidget {
         children: [
           IconButton(
             onPressed: onPrevWeek,
-            icon: const Icon(Icons.chevron_left, size: 20),
+            icon: const Icon(Icons.chevron_left, size: 18),
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
             color: const Color(0xFF374151),
           ),
           Expanded(
@@ -227,7 +231,7 @@ class _WeekNavigator extends StatelessWidget {
                       onTap: () => onSelect(days[i]),
                       child: Container(
                         constraints: const BoxConstraints(minWidth: 36),
-                        height: 52,
+                        height: 44,
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
@@ -242,12 +246,12 @@ class _WeekNavigator extends StatelessWidget {
                           children: [
                             Text(
                               weekdayLabels[i.clamp(0, 6)],
-                              style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                              style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 1),
                             Text(
                               days[i].substring(8), // DD
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827)),
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF111827)),
                             ),
                           ],
                         ),
@@ -259,9 +263,9 @@ class _WeekNavigator extends StatelessWidget {
           ),
           IconButton(
             onPressed: onNextWeek,
-            icon: const Icon(Icons.chevron_right, size: 20),
+            icon: const Icon(Icons.chevron_right, size: 18),
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
             color: const Color(0xFF374151),
           ),
         ],
@@ -352,8 +356,7 @@ class _MenuList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (menus.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 180),
+      return const Center(
         child: Text('현재 작성된 메뉴가 없습니다', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14, fontWeight: FontWeight.w600)),
       );
     }
