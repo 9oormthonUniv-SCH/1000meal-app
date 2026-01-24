@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../features/store/models/store_models.dart';
+import '../features/store/screens/store_detail_screen.dart';
 import '../features/store/viewmodels/store_list_view_model.dart';
 import 'StoreCard.dart';
 
@@ -63,7 +64,11 @@ class _StoreSectionState extends State<StoreSection> {
             ...stores.map((store) {
               return StoreCard(
                 store: store,
-                onTap: () => debugPrint("${store.name} 클릭됨"),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => StoreDetailScreen(storeId: store.id),
+                  ),
+                ),
               );
             }),
         ],

@@ -99,6 +99,7 @@ class _HomePageState extends State<HomePage> {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: HomeSegmentedTabBar(
+                          //HomeTabType에 따라서 StoreSection or Notice List
                           selected: _selectedTab,
                           onChanged: (value) {
                             setState(() {
@@ -121,6 +122,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Expanded(
+                //렌더링 분기 추가 필요
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: Column(
