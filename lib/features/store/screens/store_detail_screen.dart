@@ -228,7 +228,17 @@ class _StoreDetailView extends StatelessWidget {
             itemCount: stores.length,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              return OtherStoreCard(store: stores[index]);
+              final store = stores[index];
+              return OtherStoreCard(
+                store: store,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => StoreDetailScreen(
+                      storeId: store.id,
+                    ), // 탭 시 해당 매장 상세 페이지로 이동
+                  ),
+                ),
+              );
             },
           ),
         ),
