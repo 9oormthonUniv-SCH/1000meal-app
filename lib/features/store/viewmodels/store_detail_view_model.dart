@@ -14,6 +14,7 @@ class StoreDetailViewModel extends ChangeNotifier {
   bool loading = false;
   String? errorMessage;
   StoreDetail? detail;
+  List<StoreListItem> otherStores = [];
 
   Future<void> load() async {
     if (loading) return;
@@ -22,6 +23,12 @@ class StoreDetailViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       detail = await _repo.getStoreDetail(storeId);
+      try {
+        final list = await _repo.getStoreList();
+        otherStores = list.where((store) => store.id != storeId).toList();
+      } catch (_) {
+        otherStores = [];
+      }
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);

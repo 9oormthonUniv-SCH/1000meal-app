@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../models/store_models.dart';
 import '../repositories/store_repository.dart';
 import '../viewmodels/store_detail_view_model.dart';
+import '../widgets/other_store_card.dart';
+import '../widgets/weekly_menu_card.dart';
 
 class StoreDetailScreen extends StatelessWidget {
   static const routeName = '/store/detail';
@@ -36,7 +38,11 @@ class _StoreDetailView extends StatelessWidget {
         toolbarHeight: 50,
         title: const Text(
           '매장 상세페이지',
-          style: TextStyle(color: Colors.black, fontSize: 20),
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -75,60 +81,157 @@ class _StoreDetailView extends StatelessWidget {
 
     return SingleChildScrollView(
       //appbar 아래로 스크롤 가능
-      padding: const EdgeInsets.fromLTRB(20, 2, 20, 24),
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: SizedBox(
-                width: 197,
-                height: 220,
-                child: _buildStoreImage(
-                  detail,
-                ), // 이미지 빌더에서 사진을 축소해서 불러오는 방법 찾아야 함
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20.5, 2, 20.5, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: SizedBox(
+                      width: 197,
+                      height: 220,
+                      child: _buildStoreImage(
+                        detail,
+                      ), // 이미지 빌더에서 사진을 축소해서 불러오는 방법 찾아야 함
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  detail.name,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (detail.address != null && detail.address!.isNotEmpty)
+                  Text(
+                    detail.address!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                if (detail.phone != null && detail.phone!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      detail.phone!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                _buildOpenStatus(detail),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            detail.name,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          Container(
+            height: 14,
+            width: double.infinity,
+            color: const Color(0xFFF1F1F1),
           ),
-          const SizedBox(height: 8),
-          if (detail.address != null && detail.address!.isNotEmpty)
-            Text(
-              detail.address!,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 10, 10, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '일주일 메뉴',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 10),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _weekdayDates(DateTime.now()).map((date) {
+                      return WeeklyMenuCard(
+                        dateLabel: _formatDateLabel(date),
+                        dayLabel: _weekdayLabel(date.weekday),
+                        items: detail.menus,
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  '다른 매장 보기',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+                _buildOtherStores(context, vm),
+              ],
             ),
-          if (detail.phone != null && detail.phone!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                detail.phone!,
-                style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-              ),
-            ),
-          const SizedBox(height: 16),
-          _buildOpenStatus(detail),
-          const Divider(height: 22, thickness: 1.5, color: Color(0xFFF1F1F1)),
-          const SizedBox(height: 20),
-          const Text(
-            '오늘의 메뉴',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 10),
-          if (detail.menus.isEmpty)
-            const Text('메뉴 정보 없음', style: TextStyle(color: Color(0xFF9CA3AF)))
-          else
-            ...detail.menus.map(
-              (menu) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text('• $menu', style: const TextStyle(fontSize: 14)),
-              ),
-            ),
         ],
+      ),
+    );
+  }
+
+  String _weekdayLabel(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return '월요일';
+      case DateTime.tuesday:
+        return '화요일';
+      case DateTime.wednesday:
+        return '수요일';
+      case DateTime.thursday:
+        return '목요일';
+      case DateTime.friday:
+        return '금요일';
+      case DateTime.saturday:
+        return '토요일';
+      case DateTime.sunday:
+        return '일요일';
+      default:
+        return '';
+    }
+  }
+
+  String _formatDateLabel(DateTime date) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${two(date.month)}월 ${two(date.day)}일';
+  }
+
+  List<DateTime> _weekdayDates(DateTime today) {
+    final startOfWeek = today.subtract(
+      Duration(days: today.weekday - DateTime.monday),
+    );
+    return List.generate(5, (i) => startOfWeek.add(Duration(days: i)));
+  }
+
+  Widget _buildOtherStores(BuildContext context, StoreDetailViewModel vm) {
+    final stores = vm.otherStores.take(3).toList();
+    if (stores.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final screenWidth = MediaQuery.of(context).size.width;
+    return SizedBox(
+      height: 189,
+      child: Transform.translate(
+        offset: const Offset(-20, 0),
+        child: SizedBox(
+          width: screenWidth,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: stores.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              return OtherStoreCard(store: stores[index]);
+            },
+          ),
+        ),
       ),
     );
   }
