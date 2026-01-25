@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class BottomNavbar extends StatelessWidget {
   final int currentIndex;
@@ -31,25 +32,35 @@ class BottomNavbar extends StatelessWidget {
         currentIndex: currentIndex,
         onTap: onTap,
 
-        selectedItemColor: const Color(0xFFFF6F00), // 디자인 나오면 추후 수정
+        selectedItemColor: const Color(0xFF060B11), // 디자인 나오면 추후 수정
         unselectedItemColor: Colors.grey[400],
         selectedFontSize: 12,
         unselectedFontSize: 12,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
 
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.map_rounded), label: '지도'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.qr_code_scanner_rounded),
-            label: '큐알',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_rounded),
-            label: '마이',
-          ),
+        items: [
+          _navItem(label: '홈', assetBase: 'home', index: 0),
+          _navItem(label: '지도', assetBase: 'map', index: 1),
+          _navItem(label: '큐알', assetBase: 'qr', index: 2),
+          _navItem(label: '마이', assetBase: 'my', index: 3),
         ],
       ),
+    );
+  }
+
+  BottomNavigationBarItem _navItem({
+    required String label,
+    required String assetBase,
+    required int index,
+  }) {
+    final isActive = currentIndex == index;
+    return BottomNavigationBarItem(
+      icon: SvgPicture.asset(
+        'assets/icon/BottomNavBar/${assetBase}_${isActive ? 'activate' : 'inactivate'}.svg',
+        width: 20,
+        height: 20,
+      ),
+      label: label,
     );
   }
 }
