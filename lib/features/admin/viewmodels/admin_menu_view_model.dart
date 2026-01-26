@@ -31,10 +31,11 @@ class AdminMenuViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       final monday = mondayOfYmd(todayYmd);
-      // iOS(특히 SE)에서는 "1주(월~금)"만으로 화면이 꽉 차서 스크롤이 안 되는 것처럼 보일 수 있어
-      // 초기 2주를 로드해서 스크롤/무한로딩 UX를 확보한다.
+      // 초기 4주를 로드해서 충분한 스크롤/무한로딩 UX를 확보한다.
       await _loadWeek(baseDate: monday, direction: 'next', force: true);
       await _loadWeek(baseDate: addWeeksYmd(monday, 1), direction: 'next', force: true);
+      await _loadWeek(baseDate: addWeeksYmd(monday, 2), direction: 'next', force: true);
+      await _loadWeek(baseDate: addWeeksYmd(monday, 3), direction: 'next', force: true);
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);

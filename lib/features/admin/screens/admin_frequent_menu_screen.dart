@@ -168,7 +168,7 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                     ),
                   if (!_selectMode)
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(60),
                       child: Center(
                         child: FloatingActionButton(
                           onPressed: () => Navigator.of(context).pushNamed(AdminFrequentMenuEditScreen.routeName),
