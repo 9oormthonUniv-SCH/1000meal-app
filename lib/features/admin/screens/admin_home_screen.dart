@@ -35,15 +35,18 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 48,
+        backgroundColor: Colors.white,
+        elevation: 0,
         title: const Text(''),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
           onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false),
         ),
         actions: [
           IconButton(
             onPressed: () => _showToast(context, '준비중입니다'),
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings, color: Color(0xFF111827)),
           ),
         ],
       ),
@@ -107,7 +110,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             const SizedBox(height: 12),
             _WideCard(
               title: '메뉴 관리',
-              onTap: () => _showToast(context, '다음 이슈에서 구현 예정'),
+              onTap: () => Navigator.of(context).pushNamed('/admin/menu'),
             ),
             const SizedBox(height: 16),
             SizedBox(

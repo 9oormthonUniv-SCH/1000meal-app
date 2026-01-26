@@ -51,5 +51,71 @@ class AdminApi {
       data: {'stock': stock},
     );
   }
+
+  Future<WeeklyMenuResponse> getWeeklyMenu({required int storeId, required String date, required String token}) async {
+    final root = await _client.get<Map<String, dynamic>>(
+      '/menus/weekly/$storeId',
+      queryParameters: {'date': date},
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    final unwrapped = _unwrapData(root);
+    return WeeklyMenuResponse.fromJson(unwrapped);
+  }
+
+  Future<DailyMenuResponse> saveDailyMenu({
+    required int storeId,
+    required String date,
+    required List<String> menus,
+    required String token,
+  }) async {
+    final root = await _client.post<Map<String, dynamic>>(
+      '/menus/daily/$storeId',
+      headers: {'Authorization': 'Bearer $token'},
+      data: {'date': date, 'menus': menus},
+    );
+    return DailyMenuResponse.fromJson(_unwrapData(root));
+  }
+
+  // 자주 쓰는 메뉴 API
+  Future<FavoritesResponse> getFavorites({required int storeId, required String token}) async {
+    final root = await _client.get<Map<String, dynamic>>(
+      '/favorites/store/$storeId',
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    return FavoritesResponse.fromJson(_unwrapData(root));
+  }
+
+  Future<FavoritesResponse> getFavoriteGroup({required int groupId, required String token}) async {
+    final root = await _client.get<Map<String, dynamic>>(
+      '/favorites/group/$groupId',
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    return FavoritesResponse.fromJson(_unwrapData(root));
+  }
+
+  Future<void> createFavorite({required int storeId, required List<String> menus, required String token}) async {
+    await _client.post<Object>(
+      '/favorites/$storeId',
+      headers: {'Authorization': 'Bearer $token'},
+      data: menus,
+    );
+  }
+
+  Future<void> updateFavorite({required int groupId, required List<String> menus, required String token}) async {
+    await _client.put<Object>(
+      '/favorites/$groupId',
+      headers: {'Authorization': 'Bearer $token'},
+      data: menus,
+    );
+  }
+
+  Future<void> deleteFavorites({required int storeId, required List<int> groupIds, required String token}) async {
+    await _client.delete<Object>(
+      '/favorites/$storeId/groups',
+      headers: {'Authorization': 'Bearer $token'},
+      data: groupIds,
+    );
+  }
 }
 
