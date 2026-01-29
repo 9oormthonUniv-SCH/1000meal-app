@@ -52,8 +52,8 @@ class OtherStoreCard extends StatelessWidget {
                   ),
                   child: Center(
                     child: SizedBox(
-                      width: 120,
-                      height: 120,
+                      width: double.infinity,
+                      height: double.infinity,
                       child: _buildStoreImage(),
                     ),
                   ),

@@ -64,15 +64,21 @@ class StoreCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // 좌측 매장 이미지
+            // 좌측 매장 이미지 -> 크기가 전부 달랐었는데, 50*50 고정 박스 안에 BoxFit.contain으로 넣어 맞춤  -> 해결
             ClipRRect(
               borderRadius: BorderRadius.circular(8), // rounded-lg
               child: SizedBox(
                 width: 50,
                 height: 50,
-                child: store.imageUrl != null && store.imageUrl!.isNotEmpty
-                    ? _buildStoreImage(store.imageUrl!)
-                    : _buildNoImage(),
+                child: Center(
+                  child: SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: store.imageUrl != null && store.imageUrl!.isNotEmpty
+                        ? _buildStoreImage(store.imageUrl!)
+                        : _buildNoImage(),
+                  ),
+                ),
               ),
             ),
 
@@ -153,7 +159,7 @@ class StoreCard extends StatelessWidget {
     if (isNetwork) {
       return Image.network(
         value,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
           return Center(

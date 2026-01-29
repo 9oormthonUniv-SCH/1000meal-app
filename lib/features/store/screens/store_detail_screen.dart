@@ -85,55 +85,66 @@ class _StoreDetailView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20.5, 2, 20.5, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: SizedBox(
-                      width: 197,
-                      height: 220,
-                      child: _buildStoreImage(
-                        detail,
-                      ), // 이미지 빌더에서 사진을 축소해서 불러오는 방법 찾아야 함
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  detail.name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                if (detail.address != null && detail.address!.isNotEmpty)
-                  Text(
-                    detail.address!,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                if (detail.phone != null && detail.phone!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      detail.phone!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF6B7280),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: double.infinity,
+                    height: 231,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0x00FFFFFF), Color(0x33FFA588)],
                       ),
                     ),
+                    child: _buildStoreImage(
+                      detail,
+                    ), // 이미지 빌더에서 사진을 축소해서 불러오는 방법 찾아야 함 -> StoreCard와 동일하게 해결
                   ),
-                const SizedBox(height: 16),
-                _buildOpenStatus(detail),
-              ],
-            ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20.5, 16, 20.5, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      detail.name,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (detail.address != null && detail.address!.isNotEmpty)
+                      Text(
+                        detail.address!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    if (detail.phone != null && detail.phone!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          detail.phone!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    _buildOpenStatus(detail),
+                  ],
+                ),
+              ),
+            ],
           ),
           Container(
             height: 14,
@@ -278,13 +289,13 @@ class _StoreDetailView extends StatelessWidget {
     if (isNetwork) {
       return Image.network(
         url,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) => _buildNoImage(),
       );
     }
     return Image.asset(
       url,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) => _buildNoImage(),
     );
   }
