@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/features/map/screen/map_screen.dart';
 import 'package:meal_app/widgets/BottomNavbar.dart';
 import 'package:meal_app/widgets/HomePage.dart';
 import 'package:meal_app/features/mypage/screens/mypage_screen.dart';
@@ -71,7 +72,7 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return const HomePage();
       case 1:
-        return const Center(child: Text("지도 화면"));
+        return const MapScreen();
       case 2:
         return const Center(child: Text("QR 화면"));
       case 3:

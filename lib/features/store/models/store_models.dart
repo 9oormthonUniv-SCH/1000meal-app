@@ -119,7 +119,6 @@ class StoreListItem {
       remain: toInt(remain, fallback: 0),
       open: toBool(json['open'] ?? json['isOpen']),
       todayMenu: parsedTodayMenu,
-      todayMenu: parsedTodayMenu,
       lat: toDouble(json['lat'] ?? json['latitude']),
       lng: toDouble(json['lng'] ?? json['longitude'] ?? json['lon']),
     );
