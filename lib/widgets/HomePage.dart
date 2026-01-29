@@ -7,9 +7,17 @@ import 'dart:async';
 
 import '../features/auth/models/role.dart';
 import '../features/auth/repositories/auth_repository.dart';
+import 'TabBar.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  HomeTabType _selectedTab = HomeTabType.todayMeal;
 
   Future<void> _handleProfileTap(BuildContext context) async {
     final repo = context.read<AuthRepository>();
@@ -73,14 +81,7 @@ class HomePage extends StatelessWidget {
               fit: BoxFit.contain,
             ),
           ),
-          IconButton(
-            onPressed: () => _handleProfileTap(context),
-            icon: SvgPicture.asset(
-              'assets/icon/profile.svg',
-              width: 22,
-              height: 22,
-            ),
-          ),
+
           const SizedBox(width: 16),
         ],
       ),
@@ -94,19 +95,25 @@ class HomePage extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '오늘의 천밥',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: HomeSegmentedTabBar(
+                          //HomeTabType에 따라서 StoreSection or Notice List
+                          selected: _selectedTab,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedTab = value;
+                            });
+                          },
+                        ),
                       ),
                     ),
                     IconButton(
                       onPressed: () {
                         if (kDebugMode) debugPrint("새로고침");
                       },
-                      icon: Icon(Icons.refresh, color: Colors.grey),
+                      icon: const Icon(Icons.refresh, color: Colors.grey),
                       highlightColor: Colors.orange.withValues(alpha: 0.2),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -115,6 +122,7 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               Expanded(
+                //렌더링 분기 추가 필요
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: Column(

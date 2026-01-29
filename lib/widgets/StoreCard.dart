@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
 
 // 1. 데이터 모델 정의 (React의 StoreListItem 대응)
 class Store {
@@ -40,7 +41,7 @@ class StoreCard extends StatelessWidget {
       onTap: () {
         onTap?.call();
         // 네비게이션 로직 추가 필요
-        // Navigator.push(context, );
+        // Navigator.push(context, ); -> 각 가게 상세페이지로 이동... 라우팅 ㄱㄱ
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16), // mb-4
@@ -63,20 +64,21 @@ class StoreCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // 좌측 매장 이미지
+            // 좌측 매장 이미지 -> 크기가 전부 달랐었는데, 50*50 고정 박스 안에 BoxFit.contain으로 넣어 맞춤  -> 해결
             ClipRRect(
               borderRadius: BorderRadius.circular(8), // rounded-lg
               child: SizedBox(
-                width: 48,
-                height: 48,
-                child: store.imageUrl != null && store.imageUrl!.isNotEmpty
-                    ? Image.network(
-                        store.imageUrl!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildNoImage(), //이미지 없는 경우 보여주는 위젯 -> 하단 위젯 참고
-                      )
-                    : _buildNoImage(),
+                width: 50,
+                height: 50,
+                child: Center(
+                  child: SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: store.imageUrl != null && store.imageUrl!.isNotEmpty
+                        ? _buildStoreImage(store.imageUrl!)
+                        : _buildNoImage(),
+                  ),
+                ),
               ),
             ),
 
@@ -122,7 +124,7 @@ class StoreCard extends StatelessWidget {
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       // 색상 로직: 0개면 빨강, 아니면 주황
-                      color: store.remain == 0 ? Colors.red : Colors.orange,
+                      color: store.remain == 0 ? Colors.red : AppColors.primary,
                     ),
                   ),
                   Text(
@@ -147,6 +149,41 @@ class StoreCard extends StatelessWidget {
         "No Img",
         style: TextStyle(fontSize: 10, color: Colors.grey[500]),
       ),
+    );
+  }
+
+  Widget _buildStoreImage(String urlOrAsset) {
+    final value = urlOrAsset.trim();
+    final isNetwork =
+        value.startsWith('http://') || value.startsWith('https://');
+    if (isNetwork) {
+      return Image.network(
+        value,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                          (loadingProgress.expectedTotalBytes ?? 1)
+                    : null,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) => _buildNoImage(),
+      );
+    }
+
+    return Image.asset(
+      value,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => _buildNoImage(),
     );
   }
 }

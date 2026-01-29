@@ -1,53 +1,77 @@
 import 'package:flutter/material.dart';
-import 'StoreCard.dart'; // StoreCard 파일 import 필수
+import 'package:provider/provider.dart';
 
-class StoreSection extends StatelessWidget {
+import '../features/store/models/store_models.dart';
+import '../features/store/screens/store_detail_screen.dart';
+import '../features/store/viewmodels/store_list_view_model.dart';
+import 'StoreCard.dart';
+
+class StoreSection extends StatefulWidget {
   const StoreSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // 더미 데이터
-    final List<Store> dummyStores = [
-      Store(
-        id: 1,
-        name: "향설 1관",
-        menus: ["현미밥", "제육볶음", "미역국", "샐러드"],
-        remain: 20,
-        imageUrl: "",
-      ),
-      Store(
-        id: 2,
-        name: "야외 그라찌에",
-        menus: ["소보로빵", "요거트", "우유"],
-        remain: 30,
-        imageUrl: "",
-      ),
-      Store(
-        id: 3,
-        name: "베이커리 경",
-        menus: ["인절미", "쿠키", "음료 중 택 1"],
-        remain: 10,
-        imageUrl: "",
-      ),
-      Store(
-        id: 4,
-        name: "향설 2관",
-        menus: [], // 메뉴 없음
-        remain: 0, // 품절 (빨간색)
-        imageUrl: "",
-      ),
-    ];
+  State<StoreSection> createState() => _StoreSectionState();
+}
 
-    // 2. Column 구조 사용 (스크롤은 메인 페이지에 맡김)
+class _StoreSectionState extends State<StoreSection> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<StoreListViewModel>().load();
+    });
+  }
+
+  Store _toUi(StoreListItem item) {
+    return Store(
+      id: item.id,
+      name: item.name,
+      menus: item.menus,
+      remain: item.remain,
+      imageUrl: item.imageUrl,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<StoreListViewModel>();
+    final stores = vm.items.map(_toUi).toList();
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0), // 좌우 여백 유지
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
-        children: dummyStores.map((store) {
-          return StoreCard(
-            store: store,
-            onTap: () => print("${store.name} 클릭됨"),
-          );
-        }).toList(),
+        children: [
+          if (vm.loading && stores.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (vm.errorMessage != null && stores.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                vm.errorMessage!,
+                style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+              ),
+            )
+          else if (stores.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Text('매장이 없습니다.'),
+            )
+          else
+            ...stores.map((store) {
+              return StoreCard(
+                store: store,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => StoreDetailScreen(storeId: store.id),
+                  ),
+                ),
+              );
+            }),
+        ],
       ),
     );
   }
