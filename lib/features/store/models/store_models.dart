@@ -2,6 +2,9 @@ class StoreListItem {
   final int id;
   final String name;
   final String? imageUrl;
+  final String? address;
+  final String? phone;
+  final String? hours;
   final List<String> menus;
   final int remain;
   final bool? open;
@@ -13,6 +16,9 @@ class StoreListItem {
     required this.id,
     required this.name,
     this.imageUrl,
+    this.address,
+    this.phone,
+    this.hours,
     required this.menus,
     required this.remain,
     this.open,
@@ -115,6 +121,10 @@ class StoreListItem {
                   json['thumbnailUrl'] ??
                   json['thumbnail'])
               ?.toString(),
+      address: json['address']?.toString(),
+      phone: json['phone']?.toString(),
+      hours: (json['hours'] ?? json['operatingHours'] ?? json['openHours'])
+          ?.toString(),
       menus: toStringList(menus),
       remain: toInt(remain, fallback: 0),
       open: toBool(json['open'] ?? json['isOpen']),
