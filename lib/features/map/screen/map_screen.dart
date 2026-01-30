@@ -17,7 +17,12 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   bool _loaded = false;
+  bool _isBottomSheetOpen = false;
   KakaoMapController? _mapController;
+  DateTime? _lastBottomSheetAt;
+  static const Duration _bottomSheetCooldown = Duration(
+    milliseconds: 600,
+  ); //Bottom Sheet 호출 시간 제한
 
   @override
   void initState() {
@@ -39,14 +44,26 @@ class _MapScreenState extends State<MapScreen> {
     return {for (final store in stores) store.id.toString(): store};
   }
 
-  void _handleMarkerTap(String markerId) {
+  //마커 클릭 시 해당 매장을 찾고 showStoreBottomSheet 호출 -> 호출 횟수 제한 생각....
+  Future<void> _handleMarkerTap(String markerId) async {
+    final now = DateTime.now();
+    if (_lastBottomSheetAt != null &&
+        now.difference(_lastBottomSheetAt!) < _bottomSheetCooldown) {
+      return;
+    }
+    _lastBottomSheetAt = now;
+
     final stores = context.read<StoreListViewModel>().items;
     final storeMap = _buildStoreMap(stores);
     final store = storeMap[markerId];
     if (store == null || !mounted) return;
-    showStoreBottomSheet(context, store);
+    setState(() => _isBottomSheetOpen = true);
+    await showStoreBottomSheet(context, store);
+    if (!mounted) return;
+    setState(() => _isBottomSheetOpen = false);
   }
 
+  // Zoom in/out functions
   Future<void> _zoomIn() async {
     if (_mapController == null) return;
     final currentLevel = await _mapController!.getLevel();
@@ -59,6 +76,7 @@ class _MapScreenState extends State<MapScreen> {
     _mapController!.setLevel(currentLevel + 1);
   }
 
+  //refresh function
   Future<void> _refresh() async {
     if (!mounted) return;
     await context.read<StoreListViewModel>().load();
@@ -126,16 +144,15 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
             Positioned(
+              left: 0,
+              right: 0,
+              bottom: _isBottomSheetOpen ? kStoreBottomSheetHeight + 8 : 16,
+              child: Center(child: MapRefreshButton(onPressed: _refresh)),
+            ),
+            Positioned(
               right: 16,
               bottom: 16,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  MapRefreshButton(onPressed: _refresh),
-                  const SizedBox(width: 10),
-                  MapZoomControls(onZoomIn: _zoomIn, onZoomOut: _zoomOut),
-                ],
-              ),
+              child: MapZoomControls(onZoomIn: _zoomIn, onZoomOut: _zoomOut),
             ),
           ],
         ),
