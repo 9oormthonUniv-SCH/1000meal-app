@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:meal_app/widgets/BottomNavbar.dart';
 import 'package:meal_app/widgets/HomePage.dart';
+import 'package:meal_app/features/mypage/screens/mypage_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:meal_app/features/auth/models/role.dart';
+import 'package:meal_app/features/auth/repositories/auth_repository.dart';
+import 'package:meal_app/features/admin/screens/admin_home_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -11,14 +16,49 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  bool _didInit = false;
+  Role? _role;
+  bool _roleLoaded = false;
 
-  // 탭별 화면 리스트
-  final List<Widget> _screens = [
-    const HomePage(),
-    const Center(child: Text("지도 화면")), // 1: 지도
-    const Center(child: Text("QR 화면")), // 2: QR
-    const Center(child: Text("마이페이지")), // 3: 마이
-  ];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInit) return;
+    _didInit = true;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is int && args >= 0 && args <= 3) {
+      _selectedIndex = args;
+    }
+    _loadRole();
+  }
+
+  Future<void> _loadRole() async {
+    final repo = context.read<AuthRepository>();
+    final token = await repo.getAccessToken();
+    if (!mounted) return;
+    if (token == null || token.isEmpty) {
+      setState(() {
+        _role = null;
+        _roleLoaded = true;
+      });
+      return;
+    }
+
+    try {
+      final me = await repo.getMe();
+      if (!mounted) return;
+      setState(() {
+        _role = me.role;
+        _roleLoaded = true;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _role = null;
+        _roleLoaded = true;
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -26,13 +66,32 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  Widget _buildBody() {
+    switch (_selectedIndex) {
+      case 0:
+        return const HomePage();
+      case 1:
+        return const Center(child: Text("지도 화면"));
+      case 2:
+        return const Center(child: Text("QR 화면"));
+      case 3:
+        // 마이페이지에서만 분기:
+        // 1) 비로그인 -> MyPageScreen 내부에서 게스트 화면
+        // 2) 학생 -> MyPageScreen
+        // 3) 관리자 -> 기존 관리자 페이지로 대체
+        if (_roleLoaded && _role == Role.admin) {
+          return const AdminTabContent();
+        }
+        return const MyPageScreen(fromMainTab: true);
+      default:
+        return const HomePage();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 현재 선택된 인덱스의 화면을 갈아 끼워줌
-      body: _screens[_selectedIndex],
-
-      // 바텀 네비게이션 고정
+      body: _buildBody(),
       bottomNavigationBar: BottomNavbar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

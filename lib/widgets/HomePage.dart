@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
       final me = await repo.getMe();
       if (!context.mounted) return;
       if (me.role == Role.admin) {
-        nav.pushNamed('/admin');
+        nav.pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
       } else {
         nav.pushNamed('/mypage');
       }
@@ -72,6 +72,7 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             onPressed: () {
+              // 알림 페이지는 별도 커밋(FCM) 범위에서 처리
               if (kDebugMode) debugPrint("알림 클릭");
             },
             icon: SvgPicture.asset(

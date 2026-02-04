@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
@@ -6,10 +7,22 @@ import '../../auth/models/role.dart';
 import '../../auth/repositories/auth_repository.dart';
 import '../viewmodels/mypage_view_model.dart';
 
+/// 로그인/비로그인 마이페이지 상단 카드 공통 레이아웃 (위치·크기 통일)
+const EdgeInsets _profileCardMargin = EdgeInsets.only(left: 16, right: 16, top: 8);
+const EdgeInsets _profileCardPadding = EdgeInsets.all(16);
+const BoxDecoration _profileCardDecoration = BoxDecoration(
+  color: Colors.white,
+  borderRadius: BorderRadius.all(Radius.circular(14)),
+  boxShadow: [BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4))],
+);
+
 class MyPageScreen extends StatefulWidget {
   static const routeName = '/mypage';
 
-  const MyPageScreen({super.key});
+  /// true: 바텀 탭 "마이"에서 진입 (비로그인 시 로그인 유도 화면, 백버튼 없음)
+  final bool fromMainTab;
+
+  const MyPageScreen({super.key, this.fromMainTab = false});
 
   @override
   State<MyPageScreen> createState() => _MyPageScreenState();
@@ -17,6 +30,7 @@ class MyPageScreen extends StatefulWidget {
 
 class _MyPageScreenState extends State<MyPageScreen> {
   bool _loaded = false;
+  bool? _hasToken;
 
   @override
   void didChangeDependencies() {
@@ -24,15 +38,17 @@ class _MyPageScreenState extends State<MyPageScreen> {
     if (_loaded) return;
     _loaded = true;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // 진입 가드: 이전 세션 캐시(me)가 남아있더라도,
-      // 토큰이 없으면 마이페이지를 "그리기 전에" 로그인으로 보냄.
       final repo = context.read<AuthRepository>();
       final token = await repo.getAccessToken();
       if (!mounted) return;
-      if (token == null || token.isEmpty) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
-        // best-effort logout (do not block UI / navigation)
-        unawaited(context.read<MyPageViewModel>().logout());
+      _hasToken = token != null && token.isNotEmpty;
+
+      if (!_hasToken!) {
+        if (!widget.fromMainTab) {
+          Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
+          unawaited(context.read<MyPageViewModel>().logout());
+        }
+        setState(() {});
         return;
       }
 
@@ -41,8 +57,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
       final vm = context.read<MyPageViewModel>();
       if (vm.shouldRelogin) {
         Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
-        // best-effort logout (do not block UI / navigation)
         unawaited(vm.logout());
+      } else {
+        setState(() {});
       }
     });
   }
@@ -50,25 +67,134 @@ class _MyPageScreenState extends State<MyPageScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<MyPageViewModel>();
+    final showBack = !widget.fromMainTab;
 
-    // UX: 인증/프로필 로딩 전에는 AppBar(마이페이지)를 노출하지 않아
-    // "잠깐 마이페이지 갔다가 로그인으로 튕기는" 느낌을 줄임.
-    if (vm.me == null) {
-      return const Scaffold(
-        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+    if (widget.fromMainTab && _hasToken == null) {
+      return _buildScaffold(
+        context,
+        showBack: showBack,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('마이페이지'),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-      ),
+    if (widget.fromMainTab && _hasToken == false) {
+      return _buildScaffold(
+        context,
+        showBack: showBack,
+        body: const _GuestMyPageBody(),
+      );
+    }
+
+    if (vm.me == null) {
+      return _buildScaffold(
+        context,
+        showBack: showBack,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return _buildScaffold(
+      context,
+      showBack: showBack,
       body: _Body(vm: vm),
+    );
+  }
+
+  Scaffold _buildScaffold(BuildContext context, {required bool showBack, required Widget body}) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F4F6),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text(
+          '마이페이지',
+          style: TextStyle(
+            color: Color(0xFF111827),
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: false,
+        leading: showBack
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
+                onPressed: () => Navigator.of(context).maybePop(),
+              )
+            : null,
+        actions: [
+          IconButton(
+            icon: SvgPicture.asset(
+              'assets/icon/alarm.svg',
+              width: 22,
+              height: 22,
+              colorFilter: const ColorFilter.mode(Color(0xFF9CA3AF), BlendMode.srcIn),
+            ),
+            onPressed: () {
+              // 알림 페이지는 별도 커밋(FCM) 범위에서 처리
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: body,
+    );
+  }
+}
+
+/// 비로그인 시: 프로필과 같은 위치·같은 크기의 로그인/회원가입 CTA 카드
+class _GuestMyPageBody extends StatelessWidget {
+  const _GuestMyPageBody();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFF3F4F6),
+      child: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.only(bottom: 20),
+            child: InkWell(
+              onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                margin: _profileCardMargin,
+                padding: _profileCardPadding,
+                decoration: _profileCardDecoration,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 56),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              '오늘순밥 로그인 및 회원가입',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF374151)),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              '가게의 오픈·마감 소식을 실시간으로 알려드려요',
+                              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 24),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 }
@@ -88,8 +214,9 @@ class _Body extends StatelessWidget {
     }
 
     final isStudent = me.role == Role.student;
-    final badgeBg = isStudent ? const Color(0xFFFFEDD5) : const Color(0xFFDBEAFE);
-    final badgeFg = isStudent ? const Color(0xFFEA580C) : const Color(0xFF2563EB);
+    // 이미지 스타일: 학생 = 주황·빨강 배경 + 흰색 글씨, 관리자 = 파랑 계열
+    final badgeBg = isStudent ? const Color(0xFFFF623F) : const Color(0xFF2563EB);
+    final badgeFg = Colors.white;
     final badgeText = isStudent ? '학생' : '관리자';
 
     return Container(
@@ -100,15 +227,9 @@ class _Body extends StatelessWidget {
             color: Colors.white,
             padding: const EdgeInsets.only(bottom: 20),
             child: Container(
-              margin: const EdgeInsets.only(left: 16, right: 16, top: 8),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: const [
-                  BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4)),
-                ],
-              ),
+              margin: _profileCardMargin,
+              padding: _profileCardPadding,
+              decoration: _profileCardDecoration,
               child: Row(
                 children: [
                   Container(
@@ -139,8 +260,14 @@ class _Body extends StatelessWidget {
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(color: badgeBg, borderRadius: BorderRadius.circular(999)),
-                    child: Text(badgeText, style: TextStyle(fontSize: 12, color: badgeFg, fontWeight: FontWeight.w700)),
+                    decoration: BoxDecoration(
+                      color: badgeBg,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      badgeText,
+                      style: TextStyle(fontSize: 12, color: badgeFg, fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ],
               ),
@@ -154,20 +281,23 @@ class _Body extends StatelessWidget {
                 _MenuItem(
                   label: '회원정보 수정',
                   onTap: () => Navigator.of(context).pushNamed('/change-email'),
+                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
                 ),
                 const Divider(height: 1, color: Color(0xFFE5E7EB)),
                 _MenuItem(
                   label: '비밀번호 변경',
                   onTap: () => Navigator.of(context).pushNamed('/find-account', arguments: 'pw'),
+                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
                 ),
                 const Divider(height: 1, color: Color(0xFFE5E7EB)),
                 _MenuItem(
                   label: '로그아웃',
                   onTap: () async {
-                    Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
-                    // best-effort logout (do not block UI / navigation)
-                    unawaited(vm.logout());
+                    await vm.logout();
+                    if (!context.mounted) return;
+                    Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
                   },
+                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
                 ),
                 const Divider(height: 1, color: Color(0xFFE5E7EB)),
                 _MenuItem(
@@ -189,6 +319,7 @@ class _Body extends StatelessWidget {
                       );
                     }
                   },
+                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
                 ),
               ],
             ),
@@ -203,7 +334,8 @@ class _MenuItem extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final Color? labelColor;
-  const _MenuItem({required this.label, required this.onTap, this.labelColor});
+  final Widget? trailing;
+  const _MenuItem({required this.label, required this.onTap, this.labelColor, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -212,9 +344,16 @@ class _MenuItem extends StatelessWidget {
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        child: Text(
-          label,
-          style: TextStyle(fontSize: 14, color: labelColor ?? const Color(0xFF374151)),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(fontSize: 14, color: labelColor ?? const Color(0xFF111827)),
+              ),
+            ),
+            if (trailing != null) trailing!,
+          ],
         ),
       ),
     );
