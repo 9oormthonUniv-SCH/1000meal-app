@@ -73,12 +73,32 @@ class StoreBottomSheet extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                store
-                                    .name, //ontap() -> Navigator to StoreDetailScreen
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
+                              IntrinsicWidth(
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Text(
+                                      store
+                                          .name, //ontap() -> Navigator to StoreDetailScreen
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.none,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      child: Transform.translate(
+                                        offset: const Offset(0, -2),
+                                        child: Container(
+                                          height: 1.1,
+                                          color: const Color(0xFF111827),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               IconButton(
