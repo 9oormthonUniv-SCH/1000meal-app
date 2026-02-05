@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/menu_models.dart';
 import '../viewmodels/admin_inventory_view_model.dart';
 
 class AdminInventoryScreen extends StatefulWidget {
@@ -13,12 +14,14 @@ class AdminInventoryScreen extends StatefulWidget {
 }
 
 class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
-  final _controller = TextEditingController();
+  final Map<int, TextEditingController> _controllers = <int, TextEditingController>{};
   bool _loaded = false;
 
   @override
   void dispose() {
-    _controller.dispose();
+    for (final c in _controllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -33,25 +36,45 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<AdminInventoryViewModel>();
-    _controller.value = _controller.value.copyWith(text: vm.stock.toString(), selection: TextSelection.collapsed(offset: vm.stock.toString().length));
 
     final formatted = _formatKstKorean(vm.date);
+    final groups = vm.groupsSorted;
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 48,
+        toolbarHeight: 56,
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(''),
+        centerTitle: true,
+        title: const Text(
+          '재고 관리',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+            fontFamily: 'Pretendard',
+            height: 1.6,
+          ),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
+        actions: [
+          IconButton(
+            onPressed: (vm.loading || vm.saving) ? null : () => vm.loadToday(),
+            icon: Icon(
+              Icons.refresh,
+              color: (vm.loading || vm.saving) ? const Color(0xFFBDBDBD) : const Color(0xFFBDBDBD),
+            ),
+          ),
+          const SizedBox(width: 6),
+        ],
       ),
       body: Stack(
         children: [
           Container(
-            color: const Color(0xFFFAFAFA),
+            color: const Color(0xFFF7F7F7), // stone-50
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
@@ -67,90 +90,31 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                         TextSpan(text: formatted.weekday, style: const TextStyle(color: Color(0xFFFB923C))),
                       ],
                     ),
-                  ),
-                ),
+                  ),),
 
                 // 재고 패널
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
                   child: Column(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4))],
+                      for (final g in groups) ...[
+                        _GroupStockCard(
+                          group: g,
+                          open: vm.open,
+                          loading: vm.loading,
+                          saving: vm.saving,
+                          stock: vm.groupStock(g.id),
+                          controller: _controllers.putIfAbsent(g.id, () => TextEditingController()),
+                          onMinus: () => vm.deductGroupStock(g.id, DeductionUnit.single),
+                          onPlus: () => vm.adjustGroupStock(g.id, 1),
+                          onChanged: (v) => vm.setGroupStockFromInput(g.id, v),
+                          onCommit: () => vm.commitGroupStock(g.id),
+                          onDeduct: (DeductionUnit unit) => vm.deductGroupStock(g.id, unit),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '현재 수량',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: vm.open ? const Color(0xFF111827) : const Color(0xFFD1D5DB),
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                _CircleButton(
-                                  label: '–',
-                                  onTap: () => vm.adjustStock(-1),
-                                  disabled: vm.loading || vm.saving,
-                                ),
-                                const SizedBox(width: 10),
-                                SizedBox(
-                                  width: 96,
-                                  height: 48,
-                                  child: TextField(
-                                    controller: _controller,
-                                    enabled: !vm.loading && !vm.saving,
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: vm.open ? const Color(0xFF111827) : const Color(0xFFD1D5DB),
-                                    ),
-                                    decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.zero,
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
-                                    onChanged: vm.setStockFromInput,
-                                    onSubmitted: (_) => vm.commitStock(),
-                                    onEditingComplete: () => vm.commitStock(),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                _CircleButton(
-                                  label: '+',
-                                  onTap: () => vm.adjustStock(1),
-                                  disabled: vm.loading || vm.saving,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4))],
-                        ),
-                        child: Row(
-                          children: const [10, 5, 1].asMap().entries.map((e) {
-                            final idx = e.key;
-                            final value = e.value;
-                            return Expanded(
-                              child: _QuickMinusButton(value: value, showDivider: idx < 2),
-                            );
-                          }).toList(growable: false),
-                        ),
-                      ),
+                        const SizedBox(height: 28),
+                        const Divider(height: 1, thickness: 0.5, color: Color(0xFFBDBDBD)),
+                        const SizedBox(height: 22),
+                      ],
                       if (vm.errorMessage != null) ...[
                         const SizedBox(height: 12),
                         Text(vm.errorMessage!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
@@ -301,47 +265,244 @@ class _CircleButton extends StatelessWidget {
       onTap: disabled ? null : onTap,
       borderRadius: BorderRadius.circular(999),
       child: Container(
-        width: 28,
-        height: 28,
+        width: 20,
+        height: 20,
         decoration: BoxDecoration(
-          color: const Color(0xFFD1D5DB),
+          color: const Color(0xFFBDBDBD).withValues(alpha: 0.7), // stone-300 opacity-70
           borderRadius: BorderRadius.circular(999),
         ),
         child: Center(
-          child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 18, height: 1.0)),
+          child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.0)),
         ),
       ),
     );
   }
 }
 
-class _QuickMinusButton extends StatelessWidget {
-  final int value;
-  final bool showDivider;
-  const _QuickMinusButton({required this.value, required this.showDivider});
+class _GroupStockCard extends StatelessWidget {
+  const _GroupStockCard({
+    required this.group,
+    required this.open,
+    required this.loading,
+    required this.saving,
+    required this.stock,
+    required this.controller,
+    required this.onMinus,
+    required this.onPlus,
+    required this.onChanged,
+    required this.onCommit,
+    required this.onDeduct,
+  });
+
+  final DailyMenuGroupItem group;
+  final bool open;
+  final bool loading;
+  final bool saving;
+  final int stock;
+  final TextEditingController controller;
+  final VoidCallback onMinus;
+  final VoidCallback onPlus;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onCommit;
+  final ValueChanged<DeductionUnit> onDeduct;
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.read<AdminInventoryViewModel>();
-    return InkWell(
-      onTap: () => vm.adjustStock(-value),
-      child: Container(
-        height: 112,
-        decoration: BoxDecoration(
-          border: showDivider ? const Border(right: BorderSide(color: Color(0xFFE5E7EB))) : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(color: const Color(0xFFD1D5DB), borderRadius: BorderRadius.circular(999)),
-              child: const Center(child: Text('–', style: TextStyle(color: Colors.white, fontSize: 14, height: 1.0))),
+    controller.value = controller.value.copyWith(
+      text: stock.toString(),
+      selection: TextSelection.collapsed(offset: stock.toString().length),
+    );
+
+    final disabled = loading || saving;
+    final titleColor = open ? const Color(0xFF1A1A1A) : const Color(0xFFBDBDBD);
+
+    return SizedBox(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '[${group.name}]  현재 수량',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFBDBDBD),
+              fontFamily: 'Pretendard',
+              height: 1.6,
             ),
-            const SizedBox(width: 8),
-            Text('$value개', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
-          ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _CircleButton(label: '–', onTap: onMinus, disabled: disabled),
+              const SizedBox(width: 14),
+              SizedBox(
+                width: 88,
+                height: 36,
+                child: TextField(
+                  controller: controller,
+                  enabled: !disabled,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: titleColor,
+                    fontFamily: 'Pretendard',
+                    height: 1.0,
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Color(0xFFBDBDBD), width: 0.72),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Color(0xFFBDBDBD), width: 0.72),
+                    ),
+                  ),
+                  onChanged: onChanged,
+                  onSubmitted: (_) => onCommit(),
+                  onEditingComplete: onCommit,
+                ),
+              ),
+              const SizedBox(width: 14),
+              _CircleButton(label: '+', onTap: onPlus, disabled: disabled),
+            ],
+          ),
+          const SizedBox(height: 28),
+          _DeductRow(
+            disabled: disabled,
+            stock: stock,
+            onDeduct: onDeduct,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeductRow extends StatelessWidget {
+  const _DeductRow({
+    required this.disabled,
+    required this.stock,
+    required this.onDeduct,
+  });
+
+  final bool disabled;
+  final int stock;
+  final ValueChanged<DeductionUnit> onDeduct;
+
+  @override
+  Widget build(BuildContext context) {
+    final can10 = !disabled && stock >= 10;
+    final can5 = !disabled && stock >= 5;
+    final can1 = !disabled && stock >= 1;
+
+    return Container(
+      height: 96,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x26000000), // rgba(0,0,0,0.15)
+            blurRadius: 20,
+            offset: Offset(0, 0),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _DeductCell(
+            label: '10개',
+            enabled: can10,
+            roundedLeft: true,
+            onTap: () => onDeduct(DeductionUnit.multiTen),
+          ),
+          _DeductCell(
+            label: '5개',
+            enabled: can5,
+            onTap: () => onDeduct(DeductionUnit.multiFive),
+          ),
+          _DeductCell(
+            label: '1개',
+            enabled: can1,
+            roundedRight: true,
+            onTap: () => onDeduct(DeductionUnit.single),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeductCell extends StatelessWidget {
+  const _DeductCell({
+    required this.label,
+    required this.enabled,
+    required this.onTap,
+    this.roundedLeft = false,
+    this.roundedRight = false,
+  });
+
+  final String label;
+  final bool enabled;
+  final VoidCallback onTap;
+  final bool roundedLeft;
+  final bool roundedRight;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.only(
+      topLeft: roundedLeft ? const Radius.circular(16) : Radius.zero,
+      bottomLeft: roundedLeft ? const Radius.circular(16) : Radius.zero,
+      topRight: roundedRight ? const Radius.circular(16) : Radius.zero,
+      bottomRight: roundedRight ? const Radius.circular(16) : Radius.zero,
+    );
+
+    return Expanded(
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            border: const Border(
+              right: BorderSide(color: Color(0xFFBDBDBD), width: 0.5),
+            ),
+          ),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFBDBDBD).withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: const Center(
+                    child: Text('–', style: TextStyle(color: Colors.white, fontSize: 14, height: 1.0)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                    color: enabled ? const Color(0xFFBDBDBD) : const Color(0xFFBDBDBD),
+                    fontFamily: 'Pretendard',
+                    height: 1.0,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

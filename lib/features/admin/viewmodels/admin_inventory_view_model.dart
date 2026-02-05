@@ -18,12 +18,34 @@ class AdminInventoryViewModel extends ChangeNotifier {
   String date = kstTodayYmd(); // YYYY-MM-DD (KST fixed)
 
   DailyMenuResponse? daily;
-  int stock = 0;
   bool open = false;
 
   bool showOpenModal = false;
   bool showCloseModal = false;
-  int _lastSavedStock = 0;
+
+  // groupId -> current stock (editable)
+  final Map<int, int> _groupStocks = <int, int>{};
+  int _lastSavedTotalStock = 0;
+
+  List<DailyMenuGroupItem> get groupsSorted {
+    final groups = daily?.groups ?? const <DailyMenuGroupItem>[];
+    final sorted = [...groups]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return sorted;
+  }
+
+  int get totalStock {
+    if (_groupStocks.isNotEmpty) {
+      return _groupStocks.values.fold<int>(0, (sum, v) => sum + v);
+    }
+    return daily?.totalStock ?? 0;
+  }
+
+  int groupStock(int groupId) {
+    final v = _groupStocks[groupId];
+    if (v != null) return v;
+    final g = (daily?.groups ?? const <DailyMenuGroupItem>[]).where((e) => e.id == groupId).cast<DailyMenuGroupItem?>().firstWhere((_) => true, orElse: () => null);
+    return g?.stock ?? 0;
+  }
 
   Future<void> loadToday() async {
     loading = true;
@@ -33,10 +55,11 @@ class AdminInventoryViewModel extends ChangeNotifier {
     try {
       final res = await _repo.getDailyMenu(date: date);
       daily = res;
-      // group 기반 응답에서는 totalStock으로 노출 (Unit E에서 그룹별 재고 UI로 전환 예정)
-      stock = res?.totalStock ?? 0;
       open = res?.open ?? false;
-      _lastSavedStock = stock;
+      _groupStocks
+        ..clear()
+        ..addEntries((res?.groups ?? const <DailyMenuGroupItem>[]).map((g) => MapEntry(g.id, g.stock)));
+      _lastSavedTotalStock = totalStock;
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);
@@ -98,43 +121,84 @@ class AdminInventoryViewModel extends ChangeNotifier {
   }
 
   Future<void> adjustStock(int delta) async {
+    // legacy: no-op (group 기반으로 전환됨)
+  }
+
+  Future<void> adjustGroupStock(int groupId, int delta) async {
     if (!open) {
       showOpenModal = true;
       notifyListeners();
       return;
     }
-    final next = (stock + delta).clamp(0, 1 << 30);
-    stock = next;
+    final next = (groupStock(groupId) + delta).clamp(0, 1 << 30);
+    _groupStocks[groupId] = next;
     notifyListeners();
-    await commitStock();
+    await commitGroupStock(groupId);
   }
 
-  void setStockFromInput(String raw) {
+  void setGroupStockFromInput(int groupId, String raw) {
     final parsed = int.tryParse(raw.trim()) ?? 0;
-    stock = parsed < 0 ? 0 : parsed;
+    _groupStocks[groupId] = parsed < 0 ? 0 : parsed;
     notifyListeners();
   }
 
-  Future<void> commitStock() async {
+  Future<void> commitGroupStock(int groupId) async {
     if (!open) return;
-    final menuId = daily?.id;
-    if (menuId == null) return;
+    final stock = _groupStocks[groupId] ?? 0;
 
     saving = true;
     errorMessage = null;
     notifyListeners();
     try {
-      await _repo.updateDailyStock(menuId: menuId, stock: stock);
-      // 영업 중 상태에서 재고가 0으로 떨어졌을 때, 영업 종료 전환 모달 제안
-      if (open && stock == 0 && _lastSavedStock > 0) {
+      await _repo.updateMenuGroupStock(groupId: groupId, stock: stock);
+      final nextTotal = totalStock;
+      // 영업 중 상태에서 총 재고가 0으로 떨어졌을 때, 영업 종료 전환 모달 제안
+      if (open && nextTotal == 0 && _lastSavedTotalStock > 0) {
         showCloseModal = true;
       }
-      _lastSavedStock = stock;
+      _lastSavedTotalStock = nextTotal;
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);
       } else {
         errorMessage = '재고 업데이트 실패';
+      }
+    } finally {
+      saving = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> deductGroupStock(int groupId, DeductionUnit unit) async {
+    if (!open) {
+      showOpenModal = true;
+      notifyListeners();
+      return;
+    }
+    final current = groupStock(groupId);
+    final delta = switch (unit) {
+      DeductionUnit.single => 1,
+      DeductionUnit.multiFive => 5,
+      DeductionUnit.multiTen => 10,
+    };
+    if (current < delta) return;
+    saving = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      final res = await _repo.deductMenuGroupStock(groupId: groupId, deductionUnit: unit);
+      final nextStock = (res['stock'] is int) ? res['stock'] as int : int.tryParse('${res['stock']}') ?? groupStock(groupId);
+      _groupStocks[groupId] = nextStock < 0 ? 0 : nextStock;
+      final nextTotal = totalStock;
+      if (open && nextTotal == 0 && _lastSavedTotalStock > 0) {
+        showCloseModal = true;
+      }
+      _lastSavedTotalStock = nextTotal;
+    } catch (e) {
+      if (e is ApiException) {
+        errorMessage = mapErrorToMessage(e, responseData: e.details);
+      } else {
+        errorMessage = '재고 차감 실패';
       }
     } finally {
       saving = false;

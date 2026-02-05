@@ -30,7 +30,7 @@ class AdminApi {
 
   Future<DailyMenuResponse?> getDailyMenu({required int storeId, required String date, required String token}) async {
     final root = await _client.get<Map<String, dynamic>>(
-      '/menus/daily/$storeId/groups/',
+      '/menus/daily/$storeId/groups',
       queryParameters: {'date': date},
       headers: {'Authorization': 'Bearer $token'},
     );
@@ -130,7 +130,7 @@ class AdminApi {
     required String token,
   }) async {
     final root = await _client.post<Map<String, dynamic>>(
-      '/menus/daily/$storeId/groups/',
+      '/menus/daily/$storeId/groups',
       queryParameters: {'date': date},
       headers: {'Authorization': 'Bearer $token'},
       data: {'menus': menus},
