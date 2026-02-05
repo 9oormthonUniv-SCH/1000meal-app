@@ -106,7 +106,13 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
     }
 
     return WillPopScope(
-      onWillPop: () => _confirmDiscardIfDirty(vm),
+      onWillPop: () async {
+        final ok = await _confirmDiscardIfDirty(vm);
+        if (!ok) return false;
+        if (!context.mounted) return false;
+        Navigator.of(context).pushNamedAndRemoveUntil('/admin/menu/frequent', (r) => false);
+        return false;
+      },
       child: Scaffold(
         appBar: AppBar(
           toolbarHeight: 48,

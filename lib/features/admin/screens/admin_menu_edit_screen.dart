@@ -78,7 +78,13 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
     final days = List.generate(7, (i) => addDaysYmd(vm.mondayId, i));
 
     return WillPopScope(
-      onWillPop: () => _confirmDiscardIfDirty(vm),
+      onWillPop: () async {
+        final ok = await _confirmDiscardIfDirty(vm);
+        if (!ok) return false;
+        if (!context.mounted) return false;
+        Navigator.of(context).pushNamedAndRemoveUntil('/admin/menu', (r) => false);
+        return false;
+      },
       child: Scaffold(
         appBar: AppBar(
           toolbarHeight: 48,
@@ -315,7 +321,7 @@ class _WeekNavigator extends StatelessWidget {
                 for (int i = 0; i < days.length; i++)
                   Flexible(
                     child: GestureDetector(
-                      onTap: () => onSelect(days[i]),
+                      onTap: i >= 5 ? null : () => onSelect(days[i]), // ✅ 토/일 클릭 불가
                       child: Container(
                         constraints: const BoxConstraints(minWidth: 36),
                         height: 44,
@@ -323,7 +329,7 @@ class _WeekNavigator extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: days[i] == selectedId ? const Color(0xFFF97316) : Colors.transparent,
+                            color: (i < 5 && days[i] == selectedId) ? const Color(0xFFF97316) : Colors.transparent,
                             width: 1,
                           ),
                         ),
@@ -333,12 +339,19 @@ class _WeekNavigator extends StatelessWidget {
                           children: [
                             Text(
                               weekdayLabels[i.clamp(0, 6)],
-                              style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: i >= 5 ? const Color(0xFFD6D3D1) : const Color(0xFF6B7280), // stone-300 / gray
+                              ),
                             ),
                             const SizedBox(height: 1),
                             Text(
                               days[i].substring(8), // DD
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF111827)),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: i >= 5 ? const Color(0xFFD6D3D1) : const Color(0xFF111827), // stone-300 / zinc-900
+                              ),
                             ),
                           ],
                         ),
@@ -384,65 +397,81 @@ class _InputBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
-      child: Stack(
-        clipBehavior: Clip.none,
+      child: Row(
         children: [
-          Row(
-            children: [
-              InkWell(
-                onTap: onTapMenu,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  constraints: const BoxConstraints(minWidth: 40),
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE5E7EB),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.menu, color: Color(0xFF374151), size: 20),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: '메뉴 입력',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                isDense: true,
-              ),
-              style: const TextStyle(fontSize: 14),
-              onChanged: onChanged,
-              onSubmitted: (_) => onAdd(),
-              textInputAction: TextInputAction.done,
-              controller: controller,
+          // 피그마: 햄버거 아이콘(회색), 배경 없음
+          InkWell(
+            onTap: onTapMenu,
+            borderRadius: BorderRadius.circular(12),
+            child: const SizedBox(
+              width: 40,
+              height: 40,
+              child: Icon(Icons.menu, color: Color(0xFF9CA3AF), size: 24),
             ),
           ),
           const SizedBox(width: 8),
+          Expanded(
+            child: SizedBox(
+              height: 40, // 버튼(minimumSize)의 height와 동일
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: '메뉴 입력',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1), // stone-300
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  isDense: true,
+                  suffixIconConstraints: const BoxConstraints.tightFor(width: 40, height: 40),
+                  // 피그마: 우측 동그란 X(입력 클리어)
+                  suffixIcon: controller.text.isEmpty
+                      ? null
+                      : Center(
+                          child: InkWell(
+                            onTap: () => onChanged(''),
+                            borderRadius: BorderRadius.circular(999),
+                            child: Container(
+                              width: 15,
+                              height: 15,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFA1A1A1), // neutral-400
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Icon(Icons.close, size: 10, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                ),
+                style: const TextStyle(fontSize: 14),
+                onChanged: onChanged,
+                onSubmitted: (_) => onAdd(),
+                textInputAction: TextInputAction.done,
+                controller: controller,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
           ElevatedButton(
             onPressed: onAdd,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE5E7EB),
+              backgroundColor: const Color(0xFFE5E7EB), // zinc-100
               foregroundColor: const Color(0xFF111827),
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               minimumSize: const Size(60, 40),
             ),
-              child: const Text('입력', style: TextStyle(fontSize: 14)),
-          ),
-            ],
+            child: const Text('입력', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -486,7 +515,7 @@ class _MenuList extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF7ED), // orange-50
+                    color: const Color(0xFFFFF5F0), // orange-50
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Row(
@@ -497,11 +526,19 @@ class _MenuList extends StatelessWidget {
                         style: const TextStyle(fontSize: 14, color: Color(0xFF1F2937)),
                       ),
                       const SizedBox(width: 8),
-                      GestureDetector(
+                      InkWell(
                         onTap: () => onRemove(i),
-                        child: const Text(
-                          '✕',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                        borderRadius: BorderRadius.circular(999),
+                        child: Container(
+                          width: 15,
+                          height: 15,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFA1A1A1), // zinc-300
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.close, size: 10, color: Colors.white),
+                          ),
                         ),
                       ),
                     ],

@@ -168,7 +168,7 @@ class _AdminDashboardBody extends StatelessWidget {
   }
 }
 
-/// /admin 라우트: MainScreen으로 리다이렉트 (탭 0 선택)하여 바텀바와 동일 레이아웃 유지.
+/// /admin 라우트: MainScreen으로 리다이렉트 (탭 3 선택)하여 바텀바와 동일 레이아웃 유지.
 /// StatefulWidget 유지 시 Hot Reload 시 기존 트리의 State 타입과 충돌하지 않음.
 class AdminHomeScreen extends StatefulWidget {
   static const routeName = '/admin';
@@ -185,7 +185,7 @@ class _AdminHomeRedirectState extends State<AdminHomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 0);
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
     });
   }
 
