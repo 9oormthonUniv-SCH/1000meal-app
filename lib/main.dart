@@ -22,6 +22,7 @@ import 'features/admin/screens/admin_menu_screen.dart';
 import 'features/admin/screens/admin_menu_edit_screen.dart';
 import 'features/admin/screens/admin_frequent_menu_screen.dart';
 import 'features/admin/screens/admin_frequent_menu_edit_screen.dart';
+import 'features/admin/screens/admin_settings_screen.dart';
 import 'features/admin/viewmodels/admin_home_view_model.dart';
 import 'features/admin/viewmodels/admin_inventory_view_model.dart';
 import 'features/admin/viewmodels/admin_menu_view_model.dart';
@@ -168,6 +169,10 @@ class MyApp extends StatelessWidget {
                 );
               },
             ),
+          ),
+          AdminSettingsScreen.routeName: (_) => const RoleGuard(
+            targetRole: Role.admin,
+            child: AdminSettingsScreen(),
           ),
           MyPageScreen.routeName: (_) =>
               const RoleGuard(targetRole: Role.student, child: MyPageScreen()),

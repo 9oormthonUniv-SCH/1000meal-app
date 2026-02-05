@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 
 import '../../auth/repositories/auth_repository.dart';
+import 'admin_settings_screen.dart';
 import '../viewmodels/admin_home_view_model.dart';
 
 /// MainScreen 탭 0에서 사용: 마이페이지와 동일한 헤더 + 관리자 대시보드 본문 + (바텀바는 MainScreen에서 제공)
@@ -33,27 +34,13 @@ class _AdminTabContentState extends State<AdminTabContent> {
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: const Text(
-          '관리자',
-          style: TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        centerTitle: false,
+        title: const SizedBox.shrink(), // 요구사항: 좌측 "관리자" 제거
+        centerTitle: true,
         leading: null,
         actions: [
           IconButton(
-            icon: SvgPicture.asset(
-              'assets/icon/alarm.svg',
-              width: 22,
-              height: 22,
-              colorFilter: const ColorFilter.mode(Color(0xFF9CA3AF), BlendMode.srcIn),
-            ),
-            onPressed: () {
-              // 알림 페이지는 별도 커밋(FCM) 범위에서 처리
-            },
+            icon: const Icon(Icons.settings, color: Color(0xFF9CA3AF), size: 22),
+            onPressed: () => Navigator.of(context).pushNamed(AdminSettingsScreen.routeName),
           ),
           const SizedBox(width: 8),
         ],
