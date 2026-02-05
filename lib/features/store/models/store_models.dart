@@ -207,7 +207,9 @@ class StoreDetail {
   final String? imageUrl;
   final String? address;
   final String? phone;
-  final List<String> menus;
+  final String? hours;
+  final int? remain;
+  final WeeklyMenuResponse? weeklyMenuResponse;
 
   StoreDetail({
     required this.id,
@@ -216,7 +218,9 @@ class StoreDetail {
     this.imageUrl,
     this.address,
     this.phone,
-    required this.menus,
+    this.hours,
+    this.remain,
+    required this.weeklyMenuResponse,
   });
 
   factory StoreDetail.fromJson(Map<String, dynamic> json) {
@@ -233,28 +237,6 @@ class StoreDetail {
       return null;
     }
 
-    List<String> toStringList(dynamic v) {
-      if (v is List) {
-        return v
-            .map((e) => e.toString())
-            .where((e) => e.trim().isNotEmpty)
-            .toList();
-      }
-      if (v is String && v.trim().isNotEmpty) {
-        return v
-            .split(',')
-            .map((e) => e.trim())
-            .where((e) => e.isNotEmpty)
-            .toList();
-      }
-      return [];
-    }
-
-    final todayMenu = json['todayMenu'];
-    final menus = todayMenu is Map<String, dynamic>
-        ? (todayMenu['menus'] ?? todayMenu['menuNames'] ?? todayMenu['menu'])
-        : (json['menus'] ?? json['menuNames']);
-
     return StoreDetail(
       id: toInt(json['id'] ?? json['storeId']),
       name: (json['name'] ?? json['storeName'] ?? '').toString(),
@@ -267,7 +249,118 @@ class StoreDetail {
               ?.toString(),
       address: json['address']?.toString(),
       phone: json['phone']?.toString(),
-      menus: toStringList(menus),
+      hours: json['hours']?.toString(),
+      remain: json['remain'] == null ? null : toInt(json['remain']),
+      weeklyMenuResponse: (json['weeklyMenuResponse'] is Map<String, dynamic>)
+          ? WeeklyMenuResponse.fromJson(json['weeklyMenuResponse'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+class StoreDetailDayGroup {
+  final int groupId;
+  final String name;
+  final int sortOrder;
+  final int stock;
+  final int capacity;
+  final List<String> menus;
+
+  StoreDetailDayGroup({
+    required this.groupId,
+    required this.name,
+    required this.sortOrder,
+    required this.stock,
+    required this.capacity,
+    required this.menus,
+  });
+
+  factory StoreDetailDayGroup.fromJson(Map<String, dynamic> json) {
+    int toInt(dynamic v) => v is int ? v : int.tryParse((v ?? '').toString()) ?? 0;
+    final rawMenus = json['menus'];
+    final menus = rawMenus is List ? rawMenus.map((e) => e.toString()).toList(growable: false) : <String>[];
+    return StoreDetailDayGroup(
+      groupId: toInt(json['groupId']),
+      name: (json['name'] ?? '').toString(),
+      sortOrder: toInt(json['sortOrder']),
+      stock: toInt(json['stock']),
+      capacity: toInt(json['capacity']),
+      menus: menus,
+    );
+  }
+}
+
+class StoreWeeklyMenuDay {
+  final int id;
+  final String date; // YYYY-MM-DD
+  final String dayOfWeek; // MONDAY, ...
+  final bool? holiday;
+  final int? totalStock;
+  final List<StoreDetailDayGroup> groups;
+  final bool open;
+
+  StoreWeeklyMenuDay({
+    required this.id,
+    required this.date,
+    required this.dayOfWeek,
+    required this.holiday,
+    required this.totalStock,
+    required this.groups,
+    required this.open,
+  });
+
+  factory StoreWeeklyMenuDay.fromJson(Map<String, dynamic> json) {
+    int toInt(dynamic v) => v is int ? v : int.tryParse((v ?? '').toString()) ?? 0;
+    bool toBool(dynamic v) {
+      if (v is bool) return v;
+      if (v is num) return v != 0;
+      final s = v?.toString().trim().toLowerCase();
+      if (s == null || s.isEmpty) return false;
+      return s == 'true' || s == '1' || s == 'y' || s == 'yes';
+    }
+
+    final rawGroups = json['groups'];
+    final groups = rawGroups is List
+        ? rawGroups.whereType<Map>().map((e) => StoreDetailDayGroup.fromJson(e.cast<String, dynamic>())).toList(growable: false)
+        : <StoreDetailDayGroup>[];
+
+    return StoreWeeklyMenuDay(
+      id: toInt(json['id']),
+      date: (json['date'] ?? '').toString(),
+      dayOfWeek: (json['dayOfWeek'] ?? '').toString(),
+      holiday: json.containsKey('holiday') ? toBool(json['holiday']) : null,
+      totalStock: json['totalStock'] == null ? null : toInt(json['totalStock']),
+      groups: groups,
+      open: toBool(json['open']),
+    );
+  }
+}
+
+class WeeklyMenuResponse {
+  final int storeId;
+  final String startDate;
+  final String endDate;
+  final List<StoreWeeklyMenuDay> dailyMenus;
+
+  WeeklyMenuResponse({
+    required this.storeId,
+    required this.startDate,
+    required this.endDate,
+    required this.dailyMenus,
+  });
+
+  factory WeeklyMenuResponse.fromJson(Map<String, dynamic> json) {
+    int toInt(dynamic v) => v is int ? v : int.tryParse((v ?? '').toString()) ?? 0;
+    final list = json['dailyMenus'];
+    final daily = list is List
+        ? list.whereType<Map>().map((e) => StoreWeeklyMenuDay.fromJson(e.cast<String, dynamic>())).toList(growable: false)
+        : <StoreWeeklyMenuDay>[];
+
+    return WeeklyMenuResponse(
+      storeId: toInt(json['storeId']),
+      startDate: (json['startDate'] ?? '').toString(),
+      endDate: (json['endDate'] ?? '').toString(),
+      dailyMenus: daily,
     );
   }
 }

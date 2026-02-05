@@ -14,6 +14,7 @@ class WeeklyMenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final safeItems = items.where((e) => e.trim().isNotEmpty).toList(growable: false);
     return Container(
       width: 148,
       margin: const EdgeInsets.only(right: 12),
@@ -53,21 +54,30 @@ class WeeklyMenuCard extends StatelessWidget {
           const SizedBox(height: 8),
           Container(height: 1, color: const Color(0xFFE5E7EB)),
           const SizedBox(height: 10),
-          if (items.isEmpty)
-            const Text('메뉴 없음', style: TextStyle(color: Color(0xFF9CA3AF)))
-          else
-            ...items.map(
-              (menu) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(
-                  menu,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF4B5563),
+          Expanded(
+            child: safeItems.isEmpty
+                ? const Align(
+                    alignment: Alignment.topLeft,
+                    child: Text('메뉴 없음', style: TextStyle(color: Color(0xFF9CA3AF))),
+                  )
+                : ScrollConfiguration(
+                    behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                    child: ListView.separated(
+                      padding: EdgeInsets.zero,
+                      itemCount: safeItems.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 6),
+                      itemBuilder: (_, i) => Text(
+                        safeItems[i],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF4B5563),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
+          ),
         ],
       ),
     );
