@@ -65,90 +65,90 @@ class _AdminDashboardBody extends StatelessWidget {
     return Container(
       color: const Color(0xFFF3F4F6),
       child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: EdgeInsets.zero,
         children: [
+          // 상단 흰색 바: 마이페이지처럼 프로필 카드 아래까지 내려오게 처리
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4))],
+            color: Colors.white,
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Container(
+              margin: const EdgeInsets.only(left: 16, right: 16, top: 8),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4))],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(color: const Color(0xFFD1D5DB), borderRadius: BorderRadius.circular(24)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(storeName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: const Color(0xFFDBEAFE), borderRadius: BorderRadius.circular(999)),
+                    child: const Text('관리자', style: TextStyle(fontSize: 12, color: Color(0xFF2563EB), fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
             ),
+          ),
+          const SizedBox(height: 14),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(color: const Color(0xFFD1D5DB), borderRadius: BorderRadius.circular(24)),
+                Expanded(
+                  child: _OpenStatusCard(
+                    isOpen: vm.isOpen,
+                    loading: vm.loading || vm.toggling,
+                    onToggle: vm.toggling ? null : () => vm.toggleOpen(),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(storeName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(color: const Color(0xFFDBEAFE), borderRadius: BorderRadius.circular(999)),
-                  child: const Text('관리자', style: TextStyle(fontSize: 12, color: Color(0xFF2563EB), fontWeight: FontWeight.w700)),
+                  child: _SquareCard(
+                    title: '재고 관리',
+                    subtitle: '',
+                    onTap: () {
+                      Navigator.of(context).pushNamed('/admin/inventory').then((_) {
+                        if (!context.mounted) return;
+                        context.read<AdminHomeViewModel>().load();
+                      });
+                    },
+                    trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 28),
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: _OpenStatusCard(
-                  isOpen: vm.isOpen,
-                  loading: vm.loading || vm.toggling,
-                  onToggle: vm.toggling ? null : () => vm.toggleOpen(),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _SquareCard(
-                  title: '재고 관리',
-                  subtitle: '',
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/admin/inventory').then((_) {
-                      if (!context.mounted) return;
-                      context.read<AdminHomeViewModel>().load();
-                    });
-                  },
-                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 28),
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 12),
-          _WideCard(
-            title: '메뉴 관리',
-            onTap: () => Navigator.of(context).pushNamed('/admin/menu'),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 48,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              onPressed: () async {
-                await context.read<AuthRepository>().logout();
-                if (!context.mounted) return;
-                Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
-              },
-              child: const Text('로그아웃', style: TextStyle(fontWeight: FontWeight.w700)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _WideCard(
+              title: '메뉴 관리',
+              onTap: () => Navigator.of(context).pushNamed('/admin/menu'),
             ),
           ),
+          
           if (vm.loading) ...[
             const SizedBox(height: 12),
             const Center(child: CircularProgressIndicator()),
           ],
           if (vm.errorMessage != null) ...[
             const SizedBox(height: 12),
-            Text(vm.errorMessage!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(vm.errorMessage!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+            ),
           ],
+          const SizedBox(height: 16),
         ],
       ),
     );

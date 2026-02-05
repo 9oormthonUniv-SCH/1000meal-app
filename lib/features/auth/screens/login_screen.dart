@@ -20,7 +20,15 @@ class LoginScreen extends StatelessWidget {
         title: const Text(''),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
+          onPressed: () {
+            final nav = Navigator.of(context);
+            // 로그인 화면이 initialRoute로 열린 경우(스택에 이전 화면 없음)에는 pop이 불가능하므로 홈으로 fallback
+            if (nav.canPop()) {
+              nav.pop();
+            } else {
+              nav.pushReplacementNamed('/');
+            }
+          },
         ),
       ),
       body: SafeArea(
