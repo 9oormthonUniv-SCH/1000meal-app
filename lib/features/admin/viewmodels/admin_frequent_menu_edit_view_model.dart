@@ -28,7 +28,7 @@ class AdminFrequentMenuEditViewModel extends ChangeNotifier {
     try {
       final res = await _repo.getFavoriteGroup(groupId: groupId!);
       if (res.groups.isNotEmpty) {
-        menus = List<String>.from(res.groups.first.menu);
+        menus = List<String>.from(res.groups.first.menus);
       }
     } catch (e) {
       if (e is ApiException) {

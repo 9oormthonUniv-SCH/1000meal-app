@@ -16,11 +16,16 @@ class AdminMenuViewModel extends ChangeNotifier {
   bool loading = false;
   bool loadingNext = false;
   bool loadingPrev = false;
+  bool loadingGroups = false;
   String? errorMessage;
+
+  List<DailyMenuGroupItem> groups = [];
+  int? selectedGroupId;
 
   /// weeks[0] is the top-most week.
   final List<List<AdminMenuDay>> weeks = [];
   final Set<String> _loadedMondays = <String>{};
+  final Map<String, List<WeeklyMenuDay>> _rawWeeksByMonday = <String, List<WeeklyMenuDay>>{};
 
   String todayYmd = kstTodayYmd();
 
@@ -30,6 +35,7 @@ class AdminMenuViewModel extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
     try {
+      await _loadGroupsIfNeeded();
       final monday = mondayOfYmd(todayYmd);
       // 초기 4주를 로드해서 충분한 스크롤/무한로딩 UX를 확보한다.
       await _loadWeek(baseDate: monday, direction: 'next', force: true);
@@ -46,6 +52,87 @@ class AdminMenuViewModel extends ChangeNotifier {
       loading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> jumpToWeek({required String dateYmd}) async {
+    loading = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      await _loadGroupsIfNeeded();
+      final monday = mondayOfYmd(dateYmd);
+
+      // 멀리 점프 시에는 현재 캐시/리스트를 초기화하고 해당 주 기준으로 재구성한다.
+      weeks.clear();
+      _loadedMondays.clear();
+      _rawWeeksByMonday.clear();
+
+      await _loadWeek(baseDate: monday, direction: 'next', force: true);
+      await _loadWeek(baseDate: addWeeksYmd(monday, 1), direction: 'next', force: true);
+      await _loadWeek(baseDate: addWeeksYmd(monday, 2), direction: 'next', force: true);
+      await _loadWeek(baseDate: addWeeksYmd(monday, 3), direction: 'next', force: true);
+    } catch (e) {
+      if (e is ApiException) {
+        errorMessage = mapErrorToMessage(e, responseData: e.details);
+      } else {
+        errorMessage = '주간 메뉴 불러오기 실패';
+      }
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadGroupsIfNeeded() async {
+    if (groups.isNotEmpty && selectedGroupId != null) return;
+    loadingGroups = true;
+    notifyListeners();
+    try {
+      final res = await _repo.getDailyMenu(date: todayYmd);
+      final list = res?.groups ?? const <DailyMenuGroupItem>[];
+      groups = list;
+      if (list.isNotEmpty) {
+        if (selectedGroupId == null || !list.any((g) => g.id == selectedGroupId)) {
+          selectedGroupId = list.first.id;
+        }
+      } else {
+        selectedGroupId = null;
+      }
+    } finally {
+      loadingGroups = false;
+      notifyListeners();
+    }
+  }
+
+  void selectGroup(int groupId) {
+    if (selectedGroupId == groupId) return;
+    selectedGroupId = groupId;
+    // 이미 로드된 주차는 raw cache로 즉시 재매핑한다 (웹 useWeeklyMenus와 동일).
+    _remapWeeksFromRaw();
+    notifyListeners();
+  }
+
+  void _remapWeeksFromRaw() {
+    if (weeks.isEmpty) return;
+    final rebuilt = <List<AdminMenuDay>>[];
+    for (final week in weeks) {
+      final monday = mondayOfYmd(week.first.id);
+      final raw = _rawWeeksByMonday[monday];
+      if (raw == null || raw.isEmpty) {
+        rebuilt.add(week);
+      } else {
+        final res = WeeklyMenuResponse(
+          storeId: 0,
+          startDate: '',
+          endDate: '',
+          dailyMenus: raw,
+        );
+        rebuilt.add(_buildWeekFromApiOrEmpty(res, monday));
+      }
+    }
+    weeks
+      ..clear()
+      ..addAll(rebuilt);
   }
 
   Future<void> loadNextWeek() async {
@@ -108,6 +195,7 @@ class AdminMenuViewModel extends ChangeNotifier {
     }
 
     final res = await _repo.getWeeklyMenu(date: baseDate);
+    _rawWeeksByMonday[monday] = res.dailyMenus;
     final week = _buildWeekFromApiOrEmpty(res, monday);
     if (direction == 'next') {
       weeks.add(week);
@@ -133,7 +221,9 @@ class AdminMenuViewModel extends ChangeNotifier {
       final weekdayLabel = weekdayLabels[(dt.weekday - 1).clamp(0, 6)];
 
       final api = map[ymd];
-      final items = api?.menus ?? <String>[];
+      // 웹(useWeeklyMenus)과 동일: groupId가 있으면 해당 그룹, 없으면 첫 그룹.
+      final g = _pickGroupForDay(api?.groups ?? const <WeeklyDayGroup>[], selectedGroupId);
+      final items = g?.menus ?? <String>[];
 
       final isPast = dt.isBefore(_parseYmdLocal(todayYmd));
       final isToday = ymd == todayYmd;
@@ -157,5 +247,11 @@ class AdminMenuViewModel extends ChangeNotifier {
     return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
   }
 
+  WeeklyDayGroup? _pickGroupForDay(List<WeeklyDayGroup> groups, int? groupId) {
+    if (groups.isEmpty) return null;
+    if (groupId == null) return groups.first;
+    final hit = groups.where((g) => g.groupId == groupId).cast<WeeklyDayGroup?>().firstWhere((_) => true, orElse: () => null);
+    return hit ?? groups.first;
+  }
 }
 

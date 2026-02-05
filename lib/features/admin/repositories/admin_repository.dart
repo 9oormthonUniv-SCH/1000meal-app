@@ -67,6 +67,47 @@ class AdminRepository {
     return _api.saveDailyMenu(storeId: storeId, date: date, menus: menus, token: token);
   }
 
+  Future<Map<String, dynamic>> createMenuGroup({
+    required String name,
+    required int sortOrder,
+    required int capacity,
+  }) async {
+    final token = await _requireToken();
+    final storeId = await _requireStoreId(token);
+    return _api.createMenuGroup(
+      storeId: storeId,
+      name: name,
+      sortOrder: sortOrder,
+      capacity: capacity,
+      token: token,
+    );
+  }
+
+  Future<MenuGroupMenusResponse> upsertMenuGroupMenus({
+    required int groupId,
+    required String date,
+    required List<String> menus,
+  }) async {
+    final token = await _requireToken();
+    return _api.upsertMenuGroupMenus(groupId: groupId, date: date, menus: menus, token: token);
+  }
+
+  Future<Map<String, dynamic>> updateMenuGroupStock({
+    required int groupId,
+    required int stock,
+  }) async {
+    final token = await _requireToken();
+    return _api.updateMenuGroupStock(groupId: groupId, stock: stock, token: token);
+  }
+
+  Future<Map<String, dynamic>> deductMenuGroupStock({
+    required int groupId,
+    required DeductionUnit deductionUnit,
+  }) async {
+    final token = await _requireToken();
+    return _api.deductMenuGroupStock(groupId: groupId, deductionUnit: deductionUnit, token: token);
+  }
+
   // 자주 쓰는 메뉴 API
   Future<FavoritesResponse> getFavorites() async {
     final token = await _requireToken();

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../features/store/models/store_models.dart';
 import '../features/store/screens/store_detail_screen.dart';
 import '../features/store/viewmodels/store_list_view_model.dart';
 import 'StoreCard.dart';
@@ -23,20 +22,10 @@ class _StoreSectionState extends State<StoreSection> {
     });
   }
 
-  Store _toUi(StoreListItem item) {
-    return Store(
-      id: item.id,
-      name: item.name,
-      menus: item.menus,
-      remain: item.remain,
-      imageUrl: item.imageUrl,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<StoreListViewModel>();
-    final stores = vm.items.map(_toUi).toList();
+    final stores = vm.items;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),

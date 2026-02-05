@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 
 import '../../auth/repositories/auth_repository.dart';
+import 'admin_settings_screen.dart';
 import '../viewmodels/admin_home_view_model.dart';
 
 /// MainScreen 탭 0에서 사용: 마이페이지와 동일한 헤더 + 관리자 대시보드 본문 + (바텀바는 MainScreen에서 제공)
@@ -33,27 +34,13 @@ class _AdminTabContentState extends State<AdminTabContent> {
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: const Text(
-          '관리자',
-          style: TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        centerTitle: false,
+        title: const SizedBox.shrink(), // 요구사항: 좌측 "관리자" 제거
+        centerTitle: true,
         leading: null,
         actions: [
           IconButton(
-            icon: SvgPicture.asset(
-              'assets/icon/alarm.svg',
-              width: 22,
-              height: 22,
-              colorFilter: const ColorFilter.mode(Color(0xFF9CA3AF), BlendMode.srcIn),
-            ),
-            onPressed: () {
-              // 알림 페이지는 별도 커밋(FCM) 범위에서 처리
-            },
+            icon: const Icon(Icons.settings, color: Color(0xFF9CA3AF), size: 22),
+            onPressed: () => Navigator.of(context).pushNamed(AdminSettingsScreen.routeName),
           ),
           const SizedBox(width: 8),
         ],
@@ -78,97 +65,97 @@ class _AdminDashboardBody extends StatelessWidget {
     return Container(
       color: const Color(0xFFF3F4F6),
       child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: EdgeInsets.zero,
         children: [
+          // 상단 흰색 바: 마이페이지처럼 프로필 카드 아래까지 내려오게 처리
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4))],
+            color: Colors.white,
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Container(
+              margin: const EdgeInsets.only(left: 16, right: 16, top: 8),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4))],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(color: const Color(0xFFD1D5DB), borderRadius: BorderRadius.circular(24)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(storeName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: const Color(0xFFDBEAFE), borderRadius: BorderRadius.circular(999)),
+                    child: const Text('관리자', style: TextStyle(fontSize: 12, color: Color(0xFF2563EB), fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
             ),
+          ),
+          const SizedBox(height: 14),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(color: const Color(0xFFD1D5DB), borderRadius: BorderRadius.circular(24)),
+                Expanded(
+                  child: _OpenStatusCard(
+                    isOpen: vm.isOpen,
+                    loading: vm.loading || vm.toggling,
+                    onToggle: vm.toggling ? null : () => vm.toggleOpen(),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(storeName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(color: const Color(0xFFDBEAFE), borderRadius: BorderRadius.circular(999)),
-                  child: const Text('관리자', style: TextStyle(fontSize: 12, color: Color(0xFF2563EB), fontWeight: FontWeight.w700)),
+                  child: _SquareCard(
+                    title: '재고 관리',
+                    subtitle: '',
+                    onTap: () {
+                      Navigator.of(context).pushNamed('/admin/inventory').then((_) {
+                        if (!context.mounted) return;
+                        context.read<AdminHomeViewModel>().load();
+                      });
+                    },
+                    trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 28),
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: _OpenStatusCard(
-                  isOpen: vm.isOpen,
-                  loading: vm.loading || vm.toggling,
-                  onToggle: vm.toggling ? null : () => vm.toggleOpen(),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _SquareCard(
-                  title: '재고 관리',
-                  subtitle: '',
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/admin/inventory').then((_) {
-                      if (!context.mounted) return;
-                      context.read<AdminHomeViewModel>().load();
-                    });
-                  },
-                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 28),
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 12),
-          _WideCard(
-            title: '메뉴 관리',
-            onTap: () => Navigator.of(context).pushNamed('/admin/menu'),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 48,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              onPressed: () async {
-                await context.read<AuthRepository>().logout();
-                if (!context.mounted) return;
-                Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
-              },
-              child: const Text('로그아웃', style: TextStyle(fontWeight: FontWeight.w700)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _WideCard(
+              title: '메뉴 관리',
+              onTap: () => Navigator.of(context).pushNamed('/admin/menu'),
             ),
           ),
+          
           if (vm.loading) ...[
             const SizedBox(height: 12),
             const Center(child: CircularProgressIndicator()),
           ],
           if (vm.errorMessage != null) ...[
             const SizedBox(height: 12),
-            Text(vm.errorMessage!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(vm.errorMessage!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+            ),
           ],
+          const SizedBox(height: 16),
         ],
       ),
     );
   }
 }
 
-/// /admin 라우트: MainScreen으로 리다이렉트 (탭 0 선택)하여 바텀바와 동일 레이아웃 유지.
+/// /admin 라우트: MainScreen으로 리다이렉트 (탭 3 선택)하여 바텀바와 동일 레이아웃 유지.
 /// StatefulWidget 유지 시 Hot Reload 시 기존 트리의 State 타입과 충돌하지 않음.
 class AdminHomeScreen extends StatefulWidget {
   static const routeName = '/admin';
@@ -185,7 +172,7 @@ class _AdminHomeRedirectState extends State<AdminHomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 0);
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
     });
   }
 

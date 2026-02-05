@@ -106,7 +106,10 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
     }
 
     return WillPopScope(
-      onWillPop: () => _confirmDiscardIfDirty(vm),
+      onWillPop: () async {
+        final ok = await _confirmDiscardIfDirty(vm);
+        return ok;
+      },
       child: Scaffold(
         appBar: AppBar(
           toolbarHeight: 48,
@@ -121,7 +124,7 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
               final ok = await _confirmDiscardIfDirty(vm);
               if (!ok) return;
               if (!context.mounted) return;
-              Navigator.of(context).pushNamedAndRemoveUntil('/admin/menu/frequent', (r) => false);
+              Navigator.of(context).maybePop();
             },
           ),
           actions: [
@@ -206,29 +209,52 @@ class _InputBar extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: '메뉴 입력',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
+            child: SizedBox(
+              height: 40,
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: '메뉴 입력',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1), // stone-300
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  isDense: true,
+                  suffixIconConstraints: const BoxConstraints.tightFor(width: 40, height: 40),
+                  suffixIcon: controller.text.isEmpty
+                      ? null
+                      : Center(
+                          child: InkWell(
+                            onTap: () => onChanged(''),
+                            borderRadius: BorderRadius.circular(999),
+                            child: Container(
+                              width: 15,
+                              height: 15,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFA1A1A1), // neutral-400
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Icon(Icons.close, size: 10, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                isDense: true,
+                style: const TextStyle(fontSize: 14),
+                onChanged: onChanged,
+                onSubmitted: (_) => onAdd(),
+                textInputAction: TextInputAction.done,
+                controller: controller,
               ),
-              style: const TextStyle(fontSize: 14),
-              onChanged: onChanged,
-              onSubmitted: (_) => onAdd(),
-              textInputAction: TextInputAction.done,
-              controller: controller,
             ),
           ),
           const SizedBox(width: 8),
@@ -242,7 +268,7 @@ class _InputBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               minimumSize: const Size(60, 40),
             ),
-            child: const Text('입력', style: TextStyle(fontSize: 14)),
+            child: const Text('입력', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -297,13 +323,21 @@ class _MenuList extends StatelessWidget {
                         style: const TextStyle(fontSize: 14, color: Color(0xFF1F2937)),
                       ),
                       const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () => onRemove(i),
-                        child: const Text(
-                          '✕',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                        InkWell(
+                          onTap: () => onRemove(i),
+                          borderRadius: BorderRadius.circular(999),
+                          child: Container(
+                            width: 15,
+                            height: 15,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFA1A1A1), // neutral-400
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.close, size: 10, color: Colors.white),
+                            ),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
