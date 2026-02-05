@@ -74,7 +74,8 @@ class StoreBottomSheet extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                store.name,
+                                store
+                                    .name, //ontap() -> Navigator to StoreDetailScreen
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -83,6 +84,7 @@ class StoreBottomSheet extends StatelessWidget {
                               IconButton(
                                 onPressed: () {
                                   if (kDebugMode) debugPrint('즐겨찾기');
+                                  //즐겨찾기 클릭 시 아이콘 변경 로직 + 즐겨찾기 리스트에 포함되도록 하는 로직 들어가야 함.
                                 },
                                 icon: Icon(Icons.star, color: Colors.grey[400]),
                                 highlightColor: Colors.orange.withOpacity(0.2),

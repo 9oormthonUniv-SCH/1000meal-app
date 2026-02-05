@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:provider/provider.dart';
@@ -5,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../store/models/store_models.dart';
 import '../../store/viewmodels/store_list_view_model.dart';
 import '../widgets/bottomsheet.dart';
+import '../widgets/marker_pin.dart';
 import '../widgets/refresh.dart';
 import '../widgets/zoom_controls.dart';
 
@@ -18,11 +22,15 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   bool _loaded = false;
   bool _isBottomSheetOpen = false;
+  bool _buildingMarkerIcons = false;
   KakaoMapController? _mapController;
   DateTime? _lastBottomSheetAt;
   static const Duration _bottomSheetCooldown = Duration(
     milliseconds: 600,
   ); //Bottom Sheet 호출 시간 제한
+  final Map<String, MarkerIcon> _markerIconCache = {};
+  static const double _markerWidth = 34.34;
+  static const double _markerHeight = 44;
 
   @override
   void initState() {
@@ -44,6 +52,70 @@ class _MapScreenState extends State<MapScreen> {
     return {for (final store in stores) store.id.toString(): store};
   }
 
+  Color _markerColor(int remain) {
+    if (remain <= 0) return const Color(0xFFFF3B30);
+    if (remain <= 20) return const Color(0xFFFF9500);
+    return const Color(0xFF34C759);
+  }
+
+  Future<MarkerIcon> _buildMarkerIcon(StoreListItem store) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final size = const Size(_markerWidth, _markerHeight);
+    final painter = MarkerPinPainter(
+      count: store.remain,
+      color: _markerColor(store.remain),
+      borderWidth: 1.07,
+    );
+    painter.paint(canvas, size);
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(
+      _markerWidth.round(),
+      _markerHeight.round(),
+    );
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final bytes = byteData!.buffer.asUint8List();
+    final dataUrl = 'data:image/png;base64,${base64Encode(bytes)}';
+    return MarkerIcon.fromNetwork(dataUrl);
+  }
+
+  void _ensureMarkerIcons(List<StoreListItem> stores) {
+    if (_buildingMarkerIcons) return;
+
+    final targets = stores
+        .where((s) => s.lat != null && s.lng != null)
+        .map((s) => '${s.id}_${s.remain}')
+        .toSet();
+
+    final missing = stores.where((store) {
+      if (store.lat == null || store.lng == null) return false;
+      final key = '${store.id}_${store.remain}';
+      return !_markerIconCache.containsKey(key);
+    }).toList();
+
+    if (missing.isEmpty) return;
+
+    _buildingMarkerIcons = true;
+    Future.wait(
+          missing.map((store) async {
+            final key = '${store.id}_${store.remain}';
+            final icon = await _buildMarkerIcon(store);
+            return MapEntry(key, icon);
+          }),
+        )
+        .then((entries) {
+          if (!mounted) return;
+          setState(() {
+            for (final entry in entries) {
+              _markerIconCache[entry.key] = entry.value;
+            }
+            _markerIconCache.removeWhere((key, _) => !targets.contains(key));
+          });
+        })
+        .whenComplete(() => _buildingMarkerIcons = false);
+  }
+
   //마커 클릭 시 해당 매장을 찾고 showStoreBottomSheet 호출 -> 호출 횟수 제한 생각....
   Future<void> _handleMarkerTap(String markerId) async {
     final now = DateTime.now();
@@ -57,6 +129,20 @@ class _MapScreenState extends State<MapScreen> {
     final storeMap = _buildStoreMap(stores);
     final store = storeMap[markerId];
     if (store == null || !mounted) return;
+
+    if (_mapController != null && store.lat != null && store.lng != null) {
+      final currentCenter = await _mapController!.getCenter();
+      final isSameCenter =
+          (currentCenter.latitude - store.lat!).abs() < 0.0001 &&
+          (currentCenter.longitude - store.lng!).abs() < 0.0001;
+      if (isSameCenter) {
+        _mapController!.setLevel(2);
+      } else {
+        final target = LatLng(store.lat! - 0.003, store.lng!);
+        _mapController!.panTo(target);
+      }
+    }
+
     setState(() => _isBottomSheetOpen = true);
     await showStoreBottomSheet(context, store);
     if (!mounted) return;
@@ -85,13 +171,20 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<StoreListViewModel>();
-    final markers = vm.items
-        .where((s) => s.lat != null && s.lng != null)
-        .map(
-          (s) =>
-              Marker(markerId: s.id.toString(), latLng: LatLng(s.lat!, s.lng!)),
-        )
-        .toList();
+    _ensureMarkerIcons(vm.items);
+    final markers = vm.items.where((s) => s.lat != null && s.lng != null).map((
+      s,
+    ) {
+      final key = '${s.id}_${s.remain}';
+      final icon = _markerIconCache[key];
+      return Marker(
+        markerId: s.id.toString(),
+        latLng: LatLng(s.lat!, s.lng!),
+        width: _markerWidth.round(),
+        height: _markerHeight.round(),
+        icon: icon,
+      );
+    }).toList();
 
     final center = markers.isNotEmpty
         ? markers.first.latLng
@@ -126,6 +219,7 @@ class _MapScreenState extends State<MapScreen> {
                 onMapCreated: (controller) {
                   _mapController = controller;
                 },
+                //마커 교체 -> Figma 참고, 마커 클릭 시 마커쪽으로 화면 이동
                 onMarkerTap: (markerId, _, __) => _handleMarkerTap(markerId),
                 center: center,
                 markers: markers,
