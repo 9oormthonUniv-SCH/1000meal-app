@@ -122,6 +122,29 @@ class DioClient {
       );
     }
   }
+
+  Future<T> patch<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      final res = await _dio.patch<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: Options(headers: headers),
+      );
+      return res.data as T;
+    } on DioException catch (e) {
+      throw ApiException(
+        e.message ?? '네트워크 오류가 발생했습니다.',
+        statusCode: e.response?.statusCode,
+        details: e.response?.data,
+      );
+    }
+  }
 }
 
 

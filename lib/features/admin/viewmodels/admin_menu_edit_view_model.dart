@@ -35,7 +35,8 @@ class AdminMenuEditViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       final res = await _repo.getDailyMenu(date: selectedId);
-      menus = res?.menus ?? <String>[];
+      // 임시 호환: group 기반 응답을 "메뉴 문자열 리스트"로 편집 UI에 바인딩.
+      menus = res?.flattenedMenus ?? <String>[];
       dirty = false;
     } catch (e) {
       if (e is ApiException) {

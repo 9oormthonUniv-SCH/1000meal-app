@@ -30,7 +30,7 @@ class AdminApi {
 
   Future<DailyMenuResponse?> getDailyMenu({required int storeId, required String date, required String token}) async {
     final root = await _client.get<Map<String, dynamic>>(
-      '/menus/daily/$storeId',
+      '/menus/daily/$storeId/groups/',
       queryParameters: {'date': date},
       headers: {'Authorization': 'Bearer $token'},
     );
@@ -44,17 +44,9 @@ class AdminApi {
     return DailyMenuResponse.fromJson(unwrapped);
   }
 
-  Future<void> updateDailyStock({required int menuId, required int stock, required String token}) async {
-    await _client.post<Object>(
-      '/menus/daily/stock/$menuId',
-      headers: {'Authorization': 'Bearer $token'},
-      data: {'stock': stock},
-    );
-  }
-
   Future<WeeklyMenuResponse> getWeeklyMenu({required int storeId, required String date, required String token}) async {
     final root = await _client.get<Map<String, dynamic>>(
-      '/menus/weekly/$storeId',
+      '/menus/daily/weekly/$storeId/groups',
       queryParameters: {'date': date},
       headers: {'Authorization': 'Bearer $token'},
     );
@@ -63,6 +55,74 @@ class AdminApi {
     return WeeklyMenuResponse.fromJson(unwrapped);
   }
 
+  // ────────────────────────────────────────────────────────────────────────────
+  // Menu-group 기반 API
+  // ────────────────────────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> createMenuGroup({
+    required int storeId,
+    required String name,
+    required int sortOrder,
+    required int capacity,
+    required String token,
+  }) async {
+    final root = await _client.post<Map<String, dynamic>>(
+      '/menus/daily/$storeId/groups',
+      headers: {'Authorization': 'Bearer $token'},
+      data: {
+        'name': name,
+        'sortOrder': sortOrder,
+        'capacity': capacity,
+      },
+    );
+    return _unwrapData(root);
+  }
+
+  Future<MenuGroupMenusResponse> upsertMenuGroupMenus({
+    required int groupId,
+    required String date,
+    required List<String> menus,
+    required String token,
+  }) async {
+    final root = await _client.post<Map<String, dynamic>>(
+      '/menus/daily/groups/$groupId/menus',
+      queryParameters: {'date': date},
+      headers: {'Authorization': 'Bearer $token'},
+      data: {'menus': menus},
+    );
+    return MenuGroupMenusResponse.fromJson(_unwrapData(root));
+  }
+
+  Future<Map<String, dynamic>> updateMenuGroupStock({
+    required int groupId,
+    required int stock,
+    required String token,
+  }) async {
+    final root = await _client.post<Map<String, dynamic>>(
+      '/menus/daily/groups/$groupId/stock',
+      headers: {'Authorization': 'Bearer $token'},
+      data: {'stock': stock},
+    );
+    return _unwrapData(root);
+  }
+
+  Future<Map<String, dynamic>> deductMenuGroupStock({
+    required int groupId,
+    required DeductionUnit deductionUnit,
+    required String token,
+  }) async {
+    final root = await _client.patch<Map<String, dynamic>>(
+      '/menus/daily/groups/$groupId/deduct',
+      queryParameters: {'deductionUnit': deductionUnit.apiValue},
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    return _unwrapData(root);
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // 레거시 호환 (Next.js도 deprecated로 유지 중)
+  // ────────────────────────────────────────────────────────────────────────────
+
   Future<DailyMenuResponse> saveDailyMenu({
     required int storeId,
     required String date,
@@ -70,11 +130,20 @@ class AdminApi {
     required String token,
   }) async {
     final root = await _client.post<Map<String, dynamic>>(
-      '/menus/daily/$storeId',
+      '/menus/daily/$storeId/groups/',
+      queryParameters: {'date': date},
       headers: {'Authorization': 'Bearer $token'},
-      data: {'date': date, 'menus': menus},
+      data: {'menus': menus},
     );
     return DailyMenuResponse.fromJson(_unwrapData(root));
+  }
+
+  Future<void> updateDailyStock({required int menuId, required int stock, required String token}) async {
+    await _client.post<Object>(
+      '/menus/daily/group/$menuId/stock',
+      headers: {'Authorization': 'Bearer $token'},
+      data: {'stock': stock},
+    );
   }
 
   // 자주 쓰는 메뉴 API

@@ -33,7 +33,8 @@ class AdminInventoryViewModel extends ChangeNotifier {
     try {
       final res = await _repo.getDailyMenu(date: date);
       daily = res;
-      stock = res?.stock ?? 0;
+      // group 기반 응답에서는 totalStock으로 노출 (Unit E에서 그룹별 재고 UI로 전환 예정)
+      stock = res?.totalStock ?? 0;
       open = res?.open ?? false;
       _lastSavedStock = stock;
     } catch (e) {

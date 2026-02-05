@@ -133,7 +133,8 @@ class AdminMenuViewModel extends ChangeNotifier {
       final weekdayLabel = weekdayLabels[(dt.weekday - 1).clamp(0, 6)];
 
       final api = map[ymd];
-      final items = api?.menus ?? <String>[];
+      // 임시 호환: group 기반 응답을 "메뉴 문자열 리스트"로 평탄화하여 주간 카드에 노출.
+      final items = api?.flattenedMenus ?? <String>[];
 
       final isPast = dt.isBefore(_parseYmdLocal(todayYmd));
       final isToday = ymd == todayYmd;
