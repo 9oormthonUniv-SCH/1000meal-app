@@ -155,7 +155,7 @@ class AdminMenuEditViewModel extends ChangeNotifier {
   }
 
   void selectFrequentMenu(FavoriteGroup group) {
-    menus = [...menus, ...group.menu];
+    menus = [...menus, ...group.menus];
     dirty = true;
     showFrequentMenu = false;
     notifyListeners();

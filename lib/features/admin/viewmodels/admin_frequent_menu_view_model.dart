@@ -39,7 +39,7 @@ class AdminFrequentMenuViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       await _repo.deleteFavorites(groupIds: groupIds);
-      groups = groups.where((g) => !groupIds.contains(g.groupId)).toList();
+      groups = groups.where((g) => !groupIds.contains(g.id)).toList();
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);

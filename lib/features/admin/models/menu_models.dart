@@ -250,12 +250,16 @@ class FavoriteGroup {
     required this.menu,
   });
 
+  /// 명확한 네이밍을 위한 별칭(기존 필드와 동일 의미)
+  int get id => groupId;
+  List<String> get menus => menu;
+
   factory FavoriteGroup.fromJson(Map<String, dynamic> json) {
     final rawMenus = json['menu'];
     final menus = rawMenus is List ? rawMenus.map((e) => e.toString()).toList(growable: false) : <String>[];
 
     return FavoriteGroup(
-      groupId: json['groupId'] as int,
+      groupId: _toInt(json['groupId']),
       menu: menus,
     );
   }

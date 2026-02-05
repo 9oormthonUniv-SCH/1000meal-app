@@ -53,14 +53,8 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
   Widget build(BuildContext context) {
     final vm = context.watch<AdminMenuViewModel>();
 
-    return WillPopScope(
-      onWillPop: () async {
-        if (!mounted) return true;
-        Navigator.of(context).pushNamedAndRemoveUntil('/admin', (r) => false);
-        return false;
-      },
-      child: Scaffold(
-        appBar: AppBar(
+    return Scaffold(
+      appBar: AppBar(
         toolbarHeight: 48,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -68,7 +62,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-          onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/admin', (r) => false),
+          onPressed: () => Navigator.of(context).maybePop(),
         ),
         actions: [
           Padding(
@@ -87,8 +81,8 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
             ),
           ),
         ],
-        ),
-        body: Container(
+      ),
+      body: Container(
         color: const Color(0xFFF7F7F7), // stone-50
         child: Column(
           children: [
@@ -182,7 +176,6 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
               ),
           ],
         ),
-      ),
       ),
     );
   }

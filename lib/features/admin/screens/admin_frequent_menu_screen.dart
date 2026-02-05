@@ -118,7 +118,7 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-          onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/admin/menu', (r) => false),
+          onPressed: () => Navigator.of(context).maybePop(),
         ),
         actions: [
           Padding(
@@ -127,6 +127,14 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
           ),
         ],
       ),
+      floatingActionButton: _selectMode
+          ? null
+          : FloatingActionButton(
+              onPressed: () => Navigator.of(context).pushNamed(AdminFrequentMenuEditScreen.routeName),
+              backgroundColor: const Color(0xFFD1D5DB),
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: Container(
         color: const Color(0xFFF5F6F7),
         child: vm.loading && vm.groups.isEmpty
@@ -136,27 +144,31 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                   Expanded(
                     child: vm.groups.isEmpty
                         ? const Center(child: Text('자주 쓰는 메뉴가 없습니다', style: TextStyle(fontSize: 14, color: Color(0xFF9CA3AF))))
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: vm.groups.length,
-                            itemBuilder: (context, index) {
-                              final group = vm.groups[index];
-                              return _FrequentMenuRow(
-                                group: group,
-                                selectMode: _selectMode,
-                                isSelected: _selectedIds.contains(group.groupId),
-                                onTap: () {
-                                  if (_selectMode) {
-                                    _toggleSelect(group.groupId);
-                                  } else {
-                                    Navigator.of(context).pushNamed(
-                                      AdminFrequentMenuEditScreen.routeName,
-                                      arguments: group.groupId,
-                                    );
-                                  }
-                                },
-                              );
-                            },
+                        : RefreshIndicator.adaptive(
+                            onRefresh: () => context.read<AdminFrequentMenuViewModel>().refresh(),
+                            child: ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                              padding: const EdgeInsets.all(16),
+                              itemCount: vm.groups.length,
+                              itemBuilder: (context, index) {
+                                final group = vm.groups[index];
+                                return _FrequentMenuRow(
+                                  group: group,
+                                  selectMode: _selectMode,
+                                  isSelected: _selectedIds.contains(group.id),
+                                  onTap: () {
+                                    if (_selectMode) {
+                                      _toggleSelect(group.id);
+                                    } else {
+                                      Navigator.of(context).pushNamed(
+                                        AdminFrequentMenuEditScreen.routeName,
+                                        arguments: group.id,
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
                           ),
                   ),
                   if (vm.errorMessage != null)
@@ -165,17 +177,6 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       color: const Color(0xFFFFF1F2),
                       child: Text(vm.errorMessage!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
-                    ),
-                  if (!_selectMode)
-                    Padding(
-                      padding: const EdgeInsets.all(60),
-                      child: Center(
-                        child: FloatingActionButton(
-                          onPressed: () => Navigator.of(context).pushNamed(AdminFrequentMenuEditScreen.routeName),
-                          backgroundColor: const Color(0xFFD1D5DB),
-                          child: const Icon(Icons.add, color: Colors.white),
-                        ),
-                      ),
                     ),
                 ],
               ),
@@ -204,7 +205,7 @@ class _FrequentMenuRow extends StatelessWidget {
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
-          top: BorderSide(color: Color(0xFFE5E7EB), width: 1),
+          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
         ),
       ),
       child: InkWell(
@@ -216,7 +217,7 @@ class _FrequentMenuRow extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  group.menu.join(', '),
+                  group.menus.join(', '),
                   style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -226,7 +227,7 @@ class _FrequentMenuRow extends StatelessWidget {
                 Checkbox(
                   value: isSelected,
                   onChanged: (_) => onTap(),
-                  activeColor: const Color(0xFFE5E7EB),
+                  activeColor: const Color(0xFFF97316),
                 )
               else
                 const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 20),

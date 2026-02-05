@@ -78,13 +78,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
     final days = List.generate(7, (i) => addDaysYmd(vm.mondayId, i));
 
     return WillPopScope(
-      onWillPop: () async {
-        final ok = await _confirmDiscardIfDirty(vm);
-        if (!ok) return false;
-        if (!context.mounted) return false;
-        Navigator.of(context).pushNamedAndRemoveUntil('/admin/menu', (r) => false);
-        return false;
-      },
+      onWillPop: () => _confirmDiscardIfDirty(vm),
       child: Scaffold(
         appBar: AppBar(
           toolbarHeight: 48,
@@ -111,7 +105,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
               final ok = await _confirmDiscardIfDirty(vm);
               if (!ok) return;
               if (!context.mounted) return;
-              Navigator.of(context).pushNamedAndRemoveUntil('/admin/menu', (r) => false);
+              Navigator.of(context).maybePop();
             },
           ),
           actions: [
@@ -238,7 +232,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                                               children: [
                                                 Expanded(
                                                   child: Text(
-                                                    vm.frequentMenus[i].menu.join(', '),
+                                                    vm.frequentMenus[i].menus.join(', '),
                                                     style: const TextStyle(fontSize: 14, color: Color(0xFF374151)),
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
