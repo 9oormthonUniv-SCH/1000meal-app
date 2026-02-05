@@ -84,7 +84,20 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
           toolbarHeight: 48,
           backgroundColor: Colors.white,
           elevation: 0,
-          title: const Text('메뉴 수정', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('메뉴 수정', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+              if (vm.groupName.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    vm.groupName,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6B7280)),
+                  ),
+                ),
+            ],
+          ),
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
@@ -99,7 +112,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: ElevatedButton(
-                onPressed: vm.saving ? null : () => context.read<AdminMenuEditViewModel>().save(),
+                onPressed: (vm.saving || vm.groupId == null) ? null : () => context.read<AdminMenuEditViewModel>().save(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF97316),
                   foregroundColor: Colors.white,
@@ -139,7 +152,16 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                       await vm.selectDate(id);
                     },
                   ),
-                  if (vm.loading)
+                  if (vm.groupId == null)
+                    const Expanded(
+                      child: Center(
+                        child: Text(
+                          '메뉴 그룹을 선택해주세요',
+                          style: TextStyle(color: Color(0xFF6B7280), fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    )
+                  else if (vm.loading)
                     const Expanded(child: Center(child: CircularProgressIndicator()))
                   else
                     Expanded(
@@ -155,7 +177,8 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                                 onAdd: () => context.read<AdminMenuEditViewModel>().addMenu(),
                                 onTapMenu: () async {
                                   final hasMenus = await context.read<AdminMenuEditViewModel>().toggleFrequentMenu();
-                                  if (!hasMenus && mounted) {
+                                  if (!context.mounted) return;
+                                  if (!hasMenus) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text('자주 쓰는 메뉴가 없습니다'),

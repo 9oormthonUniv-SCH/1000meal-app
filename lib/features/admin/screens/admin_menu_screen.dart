@@ -70,22 +70,45 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
             child: TextButton(
               onPressed: () => Navigator.of(context).pushNamed('/admin/menu/frequent'),
               style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFFF97316),
+                backgroundColor: const Color(0xFFFB923C), // orange-400
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text('자주 쓰는 메뉴', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+              child: const Text('자주 쓰는 메뉴', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, height: 1)),
             ),
           ),
         ],
       ),
       body: Container(
-        color: const Color(0xFFF5F6F7),
+        color: const Color(0xFFF7F7F7), // stone-50
         child: Column(
           children: [
+            if (vm.groups.length > 1)
+              Container(
+                width: double.infinity,
+                height: 48,
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (final g in vm.groups) ...[
+                        _GroupChip(
+                          label: g.name,
+                          selected: vm.selectedGroupId == g.id,
+                          onTap: () => context.read<AdminMenuViewModel>().selectGroup(g.id),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            if (vm.groups.length > 1) const Divider(height: 1, thickness: 1, color: Color(0xFFFAFAF9)),
             Expanded(
               child: vm.loading && vm.weeks.isEmpty
                   ? const Center(child: CircularProgressIndicator())
@@ -109,7 +132,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                       child: ListView.builder(
                         controller: _scroll,
                         physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                         itemCount: vm.weeks.length + 1,
                         itemBuilder: (context, idx) {
                           if (idx == vm.weeks.length) {
@@ -130,10 +153,14 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                             key: key,
                             child: _WeekCard(
                               week: week,
-                              onTapDay: (ymd) => Navigator.of(context).pushNamed(
-                                AdminMenuEditScreen.routeName,
-                                arguments: ymd,
-                              ),
+                              onTapDay: (ymd) {
+                                final groupId = vm.selectedGroupId;
+                                if (groupId == null) return;
+                                Navigator.of(context).pushNamed(
+                                  AdminMenuEditScreen.routeName,
+                                  arguments: {'date': ymd, 'groupId': groupId},
+                                );
+                              },
                             ),
                           );
                         },
@@ -155,6 +182,42 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
 
 }
 
+class _GroupChip extends StatelessWidget {
+  const _GroupChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFFB923C) : const Color(0xFFF4F4F5), // orange-400 / zinc-100
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            height: 1,
+            color: selected ? Colors.white : const Color(0xFF27272A), // zinc-800
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _WeekCard extends StatelessWidget {
   final List<AdminMenuDay> week;
   final ValueChanged<String> onTapDay;
@@ -163,75 +226,147 @@ class _WeekCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4))],
-      ),
-      child: Column(
+    const line = Color(0xFFD9D9D9); // zinc-300 (figma)
+    final hairline = 1 / MediaQuery.of(context).devicePixelRatio;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 30),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (int i = 0; i < week.length; i++) ...[
-            _DayRow(day: week[i], onTap: () => onTapDay(week[i].id)),
-            if (i != week.length - 1) const Divider(height: 1, color: Color(0xFFE5E7EB)),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _DayRow extends StatelessWidget {
-  final AdminMenuDay day;
-  final VoidCallback onTap;
-
-  const _DayRow({required this.day, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final summary = day.items.isNotEmpty ? day.items.join(', ') : '메뉴 없음';
-    final opacity = day.isPast ? 0.4 : 1.0;
-
-    return Opacity(
-      opacity: opacity,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 64,
-                child: Text(
-                  day.dateLabel,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: day.isToday ? FontWeight.w800 : FontWeight.w600,
-                    color: day.isToday ? const Color(0xFFF97316) : const Color(0xFF6B7280),
+          // left date column (w-12)
+          SizedBox(
+            width: 48,
+            child: Column(
+              children: [
+                for (int i = 0; i < week.length; i++)
+                  Opacity(
+                    opacity: week[i].isPast ? 0.4 : 1.0,
+                    child: Container(
+                      height: 48,
+                      alignment: Alignment.center,
+                      child: Text(
+                        week[i].dateLabel,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: week[i].isToday ? const Color(0xFFFB923C) : const Color(0xFF737373), // orange-400 / neutral-500
+                          fontSize: 14,
+                          fontWeight: week[i].isToday ? FontWeight.w600 : FontWeight.w400,
+                          height: 1,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(
-                width: 40,
-                child: Text(day.weekdayLabel, style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
-              ),
-              Expanded(
-                child: Text(
-                  summary,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: day.items.isNotEmpty ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 20),
-            ],
+              ],
+            ),
           ),
-        ),
+          const SizedBox(width: 10),
+          // right day/summary column (w-72)
+          Expanded(
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    for (int i = 0; i < week.length; i++)
+                      Opacity(
+                        opacity: week[i].isPast ? 0.4 : 1.0,
+                        child: InkWell(
+                          onTap: () => onTapDay(week[i].id),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(i == 0 ? 16 : 0),
+                            topRight: Radius.circular(i == 0 ? 16 : 0),
+                            bottomLeft: Radius.circular(i == week.length - 1 ? 16 : 0),
+                            bottomRight: Radius.circular(i == week.length - 1 ? 16 : 0),
+                          ),
+                          child: Container(
+                            height: 48,
+                            
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(i == 0 ? 16 : 0),
+                                topRight: Radius.circular(i == 0 ? 16 : 0),
+                                bottomLeft: Radius.circular(i == week.length - 1 ? 16 : 0),
+                                bottomRight: Radius.circular(i == week.length - 1 ? 16 : 0),
+                              ),
+                            ),
+                            child: Stack(
+                              children: [
+                                // bottom divider (except last)
+                                if (i != week.length - 1)
+                                  Positioned(
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    child: SizedBox(
+                                      height: hairline,
+                                      child: const DecoratedBox(decoration: BoxDecoration(color: line)),
+                                    ),
+                                  ),
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 48,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 19),
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            week[i].weekdayLabel,
+                                            style: const TextStyle(
+                                              color: Color(0xFF737373), // neutral-500
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w400,
+                                              height: 1,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: hairline), // divider 공간(실선은 Stack이 그림)
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 12, right: 8),
+                                        child: Text(
+                                          week[i].items.isNotEmpty ? week[i].items.join(', ') : '',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            height: 1,
+                                            color: week[i].items.isNotEmpty ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 10),
+                                      child: Icon(Icons.chevron_right, color: Color(0xFFA3A3A3), size: 20),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                // ✅ 요일(48px) ↔ 메뉴 영역 사이 세로 구분선 (전체 높이)
+                Positioned(
+                  left: 48,
+                  top: 0,
+                  bottom: 0,
+                  child: SizedBox(
+                    width: hairline,
+                    child: const DecoratedBox(decoration: BoxDecoration(color: line)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -124,11 +124,21 @@ class MyApp extends StatelessWidget {
             child: Builder(
               builder: (context) {
                 final args = ModalRoute.of(context)?.settings.arguments;
-                final initialDate = args is String ? args : null;
+                String? initialDate;
+                int? groupId;
+                if (args is String) {
+                  initialDate = args;
+                } else if (args is Map) {
+                  final date = args['date'];
+                  final gid = args['groupId'];
+                  if (date is String) initialDate = date;
+                  if (gid is int) groupId = gid;
+                }
                 return ChangeNotifierProvider(
                   create: (_) => AdminMenuEditViewModel(
                     context.read<AdminRepository>(),
                     initialDate: initialDate,
+                    groupId: groupId,
                   ),
                   child: AdminMenuEditScreen(initialDate: initialDate),
                 );

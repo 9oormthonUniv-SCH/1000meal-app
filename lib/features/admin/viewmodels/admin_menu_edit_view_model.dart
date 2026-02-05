@@ -8,11 +8,17 @@ import '../models/menu_models.dart';
 import '../repositories/admin_repository.dart';
 
 class AdminMenuEditViewModel extends ChangeNotifier {
-  AdminMenuEditViewModel(this._repo, {String? initialDate})
-      : selectedId = initialDate?.isNotEmpty == true ? initialDate! : kstTodayYmd(),
+  AdminMenuEditViewModel(
+    this._repo, {
+    String? initialDate,
+    required this.groupId,
+  })  :
+        selectedId = initialDate?.isNotEmpty == true ? initialDate! : kstTodayYmd(),
         mondayId = mondayOfYmd(initialDate?.isNotEmpty == true ? initialDate! : kstTodayYmd());
 
   final AdminRepository _repo;
+
+  final int? groupId;
 
   String selectedId; // YYYY-MM-DD
   String mondayId; // YYYY-MM-DD (monday)
@@ -24,19 +30,30 @@ class AdminMenuEditViewModel extends ChangeNotifier {
   String? errorMessage;
 
   List<String> menus = [];
+  String groupName = '';
 
   bool showSavedToast = false;
   bool showFrequentMenu = false;
   List<FavoriteGroup> frequentMenus = [];
 
   Future<void> load() async {
+    if (groupId == null) {
+      menus = [];
+      groupName = '';
+      dirty = false;
+      loading = false;
+      notifyListeners();
+      return;
+    }
     loading = true;
     errorMessage = null;
     notifyListeners();
     try {
       final res = await _repo.getDailyMenu(date: selectedId);
-      // 임시 호환: group 기반 응답을 "메뉴 문자열 리스트"로 편집 UI에 바인딩.
-      menus = res?.flattenedMenus ?? <String>[];
+      final groups = res?.groups ?? const <DailyMenuGroupItem>[];
+      final group = groups.where((g) => g.id == groupId).cast<DailyMenuGroupItem?>().firstWhere((_) => true, orElse: () => null);
+      menus = group?.menus ?? <String>[];
+      groupName = group?.name ?? '';
       dirty = false;
     } catch (e) {
       if (e is ApiException) {
@@ -74,12 +91,13 @@ class AdminMenuEditViewModel extends ChangeNotifier {
   }
 
   Future<void> save() async {
+    if (groupId == null) return;
     if (saving) return;
     saving = true;
     errorMessage = null;
     notifyListeners();
     try {
-      await _repo.saveDailyMenu(date: selectedId, menus: menus);
+      await _repo.upsertMenuGroupMenus(groupId: groupId!, date: selectedId, menus: menus);
       dirty = false;
       showSavedToast = true;
     } catch (e) {
