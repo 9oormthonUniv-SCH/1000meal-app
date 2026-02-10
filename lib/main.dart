@@ -33,6 +33,12 @@ import 'features/store/data/store_api.dart';
 import 'features/store/repositories/store_repository.dart';
 import 'features/store/viewmodels/store_list_view_model.dart';
 import 'features/auth/models/role.dart';
+import 'features/notice/data/notice_api.dart';
+import 'features/notice/repositories/notice_repository.dart';
+import 'features/notice/viewmodels/notice_list_view_model.dart';
+import 'features/notice/screens/notice_create_screen.dart';
+import 'features/notice/screens/notice_detail_screen.dart';
+import 'features/notice/screens/notice_edit_screen.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
 import 'features/mypage/viewmodels/change_email_view_model.dart';
@@ -72,6 +78,8 @@ class MyApp extends StatelessWidget {
     final adminRepo = AdminRepository(authRepo: authRepo, api: adminApi);
     final storeApi = StoreApi(dioClient);
     final storeRepo = StoreRepository(storeApi);
+    final noticeApi = NoticeApi(dioClient);
+    final noticeRepo = NoticeRepository(authRepo: authRepo, api: noticeApi);
 
     return MultiProvider(
       providers: [
@@ -80,6 +88,8 @@ class MyApp extends StatelessWidget {
         Provider.value(value: adminRepo),
         Provider.value(value: storeApi),
         Provider.value(value: storeRepo),
+        Provider.value(value: noticeApi),
+        Provider.value(value: noticeRepo),
         ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => SignupViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
@@ -93,6 +103,12 @@ class MyApp extends StatelessWidget {
           create: (_) => AdminInventoryViewModel(adminRepo),
         ),
         ChangeNotifierProvider(create: (_) => StoreListViewModel(storeRepo)),
+        ChangeNotifierProvider(
+          create: (context) => NoticeListViewModel(
+            context.read<NoticeRepository>(),
+            context.read<AuthRepository>(),
+          ),
+        ),
       ],
       child: MaterialApp(
         title: '1000meal App',
@@ -174,6 +190,35 @@ class MyApp extends StatelessWidget {
             targetRole: Role.admin,
             child: AdminSettingsScreen(),
           ),
+          NoticeCreateScreen.routeName: (_) => const RoleGuard(
+            targetRole: Role.admin,
+            child: NoticeCreateScreen(),
+          ),
+          NoticeEditScreen.routeName: (context) => RoleGuard(
+            targetRole: Role.admin,
+            child: Builder(
+              builder: (context) {
+                final args = ModalRoute.of(context)?.settings.arguments;
+                final id = args is int ? args : int.tryParse((args ?? '').toString());
+                if (id == null) {
+                  return const Scaffold(
+                    body: SafeArea(child: Center(child: Text('잘못된 접근입니다.'))),
+                  );
+                }
+                return NoticeEditScreen(noticeId: id);
+              },
+            ),
+          ),
+          NoticeDetailScreen.routeName: (context) {
+            final args = ModalRoute.of(context)?.settings.arguments;
+            final id = args is int ? args : int.tryParse((args ?? '').toString());
+            if (id == null) {
+              return const Scaffold(
+                body: SafeArea(child: Center(child: Text('잘못된 접근입니다.'))),
+              );
+            }
+            return NoticeDetailScreen(noticeId: id);
+          },
           MyPageScreen.routeName: (_) =>
               const RoleGuard(targetRole: Role.student, child: MyPageScreen()),
           ChangeEmailScreen.routeName: (_) => const ChangeEmailScreen(),

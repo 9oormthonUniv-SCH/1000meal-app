@@ -7,6 +7,8 @@ import 'dart:async';
 
 import '../features/auth/models/role.dart';
 import '../features/auth/repositories/auth_repository.dart';
+import '../features/notice/viewmodels/notice_list_view_model.dart';
+import '../features/notice/widgets/notice_list_section.dart';
 import 'TabBar.dart';
 
 class HomePage extends StatefulWidget {
@@ -112,6 +114,10 @@ class _HomePageState extends State<HomePage> {
                     ),
                     IconButton(
                       onPressed: () {
+                        if (_selectedTab == HomeTabType.notice) {
+                          context.read<NoticeListViewModel>().refresh();
+                          return;
+                        }
                         if (kDebugMode) debugPrint("새로고침");
                       },
                       icon: const Icon(Icons.refresh, color: Colors.grey),
@@ -124,12 +130,14 @@ class _HomePageState extends State<HomePage> {
               ),
               Expanded(
                 //렌더링 분기 추가 필요
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    children: [StoreSection(), SizedBox(height: 20)],
-                  ),
-                ),
+                child: _selectedTab == HomeTabType.notice
+                    ? const NoticeListSection()
+                    : SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          children: [StoreSection(), SizedBox(height: 20)],
+                        ),
+                      ),
               ),
             ],
           );
