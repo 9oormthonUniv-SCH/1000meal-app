@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../screens/notice_create_screen.dart';
+import '../screens/notice_detail_screen.dart';
 import '../viewmodels/notice_list_view_model.dart';
 
 class NoticeListSection extends StatefulWidget {
@@ -69,8 +70,9 @@ class _NoticeListSectionState extends State<NoticeListSection> {
               children: [
                 InkWell(
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('공지 상세 화면은 다음 작업에서 연결됩니다.')),
+                    Navigator.of(context).pushNamed(
+                      NoticeDetailScreen.routeName,
+                      arguments: n.id,
                     );
                   },
                   child: Padding(
@@ -164,7 +166,7 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
+                        SizedBox(
                           width: 26,
                           height: 26,
                           child: Center(

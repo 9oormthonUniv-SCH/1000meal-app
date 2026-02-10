@@ -37,6 +37,8 @@ import 'features/notice/data/notice_api.dart';
 import 'features/notice/repositories/notice_repository.dart';
 import 'features/notice/viewmodels/notice_list_view_model.dart';
 import 'features/notice/screens/notice_create_screen.dart';
+import 'features/notice/screens/notice_detail_screen.dart';
+import 'features/notice/screens/notice_edit_screen.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
 import 'features/mypage/viewmodels/change_email_view_model.dart';
@@ -192,6 +194,31 @@ class MyApp extends StatelessWidget {
             targetRole: Role.admin,
             child: NoticeCreateScreen(),
           ),
+          NoticeEditScreen.routeName: (context) => RoleGuard(
+            targetRole: Role.admin,
+            child: Builder(
+              builder: (context) {
+                final args = ModalRoute.of(context)?.settings.arguments;
+                final id = args is int ? args : int.tryParse((args ?? '').toString());
+                if (id == null) {
+                  return const Scaffold(
+                    body: SafeArea(child: Center(child: Text('잘못된 접근입니다.'))),
+                  );
+                }
+                return NoticeEditScreen(noticeId: id);
+              },
+            ),
+          ),
+          NoticeDetailScreen.routeName: (context) {
+            final args = ModalRoute.of(context)?.settings.arguments;
+            final id = args is int ? args : int.tryParse((args ?? '').toString());
+            if (id == null) {
+              return const Scaffold(
+                body: SafeArea(child: Center(child: Text('잘못된 접근입니다.'))),
+              );
+            }
+            return NoticeDetailScreen(noticeId: id);
+          },
           MyPageScreen.routeName: (_) =>
               const RoleGuard(targetRole: Role.student, child: MyPageScreen()),
           ChangeEmailScreen.routeName: (_) => const ChangeEmailScreen(),
