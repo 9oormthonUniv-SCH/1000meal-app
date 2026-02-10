@@ -36,6 +36,7 @@ import 'features/auth/models/role.dart';
 import 'features/notice/data/notice_api.dart';
 import 'features/notice/repositories/notice_repository.dart';
 import 'features/notice/viewmodels/notice_list_view_model.dart';
+import 'features/notice/screens/notice_create_screen.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
 import 'features/mypage/viewmodels/change_email_view_model.dart';
@@ -186,6 +187,10 @@ class MyApp extends StatelessWidget {
           AdminSettingsScreen.routeName: (_) => const RoleGuard(
             targetRole: Role.admin,
             child: AdminSettingsScreen(),
+          ),
+          NoticeCreateScreen.routeName: (_) => const RoleGuard(
+            targetRole: Role.admin,
+            child: NoticeCreateScreen(),
           ),
           MyPageScreen.routeName: (_) =>
               const RoleGuard(targetRole: Role.student, child: MyPageScreen()),
