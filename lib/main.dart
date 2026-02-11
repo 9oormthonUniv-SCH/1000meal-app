@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart' as kakao;
 import 'package:provider/provider.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import 'common/config/app_config.dart';
 import 'common/dio/dio_client.dart';
@@ -55,12 +59,22 @@ Future<void> main() async {
   // AppConfig 로드
   await AppConfig.load();
 
+  // WebView 초기화
+  if (WebViewPlatform.instance == null) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      WebViewPlatform.instance = AndroidWebViewPlatform();
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      WebViewPlatform.instance = WebKitWebViewPlatform();
+    }
+  }
+
   // 카카오맵 초기화
   await dotenv.load(fileName: "assets/env/.env");
   String key = dotenv.env['KAKAO_MAP_JS_KEY'] ?? '키 없음';
   if (kDebugMode) {
     debugPrint("내 키 확인: $key");
   }
+  kakao.AuthRepository.initialize(appKey: key);
 
   runApp(const MyApp());
 }
