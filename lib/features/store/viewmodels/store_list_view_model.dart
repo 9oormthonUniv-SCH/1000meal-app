@@ -6,6 +6,14 @@ import '../models/store_models.dart';
 import '../repositories/store_repository.dart';
 
 class StoreListViewModel extends ChangeNotifier {
+  void toggleFavorite(StoreListItem store) {
+    final idx = items.indexWhere((e) => e.id == store.id);
+    if (idx != -1) {
+      items[idx] = items[idx].copyWith(isFavorite: !items[idx].isFavorite);
+      notifyListeners();
+    }
+  }
+
   StoreListViewModel(this._repo);
 
   final StoreRepository _repo;
