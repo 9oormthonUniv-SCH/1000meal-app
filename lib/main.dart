@@ -114,7 +114,8 @@ class MyApp extends StatelessWidget {
         title: '1000meal App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(useMaterial3: true),
-        initialRoute: LoginScreen.routeName,
+        // App entry should be the home (MainScreen). Login is an explicit flow.
+        initialRoute: '/',
         routes: {
           LoginScreen.routeName: (_) => const LoginScreen(),
           // 학생 로그인 성공 시 기본 진입(스펙: STUDENT → '/')
@@ -219,8 +220,8 @@ class MyApp extends StatelessWidget {
             }
             return NoticeDetailScreen(noticeId: id);
           },
-          MyPageScreen.routeName: (_) =>
-              const RoleGuard(targetRole: Role.student, child: MyPageScreen()),
+          // MyPage should be accessible for guests too (shows guest UI when not logged in).
+          MyPageScreen.routeName: (_) => const MyPageScreen(),
           ChangeEmailScreen.routeName: (_) => const ChangeEmailScreen(),
           // signup
           '/signup': (_) => const SignupIdScreen(),

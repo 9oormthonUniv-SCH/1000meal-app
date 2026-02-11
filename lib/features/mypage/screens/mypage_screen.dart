@@ -44,10 +44,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
       _hasToken = token != null && token.isNotEmpty;
 
       if (!_hasToken!) {
-        if (!widget.fromMainTab) {
-          Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
-          unawaited(context.read<MyPageViewModel>().logout());
-        }
         setState(() {});
         return;
       }
@@ -56,8 +52,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
       if (!mounted) return;
       final vm = context.read<MyPageViewModel>();
       if (vm.shouldRelogin) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
+        // Expired/invalid token: treat as guest instead of forcing navigation.
+        _hasToken = false;
         unawaited(vm.logout());
+        setState(() {});
       } else {
         setState(() {});
       }
