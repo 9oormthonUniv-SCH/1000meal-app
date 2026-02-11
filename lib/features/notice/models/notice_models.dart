@@ -14,6 +14,133 @@ DateTime? _tryParseDateTime(String? raw) {
   return DateTime.tryParse(s);
 }
 
+class NoticeImage {
+  final int id;
+  final String url;
+  final String originalName;
+  final String contentType;
+  final int size;
+
+  const NoticeImage({
+    required this.id,
+    required this.url,
+    required this.originalName,
+    required this.contentType,
+    required this.size,
+  });
+
+  factory NoticeImage.fromJson(Map<String, dynamic> json) {
+    return NoticeImage(
+      id: _toInt(json['id']),
+      url: (json['url'] ?? '').toString(),
+      originalName: (json['originalName'] ?? '').toString(),
+      contentType: (json['contentType'] ?? '').toString(),
+      size: _toInt(json['size']),
+    );
+  }
+}
+
+class NoticeImagePresign {
+  final String s3Key;
+  final String url;
+  final String uploadUrl;
+  final Map<String, String> headers;
+  final String originalName;
+  final String contentType;
+  final int size;
+
+  const NoticeImagePresign({
+    required this.s3Key,
+    required this.url,
+    required this.uploadUrl,
+    required this.headers,
+    required this.originalName,
+    required this.contentType,
+    required this.size,
+  });
+
+  factory NoticeImagePresign.fromJson(Map<String, dynamic> json) {
+    final rawHeaders = json['headers'];
+    final Map<String, String> headers = {};
+    if (rawHeaders is Map) {
+      for (final entry in rawHeaders.entries) {
+        headers[entry.key.toString()] = (entry.value ?? '').toString();
+      }
+    }
+    return NoticeImagePresign(
+      s3Key: (json['s3Key'] ?? '').toString(),
+      url: (json['url'] ?? '').toString(),
+      uploadUrl: (json['uploadUrl'] ?? '').toString(),
+      headers: headers,
+      originalName: (json['originalName'] ?? '').toString(),
+      contentType: (json['contentType'] ?? '').toString(),
+      size: _toInt(json['size']),
+    );
+  }
+}
+
+class NoticePresignFileRequest {
+  final String originalName;
+  final String contentType;
+  final int size;
+
+  const NoticePresignFileRequest({
+    required this.originalName,
+    required this.contentType,
+    required this.size,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'originalName': originalName,
+        'contentType': contentType,
+        'size': size,
+      };
+}
+
+class NoticePresignRequest {
+  final List<NoticePresignFileRequest> files;
+
+  const NoticePresignRequest({required this.files});
+
+  Map<String, dynamic> toJson() => {
+        'files': files.map((e) => e.toJson()).toList(growable: false),
+      };
+}
+
+class NoticeImagesUpsertItem {
+  final String s3Key;
+  final String url;
+  final String originalName;
+  final String contentType;
+  final int size;
+
+  const NoticeImagesUpsertItem({
+    required this.s3Key,
+    required this.url,
+    required this.originalName,
+    required this.contentType,
+    required this.size,
+  });
+
+  Map<String, dynamic> toJson() => {
+        's3Key': s3Key,
+        'url': url,
+        'originalName': originalName,
+        'contentType': contentType,
+        'size': size,
+      };
+}
+
+class NoticeImagesUpsertRequest {
+  final List<NoticeImagesUpsertItem> images;
+
+  const NoticeImagesUpsertRequest({required this.images});
+
+  Map<String, dynamic> toJson() => {
+        'images': images.map((e) => e.toJson()).toList(growable: false),
+      };
+}
+
 class Notice {
   final int id;
   final String title;
@@ -22,6 +149,7 @@ class Notice {
   final bool isPinned;
   final String createdAt; // ISO string
   final String updatedAt; // ISO string
+  final List<NoticeImage> images;
 
   Notice({
     required this.id,
@@ -31,12 +159,18 @@ class Notice {
     required this.isPinned,
     required this.createdAt,
     required this.updatedAt,
+    this.images = const <NoticeImage>[],
   });
 
   DateTime? get createdAtDateTime => _tryParseDateTime(createdAt);
   DateTime? get updatedAtDateTime => _tryParseDateTime(updatedAt);
 
   factory Notice.fromJson(Map<String, dynamic> json) {
+    final rawImages = json['images'];
+    final images = (rawImages is List)
+        ? rawImages.whereType<Map<String, dynamic>>().map(NoticeImage.fromJson).toList(growable: false)
+        : const <NoticeImage>[];
+
     return Notice(
       id: _toInt(json['id']),
       title: (json['title'] ?? '').toString(),
@@ -45,6 +179,7 @@ class Notice {
       isPinned: _toBool(json['isPinned']),
       createdAt: (json['createdAt'] ?? '').toString(),
       updatedAt: (json['updatedAt'] ?? '').toString(),
+      images: images,
     );
   }
 }

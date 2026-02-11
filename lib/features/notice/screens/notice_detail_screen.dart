@@ -186,6 +186,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
       final title = n?.title ?? '';
       final dateText = (n?.createdAt ?? '').length >= 10 ? (n!.createdAt.substring(0, 10)) : (n?.createdAt ?? '');
       final content = n?.content ?? '';
+      final images = n?.images ?? const <NoticeImage>[];
 
       // Use a single scrollable ListView to avoid semantics/layout edge cases
       // during route transitions.
@@ -209,7 +210,48 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
           ),
           const SizedBox(height: 14),
           const Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EB)),
-          const SizedBox(height: 16),
+          if (images.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            ...List.generate(images.length, (i) {
+              final img = images[i];
+              return Padding(
+                padding: EdgeInsets.only(bottom: i == images.length - 1 ? 0 : 12),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.network(
+                      img.url,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFFF3F4F6),
+                        alignment: Alignment.center,
+                        child: const Text(
+                          '이미지를 불러올 수 없습니다.',
+                          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                        ),
+                      ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: const Color(0xFFF3F4F6),
+                          alignment: Alignment.center,
+                          child: const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 16),
+          ] else ...[
+            const SizedBox(height: 16),
+          ],
           Text(
             content,
             style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280), height: 1.6),

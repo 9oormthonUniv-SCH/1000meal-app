@@ -54,5 +54,9 @@
 	</dict>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>공지 이미지 첨부를 위해 사진 라이브러리 접근이 필요합니다.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>공지 이미지 첨부를 위해 카메라 접근이 필요합니다.</string>
 </dict>
 </plist>

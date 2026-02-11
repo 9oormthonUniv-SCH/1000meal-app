@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
+import 'package:path/path.dart' as p;
+import 'dart:io';
 
 import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
@@ -21,10 +25,12 @@ class NoticeEditScreen extends StatefulWidget {
 class _NoticeEditScreenState extends State<NoticeEditScreen> {
   final _titleCtrl = TextEditingController();
   final _contentCtrl = TextEditingController();
+  final _picker = ImagePicker();
 
   bool _loading = false;
   bool _saving = false;
   String? _errorMessage;
+  final List<XFile> _pickedImages = <XFile>[];
 
   bool get _canSubmit {
     if (_saving || _loading) return false;
@@ -71,6 +77,15 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
           isPinned: false,
         ),
       );
+
+      final uploadedOk = await _uploadPickedImages(noticeId: widget.noticeId);
+      if (!mounted) return;
+      if (!uploadedOk) {
+        // keep screen; user can retry
+        setState(() => _saving = false);
+        return;
+      }
+
       if (!mounted) return;
       try {
         await context.read<NoticeListViewModel>().refresh();
@@ -86,6 +101,137 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  Future<void> _openImageSourceSheet() async {
+    if (_saving) return;
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (context) {
+        Widget item({required IconData icon, required String label, required VoidCallback onTap}) {
+          return ListTile(
+            leading: Icon(icon, color: const Color(0xFF111827)),
+            title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+            onTap: onTap,
+          );
+        }
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(width: 36, height: 4, decoration: BoxDecoration(color: const Color(0xFFE5E7EB), borderRadius: BorderRadius.circular(999))),
+              const SizedBox(height: 8),
+              item(
+                icon: Icons.photo_library_outlined,
+                label: '갤러리에서 선택',
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final images = await _picker.pickMultiImage(imageQuality: 90);
+                  if (!mounted) return;
+                  if (images.isEmpty) return;
+                  setState(() {
+                    _pickedImages.addAll(images);
+                    if (_pickedImages.length > 5) _pickedImages.removeRange(5, _pickedImages.length);
+                  });
+                  if (images.length > 5) {
+                    ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('이미지는 최대 5장까지 첨부할 수 있어요.')));
+                  }
+                },
+              ),
+              item(
+                icon: Icons.photo_camera_outlined,
+                label: '카메라로 촬영',
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final image = await _picker.pickImage(source: ImageSource.camera, imageQuality: 90);
+                  if (!mounted) return;
+                  if (image == null) return;
+                  setState(() {
+                    if (_pickedImages.length < 5) {
+                      _pickedImages.add(image);
+                    }
+                  });
+                  if (_pickedImages.length >= 5) {
+                    ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('이미지는 최대 5장까지 첨부할 수 있어요.')));
+                  }
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool> _uploadPickedImages({required int noticeId}) async {
+    if (_pickedImages.isEmpty) return true;
+
+    final repo = context.read<NoticeRepository>();
+    final fileRequests = <NoticePresignFileRequest>[];
+    for (final x in _pickedImages) {
+      final name = p.basename(x.path);
+      final mime = x.mimeType ?? lookupMimeType(x.path) ?? 'image/jpeg';
+      final size = await x.length();
+      fileRequests.add(NoticePresignFileRequest(originalName: name, contentType: mime, size: size));
+    }
+
+    final presigns = await repo.presignNoticeImages(
+      id: noticeId,
+      request: NoticePresignRequest(files: fileRequests),
+    );
+    if (presigns.length != _pickedImages.length) {
+      throw ApiException('이미지 업로드 준비에 실패했습니다.');
+    }
+
+    final successes = <NoticeImagesUpsertItem>[];
+    final failures = <String>[];
+
+    for (var i = 0; i < presigns.length; i++) {
+      final presign = presigns[i];
+      final file = _pickedImages[i];
+      try {
+        final bytes = await file.readAsBytes();
+        final headers = {...presign.headers};
+        headers.putIfAbsent('Content-Type', () => presign.contentType);
+        await repo.uploadToPresignedUrl(uploadUrl: presign.uploadUrl, bytes: bytes, headers: headers);
+        successes.add(
+          NoticeImagesUpsertItem(
+            s3Key: presign.s3Key,
+            url: presign.url,
+            originalName: presign.originalName,
+            contentType: presign.contentType,
+            size: presign.size,
+          ),
+        );
+      } catch (_) {
+        failures.add(presign.originalName);
+      }
+    }
+
+    if (successes.isNotEmpty) {
+      await repo.registerNoticeImages(
+        id: noticeId,
+        request: NoticeImagesUpsertRequest(images: successes),
+      );
+    }
+
+    if (failures.isNotEmpty) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('일부 이미지 업로드 실패: ${failures.take(2).join(', ')}${failures.length > 2 ? ' 외 ${failures.length - 2}개' : ''}')),
+      );
+      return false;
+    }
+    setState(() => _pickedImages.clear());
+    return true;
   }
 
   @override
@@ -170,11 +316,7 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                           ),
                           const SizedBox(height: 10),
                           InkWell(
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('사진 첨부는 다음 작업에서 연결됩니다.')),
-                              );
-                            },
+                            onTap: _openImageSourceSheet,
                             child: const Padding(
                               padding: EdgeInsets.symmetric(vertical: 10),
                               child: Row(
@@ -189,6 +331,53 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                               ),
                             ),
                           ),
+                          if (_pickedImages.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              height: 74,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: _pickedImages.length,
+                                separatorBuilder: (_, index) => const SizedBox(width: 10),
+                                itemBuilder: (context, index) {
+                                  final f = _pickedImages[index];
+                                  return Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.file(
+                                          File(f.path),
+                                          width: 74,
+                                          height: 74,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 6,
+                                        right: 6,
+                                        child: InkWell(
+                                          onTap: _saving
+                                              ? null
+                                              : () => setState(() {
+                                                    _pickedImages.removeAt(index);
+                                                  }),
+                                          child: Container(
+                                            width: 20,
+                                            height: 20,
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xAA111827),
+                                              borderRadius: BorderRadius.circular(999),
+                                            ),
+                                            child: const Icon(Icons.close, size: 14, color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                           const Spacer(),
                         ],
                       ),
