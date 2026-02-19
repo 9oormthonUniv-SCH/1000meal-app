@@ -95,30 +95,42 @@ class AdminApi {
     return MenuGroupMenusResponse.fromJson(_unwrapData(root));
   }
 
+  /// POST /stores/{storeId}/menus/daily/groups/{groupId}/stock
   Future<Map<String, dynamic>> updateMenuGroupStock({
+    required int storeId,
     required int groupId,
     required int stock,
     required String token,
   }) async {
     final root = await _client.post<Map<String, dynamic>>(
-      '/menus/daily/groups/$groupId/stock',
+      '/stores/$storeId/menus/daily/groups/$groupId/stock',
       headers: {'Authorization': 'Bearer $token'},
       data: {'stock': stock},
     );
     return _unwrapData(root);
   }
 
+  /// POST /stores/{storeId}/menus/daily/groups/{groupId}/deduct?deductionUnit=
   Future<Map<String, dynamic>> deductMenuGroupStock({
+    required int storeId,
     required int groupId,
     required DeductionUnit deductionUnit,
     required String token,
   }) async {
-    final root = await _client.patch<Map<String, dynamic>>(
-      '/menus/daily/groups/$groupId/deduct',
+    final root = await _client.post<Map<String, dynamic>>(
+      '/stores/$storeId/menus/daily/groups/$groupId/deduct',
       queryParameters: {'deductionUnit': deductionUnit.apiValue},
       headers: {'Authorization': 'Bearer $token'},
     );
     return _unwrapData(root);
+  }
+
+  /// DELETE /menus/daily/groups/{groupId}
+  Future<void> deleteMenuGroup({required int groupId, required String token}) async {
+    await _client.delete<Object>(
+      '/menus/daily/groups/$groupId',
+      headers: {'Authorization': 'Bearer $token'},
+    );
   }
 
   // ────────────────────────────────────────────────────────────────────────────

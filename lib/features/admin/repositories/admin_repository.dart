@@ -104,7 +104,13 @@ class AdminRepository {
     required int stock,
   }) async {
     final token = await _requireToken();
-    return _api.updateMenuGroupStock(groupId: groupId, stock: stock, token: token);
+    final storeId = await _requireStoreId(token);
+    return _api.updateMenuGroupStock(
+      storeId: storeId,
+      groupId: groupId,
+      stock: stock,
+      token: token,
+    );
   }
 
   Future<Map<String, dynamic>> deductMenuGroupStock({
@@ -112,7 +118,18 @@ class AdminRepository {
     required DeductionUnit deductionUnit,
   }) async {
     final token = await _requireToken();
-    return _api.deductMenuGroupStock(groupId: groupId, deductionUnit: deductionUnit, token: token);
+    final storeId = await _requireStoreId(token);
+    return _api.deductMenuGroupStock(
+      storeId: storeId,
+      groupId: groupId,
+      deductionUnit: deductionUnit,
+      token: token,
+    );
+  }
+
+  Future<void> deleteMenuGroup({required int groupId}) async {
+    final token = await _requireToken();
+    await _api.deleteMenuGroup(groupId: groupId, token: token);
   }
 
   // 자주 쓰는 메뉴 API (menu-presets: storeId + groupId = 일일 메뉴 그룹)
