@@ -41,5 +41,29 @@ class NoticeRepository {
     final token = await _requireToken();
     await _api.deleteNotice(id: id, token: token);
   }
+
+  Future<List<NoticeImagePresign>> presignNoticeImages({
+    required int id,
+    required NoticePresignRequest request,
+  }) async {
+    final token = await _requireToken();
+    return _api.presignNoticeImages(id: id, request: request, token: token);
+  }
+
+  Future<List<NoticeImage>> registerNoticeImages({
+    required int id,
+    required NoticeImagesUpsertRequest request,
+  }) async {
+    final token = await _requireToken();
+    return _api.registerNoticeImages(id: id, request: request, token: token);
+  }
+
+  Future<void> uploadToPresignedUrl({
+    required String uploadUrl,
+    required List<int> bytes,
+    required Map<String, String> headers,
+  }) async {
+    await _api.uploadToPresignedUrl(uploadUrl: uploadUrl, bytes: bytes, headers: headers);
+  }
 }
 

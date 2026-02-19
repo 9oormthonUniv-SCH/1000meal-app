@@ -1,5 +1,7 @@
 import '../../../common/dio/api_exception.dart';
 import '../../../common/dio/dio_client.dart';
+import 'package:dio/dio.dart';
+import 'dart:typed_data';
 import '../models/notice_models.dart';
 
 class NoticeApi {
@@ -82,6 +84,73 @@ class NoticeApi {
       '/notices/$id',
       headers: {'Authorization': 'Bearer $token'},
     );
+  }
+
+  Future<List<NoticeImagePresign>> presignNoticeImages({
+    required int id,
+    required NoticePresignRequest request,
+    required String token,
+  }) async {
+    final root = await _client.post<Object>(
+      '/notices/$id/images/presign',
+      headers: {'Authorization': 'Bearer $token'},
+      data: request.toJson(),
+    );
+    final data = _unwrapData(root);
+    final rawList = _extractList(data);
+    return rawList
+        .whereType<Map<String, dynamic>>()
+        .map(NoticeImagePresign.fromJson)
+        .toList(growable: false);
+  }
+
+  Future<List<NoticeImage>> registerNoticeImages({
+    required int id,
+    required NoticeImagesUpsertRequest request,
+    required String token,
+  }) async {
+    final root = await _client.post<Object>(
+      '/notices/$id/images',
+      headers: {'Authorization': 'Bearer $token'},
+      data: request.toJson(),
+    );
+    final data = _unwrapData(root);
+    final rawList = _extractList(data);
+    return rawList
+        .whereType<Map<String, dynamic>>()
+        .map(NoticeImage.fromJson)
+        .toList(growable: false);
+  }
+
+  /// Uploads bytes to an S3 presigned URL (full URL).
+  Future<void> uploadToPresignedUrl({
+    required String uploadUrl,
+    required List<int> bytes,
+    required Map<String, String> headers,
+  }) async {
+    try {
+      final dio = Dio(
+        BaseOptions(
+          // Do not use API baseUrl
+          connectTimeout: const Duration(milliseconds: 20000),
+          sendTimeout: const Duration(milliseconds: 20000),
+          receiveTimeout: const Duration(milliseconds: 20000),
+          responseType: ResponseType.plain,
+          followRedirects: true,
+        ),
+      );
+      await dio.put<void>(
+        uploadUrl,
+        data: Uint8List.fromList(bytes),
+        options: Options(headers: headers),
+      );
+    } on DioException catch (e) {
+      throw ApiException(
+        e.message ?? '이미지 업로드에 실패했습니다.',
+        statusCode: e.response?.statusCode,
+        details: e.response?.data,
+      );
+    }
   }
 }
 
