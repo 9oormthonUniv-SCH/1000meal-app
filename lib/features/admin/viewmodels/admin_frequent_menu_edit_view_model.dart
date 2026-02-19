@@ -5,10 +5,11 @@ import '../../../common/dio/api_exception.dart';
 import '../repositories/admin_repository.dart';
 
 class AdminFrequentMenuEditViewModel extends ChangeNotifier {
-  AdminFrequentMenuEditViewModel(this._repo, {this.groupId});
+  AdminFrequentMenuEditViewModel(this._repo, {required this.groupId, this.presetId});
 
   final AdminRepository _repo;
-  final int? groupId; // null이면 새로 만들기, 있으면 수정
+  final int groupId; // 일일 메뉴 그룹 ID
+  final int? presetId; // null이면 새로 만들기, 있으면 수정(로드 후 저장 시 삭제+생성)
 
   bool loading = false;
   bool saving = false;
@@ -21,15 +22,13 @@ class AdminFrequentMenuEditViewModel extends ChangeNotifier {
   bool showSavedToast = false;
 
   Future<void> init() async {
-    if (groupId == null) return; // 새로 만들기는 로딩 불필요
+    if (presetId == null) return; // 새로 만들기는 로딩 불필요
     loading = true;
     errorMessage = null;
     notifyListeners();
     try {
-      final res = await _repo.getFavoriteGroup(groupId: groupId!);
-      if (res.groups.isNotEmpty) {
-        menus = List<String>.from(res.groups.first.menus);
-      }
+      final detail = await _repo.getMenuPresetDetail(groupId: groupId, presetId: presetId!);
+      menus = List<String>.from(detail.menus);
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);
@@ -67,11 +66,10 @@ class AdminFrequentMenuEditViewModel extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
     try {
-      if (groupId == null) {
-        await _repo.createFavorite(menus: menus);
-      } else {
-        await _repo.updateFavorite(groupId: groupId!, menus: menus);
+      if (presetId != null) {
+        await _repo.deleteMenuPreset(groupId: groupId, presetId: presetId!);
       }
+      await _repo.createMenuPreset(groupId: groupId, menus: menus);
       dirty = false;
       showSavedToast = true;
       notifyListeners();

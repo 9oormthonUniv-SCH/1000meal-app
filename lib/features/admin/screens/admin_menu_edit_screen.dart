@@ -112,7 +112,21 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: ElevatedButton(
-                onPressed: (vm.saving || vm.groupId == null) ? null : () => context.read<AdminMenuEditViewModel>().save(),
+                onPressed: (vm.saving || vm.groupId == null)
+                  ? null
+                  : () async {
+                      final editVm = context.read<AdminMenuEditViewModel>();
+                      await editVm.save();
+                      if (!context.mounted) return;
+                      if (editVm.errorMessage != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(editVm.errorMessage!),
+                            backgroundColor: const Color(0xFFEF4444),
+                          ),
+                        );
+                      }
+                    },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF97316),
                   foregroundColor: Colors.white,
@@ -132,6 +146,16 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
               color: Colors.white,
               child: Column(
                 children: [
+                  if (vm.errorMessage != null)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      color: const Color(0xFFFFF1F2),
+                      child: Text(
+                        vm.errorMessage!,
+                        style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                      ),
+                    ),
                   _WeekNavigator(
                     mondayId: vm.mondayId,
                     selectedId: vm.selectedId,
@@ -232,7 +256,9 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                                               children: [
                                                 Expanded(
                                                   child: Text(
-                                                    vm.frequentMenus[i].menus.join(', '),
+                                                    vm.frequentMenus[i].preview.isNotEmpty
+                                                        ? vm.frequentMenus[i].preview
+                                                        : vm.frequentMenus[i].menus.join(', '),
                                                     style: const TextStyle(fontSize: 14, color: Color(0xFF374151)),
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,

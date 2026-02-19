@@ -1,3 +1,4 @@
+import '../../../common/dio/api_exception.dart';
 import '../../../common/dio/dio_client.dart';
 
 import '../models/menu_models.dart';
@@ -79,13 +80,14 @@ class AdminApi {
   }
 
   Future<MenuGroupMenusResponse> upsertMenuGroupMenus({
+    required int storeId,
     required int groupId,
     required String date,
     required List<String> menus,
     required String token,
   }) async {
     final root = await _client.post<Map<String, dynamic>>(
-      '/menus/daily/groups/$groupId/menus',
+      '/stores/$storeId/menus/daily/groups/$groupId/menus',
       queryParameters: {'date': date},
       headers: {'Authorization': 'Bearer $token'},
       data: {'menus': menus},
@@ -146,44 +148,66 @@ class AdminApi {
     );
   }
 
-  // 자주 쓰는 메뉴 API
-  Future<FavoritesResponse> getFavorites({required int storeId, required String token}) async {
+  // 자주 쓰는 메뉴 API (menu-presets)
+  // GET .../menu-presets → 200 목록, 404 MENU_PRESET_EMPTY 시 빈 목록 반환
+  Future<List<MenuPreset>> getMenuPresets({
+    required int storeId,
+    required int groupId,
+    required String token,
+  }) async {
+    try {
+      final root = await _client.get<Map<String, dynamic>>(
+        '/admin/stores/$storeId/menus/daily/groups/$groupId/menu-presets',
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      final data = root['data'];
+      final list = data is List ? data : <dynamic>[];
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map(MenuPreset.fromJson)
+          .toList(growable: false);
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) return []; // MENU_PRESET_EMPTY
+      rethrow;
+    }
+  }
+
+  Future<MenuPresetDetail> getMenuPresetDetail({
+    required int storeId,
+    required int groupId,
+    required int presetId,
+    required String token,
+  }) async {
     final root = await _client.get<Map<String, dynamic>>(
-      '/favorites/store/$storeId',
+      '/admin/stores/$storeId/menus/daily/groups/$groupId/menu-presets/$presetId',
       headers: {'Authorization': 'Bearer $token'},
     );
-    return FavoritesResponse.fromJson(_unwrapData(root));
+    return MenuPresetDetail.fromJson(_unwrapData(root));
   }
 
-  Future<FavoritesResponse> getFavoriteGroup({required int groupId, required String token}) async {
-    final root = await _client.get<Map<String, dynamic>>(
-      '/favorites/group/$groupId',
+  Future<MenuPresetDetail> createMenuPreset({
+    required int storeId,
+    required int groupId,
+    required List<String> menus,
+    required String token,
+  }) async {
+    final root = await _client.post<Map<String, dynamic>>(
+      '/admin/stores/$storeId/menus/daily/groups/$groupId/menu-presets',
       headers: {'Authorization': 'Bearer $token'},
+      data: {'menus': menus},
     );
-    return FavoritesResponse.fromJson(_unwrapData(root));
+    return MenuPresetDetail.fromJson(_unwrapData(root));
   }
 
-  Future<void> createFavorite({required int storeId, required List<String> menus, required String token}) async {
-    await _client.post<Object>(
-      '/favorites/$storeId',
-      headers: {'Authorization': 'Bearer $token'},
-      data: menus,
-    );
-  }
-
-  Future<void> updateFavorite({required int groupId, required List<String> menus, required String token}) async {
-    await _client.put<Object>(
-      '/favorites/$groupId',
-      headers: {'Authorization': 'Bearer $token'},
-      data: menus,
-    );
-  }
-
-  Future<void> deleteFavorites({required int storeId, required List<int> groupIds, required String token}) async {
+  Future<void> deleteMenuPreset({
+    required int storeId,
+    required int groupId,
+    required int presetId,
+    required String token,
+  }) async {
     await _client.delete<Object>(
-      '/favorites/$storeId/groups',
+      '/admin/stores/$storeId/menus/daily/groups/$groupId/menu-presets/$presetId',
       headers: {'Authorization': 'Bearer $token'},
-      data: groupIds,
     );
   }
 }

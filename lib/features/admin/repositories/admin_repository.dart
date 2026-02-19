@@ -89,7 +89,14 @@ class AdminRepository {
     required List<String> menus,
   }) async {
     final token = await _requireToken();
-    return _api.upsertMenuGroupMenus(groupId: groupId, date: date, menus: menus, token: token);
+    final storeId = await _requireStoreId(token);
+    return _api.upsertMenuGroupMenus(
+      storeId: storeId,
+      groupId: groupId,
+      date: date,
+      menus: menus,
+      token: token,
+    );
   }
 
   Future<Map<String, dynamic>> updateMenuGroupStock({
@@ -108,33 +115,50 @@ class AdminRepository {
     return _api.deductMenuGroupStock(groupId: groupId, deductionUnit: deductionUnit, token: token);
   }
 
-  // 자주 쓰는 메뉴 API
-  Future<FavoritesResponse> getFavorites() async {
+  // 자주 쓰는 메뉴 API (menu-presets: storeId + groupId = 일일 메뉴 그룹)
+  Future<List<MenuPreset>> getMenuPresets({required int groupId}) async {
     final token = await _requireToken();
     final storeId = await _requireStoreId(token);
-    return _api.getFavorites(storeId: storeId, token: token);
+    return _api.getMenuPresets(storeId: storeId, groupId: groupId, token: token);
   }
 
-  Future<FavoritesResponse> getFavoriteGroup({required int groupId}) async {
-    final token = await _requireToken();
-    return _api.getFavoriteGroup(groupId: groupId, token: token);
-  }
-
-  Future<void> createFavorite({required List<String> menus}) async {
+  Future<MenuPresetDetail> getMenuPresetDetail({required int groupId, required int presetId}) async {
     final token = await _requireToken();
     final storeId = await _requireStoreId(token);
-    await _api.createFavorite(storeId: storeId, menus: menus, token: token);
+    return _api.getMenuPresetDetail(
+      storeId: storeId,
+      groupId: groupId,
+      presetId: presetId,
+      token: token,
+    );
   }
 
-  Future<void> updateFavorite({required int groupId, required List<String> menus}) async {
-    final token = await _requireToken();
-    await _api.updateFavorite(groupId: groupId, menus: menus, token: token);
-  }
-
-  Future<void> deleteFavorites({required List<int> groupIds}) async {
+  Future<MenuPresetDetail> createMenuPreset({required int groupId, required List<String> menus}) async {
     final token = await _requireToken();
     final storeId = await _requireStoreId(token);
-    await _api.deleteFavorites(storeId: storeId, groupIds: groupIds, token: token);
+    return _api.createMenuPreset(
+      storeId: storeId,
+      groupId: groupId,
+      menus: menus,
+      token: token,
+    );
+  }
+
+  Future<void> deleteMenuPreset({required int groupId, required int presetId}) async {
+    final token = await _requireToken();
+    final storeId = await _requireStoreId(token);
+    await _api.deleteMenuPreset(
+      storeId: storeId,
+      groupId: groupId,
+      presetId: presetId,
+      token: token,
+    );
+  }
+
+  /// 메뉴 수정 화면용: 해당 그룹의 프리셋 목록을 FavoriteGroup 형태로 (preview만)
+  Future<FavoritesResponse> getFavoritesForGroup({required int groupId}) async {
+    final presets = await getMenuPresets(groupId: groupId);
+    return FavoritesResponse.fromPresetList(presets);
   }
 }
 

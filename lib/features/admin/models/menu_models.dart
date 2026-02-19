@@ -241,16 +241,80 @@ extension DeductionUnitValue on DeductionUnit {
   }
 }
 
+/// 자주 쓰는 메뉴 프리셋 목록 항목 (GET .../menu-presets)
+class MenuPreset {
+  final int id;
+  final String preview;
+  final String createdAt;
+  final String updatedAt;
+
+  MenuPreset({
+    required this.id,
+    required this.preview,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory MenuPreset.fromJson(Map<String, dynamic> json) {
+    return MenuPreset(
+      id: _toInt(json['id']),
+      preview: (json['preview'] ?? '').toString(),
+      createdAt: (json['createdAt'] ?? '').toString(),
+      updatedAt: (json['updatedAt'] ?? '').toString(),
+    );
+  }
+}
+
+/// 자주 쓰는 메뉴 프리셋 상세 (GET .../menu-presets/{presetId}, POST 응답)
+class MenuPresetDetail {
+  final int id;
+  final int storeId;
+  final int groupId;
+  final List<String> menus;
+  final String preview;
+  final String createdAt;
+  final String updatedAt;
+
+  MenuPresetDetail({
+    required this.id,
+    required this.storeId,
+    required this.groupId,
+    required this.menus,
+    required this.preview,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory MenuPresetDetail.fromJson(Map<String, dynamic> json) {
+    final rawMenus = json['menus'];
+    final menus = rawMenus is List
+        ? rawMenus.map((e) => e.toString()).toList(growable: false)
+        : <String>[];
+
+    return MenuPresetDetail(
+      id: _toInt(json['id']),
+      storeId: _toInt(json['storeId']),
+      groupId: _toInt(json['groupId']),
+      menus: menus,
+      preview: (json['preview'] ?? '').toString(),
+      createdAt: (json['createdAt'] ?? '').toString(),
+      updatedAt: (json['updatedAt'] ?? '').toString(),
+    );
+  }
+}
+
+/// UI 호환용: 목록/선택에서 id + menus 표시 (MenuPresetDetail 또는 목록용 래퍼)
 class FavoriteGroup {
   final int groupId;
   final List<String> menu;
+  final String preview;
 
   FavoriteGroup({
     required this.groupId,
     required this.menu,
+    this.preview = '',
   });
 
-  /// 명확한 네이밍을 위한 별칭(기존 필드와 동일 의미)
   int get id => groupId;
   List<String> get menus => menu;
 
@@ -261,7 +325,12 @@ class FavoriteGroup {
     return FavoriteGroup(
       groupId: _toInt(json['groupId']),
       menu: menus,
+      preview: (json['preview'] ?? '').toString(),
     );
+  }
+
+  factory FavoriteGroup.fromPresetDetail(MenuPresetDetail d) {
+    return FavoriteGroup(groupId: d.id, menu: d.menus, preview: d.preview);
   }
 }
 
@@ -276,6 +345,14 @@ class FavoritesResponse {
         ? list.whereType<Map>().map((e) => FavoriteGroup.fromJson(e.cast<String, dynamic>())).toList(growable: false)
         : <FavoriteGroup>[];
 
+    return FavoritesResponse(groups: groups);
+  }
+
+  /// menu-presets 목록을 FavoriteGroup 형태로 변환 (preview만 있음, 상세는 별도 조회)
+  static FavoritesResponse fromPresetList(List<MenuPreset> presets) {
+    final groups = presets
+        .map((p) => FavoriteGroup(groupId: p.id, menu: const [], preview: p.preview))
+        .toList(growable: false);
     return FavoritesResponse(groups: groups);
   }
 }

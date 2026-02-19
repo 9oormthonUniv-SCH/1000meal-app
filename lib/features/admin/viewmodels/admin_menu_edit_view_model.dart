@@ -119,8 +119,9 @@ class AdminMenuEditViewModel extends ChangeNotifier {
   }
 
   Future<bool> loadFrequentMenus() async {
+    if (groupId == null) return false;
     try {
-      final res = await _repo.getFavorites();
+      final res = await _repo.getFavoritesForGroup(groupId: groupId!);
       frequentMenus = res.groups;
       notifyListeners();
       return res.groups.isNotEmpty;
@@ -154,11 +155,17 @@ class AdminMenuEditViewModel extends ChangeNotifier {
     }
   }
 
-  void selectFrequentMenu(FavoriteGroup group) {
-    menus = [...menus, ...group.menus];
-    dirty = true;
-    showFrequentMenu = false;
-    notifyListeners();
+  Future<void> selectFrequentMenu(FavoriteGroup group) async {
+    if (groupId == null) return;
+    try {
+      final detail = await _repo.getMenuPresetDetail(groupId: groupId!, presetId: group.id);
+      menus = [...menus, ...detail.menus];
+      dirty = true;
+      showFrequentMenu = false;
+      notifyListeners();
+    } catch (_) {
+      // 실패 시 무시
+    }
   }
 
   Future<void> selectDate(String ymd) async {

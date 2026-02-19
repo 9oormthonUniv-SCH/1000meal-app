@@ -8,7 +8,9 @@ import 'admin_frequent_menu_edit_screen.dart';
 class AdminFrequentMenuScreen extends StatefulWidget {
   static const routeName = '/admin/menu/frequent';
 
-  const AdminFrequentMenuScreen({super.key});
+  final int groupId; // 일일 메뉴 그룹 ID (필수)
+
+  const AdminFrequentMenuScreen({super.key, required this.groupId});
 
   @override
   State<AdminFrequentMenuScreen> createState() => _AdminFrequentMenuScreenState();
@@ -130,7 +132,14 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
       floatingActionButton: _selectMode
           ? null
           : FloatingActionButton(
-              onPressed: () => Navigator.of(context).pushNamed(AdminFrequentMenuEditScreen.routeName),
+              onPressed: () async {
+                    await Navigator.of(context).pushNamed(
+                      AdminFrequentMenuEditScreen.routeName,
+                      arguments: {'groupId': widget.groupId},
+                    );
+                    if (!context.mounted) return;
+                    context.read<AdminFrequentMenuViewModel>().refresh();
+                  },
               backgroundColor: const Color(0xFFD1D5DB),
               child: const Icon(Icons.add, color: Colors.white),
             ),
@@ -156,14 +165,16 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                                   group: group,
                                   selectMode: _selectMode,
                                   isSelected: _selectedIds.contains(group.id),
-                                  onTap: () {
+                                  onTap: () async {
                                     if (_selectMode) {
                                       _toggleSelect(group.id);
                                     } else {
-                                      Navigator.of(context).pushNamed(
+                                      await Navigator.of(context).pushNamed(
                                         AdminFrequentMenuEditScreen.routeName,
-                                        arguments: group.id,
+                                        arguments: {'groupId': widget.groupId, 'presetId': group.id},
                                       );
+                                      if (!context.mounted) return;
+                                      context.read<AdminFrequentMenuViewModel>().refresh();
                                     }
                                   },
                                 );
@@ -217,7 +228,7 @@ class _FrequentMenuRow extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  group.menus.join(', '),
+                  group.preview.isNotEmpty ? group.preview : group.menus.join(', '),
                   style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

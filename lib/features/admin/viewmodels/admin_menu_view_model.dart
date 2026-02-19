@@ -29,6 +29,14 @@ class AdminMenuViewModel extends ChangeNotifier {
 
   String todayYmd = kstTodayYmd();
 
+  /// 메뉴 수정 화면에서 저장 후 돌아왔을 때 주간 데이터 다시 로드
+  Future<void> refreshAfterEdit() async {
+    weeks.clear();
+    _loadedMondays.clear();
+    _rawWeeksByMonday.clear();
+    await init();
+  }
+
   Future<void> init() async {
     if (weeks.isNotEmpty) return;
     loading = true;

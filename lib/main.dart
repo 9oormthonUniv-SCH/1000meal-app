@@ -179,10 +179,23 @@ class MyApp extends StatelessWidget {
           ),
           AdminFrequentMenuScreen.routeName: (context) => RoleGuard(
             targetRole: Role.admin,
-            child: ChangeNotifierProvider(
-              create: (_) =>
-                  AdminFrequentMenuViewModel(context.read<AdminRepository>()),
-              child: const AdminFrequentMenuScreen(),
+            child: Builder(
+              builder: (context) {
+                final args = ModalRoute.of(context)?.settings.arguments;
+                final groupId = args is int ? args : (args is Map ? args['groupId'] as int? : null);
+                if (groupId == null) {
+                  return const Scaffold(
+                    body: Center(child: Text('메뉴 그룹을 선택한 뒤 자주 쓰는 메뉴를 이용해 주세요')),
+                  );
+                }
+                return ChangeNotifierProvider(
+                  create: (_) => AdminFrequentMenuViewModel(
+                    context.read<AdminRepository>(),
+                    groupId: groupId,
+                  ),
+                  child: AdminFrequentMenuScreen(groupId: groupId),
+                );
+              },
             ),
           ),
           AdminFrequentMenuEditScreen.routeName: (context) => RoleGuard(
@@ -190,13 +203,24 @@ class MyApp extends StatelessWidget {
             child: Builder(
               builder: (context) {
                 final args = ModalRoute.of(context)?.settings.arguments;
-                final groupId = args is int ? args : null;
+                int? groupId;
+                int? presetId;
+                if (args is Map) {
+                  groupId = args['groupId'] as int?;
+                  presetId = args['presetId'] as int?;
+                }
+                if (groupId == null) {
+                  return const Scaffold(
+                    body: Center(child: Text('메뉴 그룹 정보가 없습니다')),
+                  );
+                }
                 return ChangeNotifierProvider(
                   create: (_) => AdminFrequentMenuEditViewModel(
                     context.read<AdminRepository>(),
-                    groupId: groupId,
+                    groupId: groupId!,
+                    presetId: presetId,
                   ),
-                  child: AdminFrequentMenuEditScreen(groupId: groupId),
+                  child: AdminFrequentMenuEditScreen(groupId: groupId, presetId: presetId),
                 );
               },
             ),

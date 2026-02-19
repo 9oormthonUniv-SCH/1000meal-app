@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../common/utils/week_kst.dart';
 import '../models/admin_menu_week.dart';
+import 'admin_frequent_menu_screen.dart';
 import 'admin_menu_edit_screen.dart';
 import '../viewmodels/admin_menu_view_model.dart';
 
@@ -68,7 +69,16 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: TextButton(
-              onPressed: () => Navigator.of(context).pushNamed('/admin/menu/frequent'),
+              onPressed: () {
+                final gid = vm.selectedGroupId ?? (vm.groups.isNotEmpty ? vm.groups.first.id : null);
+                if (gid == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('먼저 메뉴 그룹을 선택해 주세요')),
+                  );
+                  return;
+                }
+                Navigator.of(context).pushNamed(AdminFrequentMenuScreen.routeName, arguments: gid);
+              },
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFFFB923C), // orange-400
                 foregroundColor: Colors.white,
@@ -153,13 +163,15 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                             key: key,
                             child: _WeekCard(
                               week: week,
-                              onTapDay: (ymd) {
+                              onTapDay: (ymd) async {
                                 final groupId = vm.selectedGroupId;
                                 if (groupId == null) return;
-                                Navigator.of(context).pushNamed(
+                                await Navigator.of(context).pushNamed(
                                   AdminMenuEditScreen.routeName,
                                   arguments: {'date': ymd, 'groupId': groupId},
                                 );
+                                if (!context.mounted) return;
+                                await context.read<AdminMenuViewModel>().refreshAfterEdit();
                               },
                             ),
                           );

@@ -8,9 +8,10 @@ import '../viewmodels/admin_frequent_menu_edit_view_model.dart';
 class AdminFrequentMenuEditScreen extends StatefulWidget {
   static const routeName = '/admin/menu/frequent/edit';
 
-  final int? groupId; // null이면 새로 만들기, 있으면 수정
+  final int groupId; // 일일 메뉴 그룹 ID (필수)
+  final int? presetId; // null이면 새로 만들기, 있으면 수정
 
-  const AdminFrequentMenuEditScreen({super.key, this.groupId});
+  const AdminFrequentMenuEditScreen({super.key, required this.groupId, this.presetId});
 
   @override
   State<AdminFrequentMenuEditScreen> createState() => _AdminFrequentMenuEditScreenState();
@@ -115,7 +116,7 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
           toolbarHeight: 48,
           backgroundColor: Colors.white,
           elevation: 0,
-          title: Text(widget.groupId == null ? '자주 쓰는 메뉴 추가' : '자주 쓰는 메뉴 수정',
+          title: Text(widget.presetId == null ? '자주 쓰는 메뉴 추가' : '자주 쓰는 메뉴 수정',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
           centerTitle: true,
           leading: IconButton(
@@ -131,7 +132,11 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: ElevatedButton(
-                onPressed: vm.saving ? null : () => context.read<AdminFrequentMenuEditViewModel>().save(),
+                onPressed: vm.saving
+                    ? null
+                    : () async {
+                        await context.read<AdminFrequentMenuEditViewModel>().save();
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF97316),
                   foregroundColor: Colors.white,

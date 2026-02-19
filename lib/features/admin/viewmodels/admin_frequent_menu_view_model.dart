@@ -6,9 +6,10 @@ import '../models/menu_models.dart';
 import '../repositories/admin_repository.dart';
 
 class AdminFrequentMenuViewModel extends ChangeNotifier {
-  AdminFrequentMenuViewModel(this._repo);
+  AdminFrequentMenuViewModel(this._repo, {required this.groupId});
 
   final AdminRepository _repo;
+  final int groupId;
 
   bool loading = false;
   String? errorMessage;
@@ -19,8 +20,8 @@ class AdminFrequentMenuViewModel extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
     try {
-      final res = await _repo.getFavorites();
-      groups = res.groups;
+      final presets = await _repo.getMenuPresets(groupId: groupId);
+      groups = FavoritesResponse.fromPresetList(presets).groups;
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);
@@ -33,13 +34,15 @@ class AdminFrequentMenuViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteGroups(List<int> groupIds) async {
+  Future<void> deleteGroups(List<int> presetIds) async {
     loading = true;
     errorMessage = null;
     notifyListeners();
     try {
-      await _repo.deleteFavorites(groupIds: groupIds);
-      groups = groups.where((g) => !groupIds.contains(g.id)).toList();
+      for (final id in presetIds) {
+        await _repo.deleteMenuPreset(groupId: groupId, presetId: id);
+      }
+      groups = groups.where((g) => !presetIds.contains(g.id)).toList();
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);
