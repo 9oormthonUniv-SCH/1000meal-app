@@ -62,8 +62,9 @@ class NoticeRepository {
     required String uploadUrl,
     required List<int> bytes,
     required Map<String, String> headers,
+    String method = 'PUT',
   }) async {
-    await _api.uploadToPresignedUrl(uploadUrl: uploadUrl, bytes: bytes, headers: headers);
+    await _api.uploadToPresignedUrl(uploadUrl: uploadUrl, bytes: bytes, headers: headers, method: method);
   }
 }
 

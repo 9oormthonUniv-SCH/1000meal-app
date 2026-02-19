@@ -103,16 +103,35 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                n.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF111827),
-                                  height: 1.3,
-                                ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      n.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF111827),
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ),
+                                  if (n.images.isNotEmpty) ...[
+                                    const SizedBox(width: 6),
+                                    SvgPicture.asset(
+                                      'assets/icon/clip.svg',
+                                      width: 18,
+                                      height: 18,
+                                      colorFilter: const ColorFilter.mode(
+                                        Color(0xFF9CA3AF),
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                               const SizedBox(height: 6),
                               Text(

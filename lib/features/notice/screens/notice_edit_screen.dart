@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -201,7 +202,7 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
         final bytes = await file.readAsBytes();
         final headers = {...presign.headers};
         headers.putIfAbsent('Content-Type', () => presign.contentType);
-        await repo.uploadToPresignedUrl(uploadUrl: presign.uploadUrl, bytes: bytes, headers: headers);
+        await repo.uploadToPresignedUrl(uploadUrl: presign.uploadUrl, bytes: bytes, headers: headers, method: presign.method);
         successes.add(
           NoticeImagesUpsertItem(
             s3Key: presign.s3Key,
@@ -211,16 +212,34 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
             size: presign.size,
           ),
         );
-      } catch (_) {
+      } catch (e) {
+        if (kDebugMode) {
+          final code = e is ApiException ? e.statusCode : null;
+          final body = e is ApiException ? e.details : null;
+          debugPrint('[S3 업로드 실패] originalName=${presign.originalName} statusCode=$code details=$body message=$e');
+        }
         failures.add(presign.originalName);
       }
     }
 
     if (successes.isNotEmpty) {
-      await repo.registerNoticeImages(
-        id: noticeId,
-        request: NoticeImagesUpsertRequest(images: successes),
-      );
+      try {
+        await repo.registerNoticeImages(
+          id: noticeId,
+          request: NoticeImagesUpsertRequest(images: successes),
+        );
+      } catch (e) {
+        if (kDebugMode) {
+          final code = e is ApiException ? e.statusCode : null;
+          final body = e is ApiException ? e.details : null;
+          debugPrint('[이미지 등록 API 실패] statusCode=$code details=$body message=$e');
+        }
+        if (!mounted) return false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미지 등록(서버 저장)에 실패했어요. 다시 시도해주세요.')),
+        );
+        return false;
+      }
     }
 
     if (failures.isNotEmpty) {

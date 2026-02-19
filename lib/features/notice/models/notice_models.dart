@@ -48,6 +48,8 @@ class NoticeImagePresign {
   final String originalName;
   final String contentType;
   final int size;
+  /// Optional: "PUT" (default, S3 PutObject presigned) or "POST".
+  final String method;
 
   const NoticeImagePresign({
     required this.s3Key,
@@ -57,6 +59,7 @@ class NoticeImagePresign {
     required this.originalName,
     required this.contentType,
     required this.size,
+    this.method = 'PUT',
   });
 
   factory NoticeImagePresign.fromJson(Map<String, dynamic> json) {
@@ -67,6 +70,7 @@ class NoticeImagePresign {
         headers[entry.key.toString()] = (entry.value ?? '').toString();
       }
     }
+    final method = (json['method'] ?? 'PUT').toString().toUpperCase();
     return NoticeImagePresign(
       s3Key: (json['s3Key'] ?? '').toString(),
       url: (json['url'] ?? '').toString(),
@@ -75,6 +79,7 @@ class NoticeImagePresign {
       originalName: (json['originalName'] ?? '').toString(),
       contentType: (json['contentType'] ?? '').toString(),
       size: _toInt(json['size']),
+      method: method == 'POST' ? 'POST' : 'PUT',
     );
   }
 }

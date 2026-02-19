@@ -123,15 +123,16 @@ class NoticeApi {
   }
 
   /// Uploads bytes to an S3 presigned URL (full URL).
+  /// [method] 'PUT' (default, S3 PutObject presigned) or 'POST'.
   Future<void> uploadToPresignedUrl({
     required String uploadUrl,
     required List<int> bytes,
     required Map<String, String> headers,
+    String method = 'PUT',
   }) async {
     try {
       final dio = Dio(
         BaseOptions(
-          // Do not use API baseUrl
           connectTimeout: const Duration(milliseconds: 20000),
           sendTimeout: const Duration(milliseconds: 20000),
           receiveTimeout: const Duration(milliseconds: 20000),
@@ -139,11 +140,20 @@ class NoticeApi {
           followRedirects: true,
         ),
       );
-      await dio.put<void>(
-        uploadUrl,
-        data: Uint8List.fromList(bytes),
-        options: Options(headers: headers),
-      );
+      final body = Uint8List.fromList(bytes);
+      // S3 presigned URL: only headers that were signed may be sent. Backend often signs only Content-Type.
+      // Sending x-amz-acl (etc.) when not in SignedHeaders causes 403 "Headers present which were not signed".
+      final safeHeaders = <String, String>{};
+      final contentType = headers['Content-Type'] ?? headers['content-type'];
+      if (contentType != null && contentType.isNotEmpty) {
+        safeHeaders['Content-Type'] = contentType;
+      }
+      final options = Options(headers: safeHeaders);
+      if (method.toUpperCase() == 'PUT') {
+        await dio.put<void>(uploadUrl, data: body, options: options);
+      } else {
+        await dio.post<void>(uploadUrl, data: body, options: options);
+      }
     } on DioException catch (e) {
       throw ApiException(
         e.message ?? '이미지 업로드에 실패했습니다.',
