@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:meal_app/features/auth/models/role.dart';
 import 'package:meal_app/features/auth/repositories/auth_repository.dart';
 import 'package:meal_app/features/admin/screens/admin_home_screen.dart';
+import 'package:meal_app/features/qr/screens/qr_scan_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -74,7 +75,7 @@ class _MainScreenState extends State<MainScreen> {
       case 1:
         return const MapScreen();
       case 2:
-        return const Center(child: Text("QR 화면"));
+        return const QrScanScreen();
       case 3:
         // 마이페이지에서만 분기:
         // 1) 비로그인 -> MyPageScreen 내부에서 게스트 화면

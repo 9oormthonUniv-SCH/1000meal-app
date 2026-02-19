@@ -43,6 +43,7 @@ import 'features/notice/viewmodels/notice_list_view_model.dart';
 import 'features/notice/screens/notice_create_screen.dart';
 import 'features/notice/screens/notice_detail_screen.dart';
 import 'features/notice/screens/notice_edit_screen.dart';
+import 'features/qr/data/qr_api.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
 import 'features/mypage/viewmodels/change_email_view_model.dart';
@@ -94,10 +95,12 @@ class MyApp extends StatelessWidget {
     final storeRepo = StoreRepository(storeApi);
     final noticeApi = NoticeApi(dioClient);
     final noticeRepo = NoticeRepository(authRepo: authRepo, api: noticeApi);
+    final qrApi = QrApi(dioClient);
 
     return MultiProvider(
       providers: [
         Provider.value(value: authRepo),
+        Provider.value(value: qrApi),
         Provider.value(value: adminApi),
         Provider.value(value: adminRepo),
         Provider.value(value: storeApi),
