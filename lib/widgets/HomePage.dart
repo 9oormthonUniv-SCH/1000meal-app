@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:meal_app/widgets/StoreSection.dart';
+import 'package:meal_app/widgets/app_text_logo.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
@@ -64,10 +65,12 @@ class _HomePageState extends State<HomePage> {
         scrolledUnderElevation: 0, // 스크롤 시 색상 변경 방지
         centerTitle: false,
         automaticallyImplyLeading: false,
+        titleSpacing: AppTextLogo.leftPadding,
         title: Image.asset(
-          'assets/icon/Textlogo.png',
-          width: 120,
-          fit: BoxFit.contain, // 그림 비율 유지하며 잘리기 방지
+          AppTextLogo.assetPath,
+          width: AppTextLogo.width,
+          height: AppTextLogo.height,
+          fit: BoxFit.contain,
         ),
 
         // 뒤로가기 버튼 공간 없애기

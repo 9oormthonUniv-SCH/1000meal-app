@@ -75,7 +75,9 @@ class _MainScreenState extends State<MainScreen> {
       case 1:
         return const MapScreen();
       case 2:
-        return const QrScanScreen();
+        return QrScanScreen(
+          onExit: () => setState(() => _selectedIndex = 0),
+        );
       case 3:
         // 마이페이지에서만 분기:
         // 1) 비로그인 -> MyPageScreen 내부에서 게스트 화면

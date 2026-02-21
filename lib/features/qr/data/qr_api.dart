@@ -1,3 +1,4 @@
+import '../../../common/config/app_config.dart';
 import '../../../common/dio/api_exception.dart';
 import '../../../common/dio/dio_client.dart';
 import '../models/qr_models.dart';
@@ -8,9 +9,60 @@ class QrApi {
 
   final DioClient _client;
 
+  /// 당일 명부 등록 정보 (GET /qr/usages/today). 404면 미등록.
+  Future<QrTodayResponse?> getTodayUsage(String accessToken) async {
+    try {
+      final res = await _client.get<Map<String, dynamic>>(
+        '/qr/usages/today',
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (res == null) return null;
+      final data = res['data'] is Map<String, dynamic>
+          ? res['data'] as Map<String, dynamic>
+          : res;
+      final today = QrTodayResponse.fromJson(Map<String, dynamic>.from(data));
+      return today.used ? today : null;
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  /// qrToken으로 매장 이름 조회 (GET /qr/stores?qrToken= 또는 동일 형식). 없으면 null.
+  Future<String?> getStoreNameByQrToken(String qrToken, String accessToken) async {
+    try {
+      final res = await _client.get<Map<String, dynamic>>(
+        '/qr/stores',
+        queryParameters: {'qrToken': qrToken},
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (res == null) return null;
+      final data = res['data'];
+      if (data is! Map<String, dynamic>) return null;
+      final name = data['storeName'] ?? data['name'];
+      return name?.toString();
+    } on ApiException catch (_) {
+      return null;
+    }
+  }
+
+  /// qrToken만으로 명부 등록 (확인 버튼 후 호출).
+  Future<QrUsageResponse> reportQrUsageByToken(
+    String qrToken,
+    String accessToken,
+  ) async {
+    final url = '${AppConfig.apiBaseUrl}/qr/usages';
+    return _postWithAuth(url, qrToken: qrToken, accessToken: accessToken);
+  }
+
   /// 스캔한 URL에서 endpoint와 qrToken을 추출해 POST 요청.
   /// URL 예: https://domain/api/v1/qr/usages?qrToken=매장토큰
-  /// 또는 path에 토큰: .../qr/usages/매장토큰
   Future<QrUsageResponse> reportQrUsage(String scannedUrl, String accessToken) {
     final uri = Uri.tryParse(scannedUrl);
     if (uri == null || !uri.hasAbsolutePath) {

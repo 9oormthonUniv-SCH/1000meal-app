@@ -17,6 +17,13 @@ class AppConfig {
     final normalized = raw.endsWith('/') ? raw.substring(0, raw.length - 1) : raw;
     return '$normalized/api/v1';
   }
+
+  /// 앱 다운로드/소개 고정 URL. QR이 이 base로 시작하고 qrToken 파라미터가 있으면 인앱 명부 등록 플로우.
+  static String? get appDownloadUrlBase {
+    final raw = dotenv.env['APP_DOWNLOAD_URL']?.trim();
+    if (raw == null || raw.isEmpty) return null;
+    return raw.endsWith('/') ? raw.substring(0, raw.length - 1) : raw;
+  }
 }
 
 
