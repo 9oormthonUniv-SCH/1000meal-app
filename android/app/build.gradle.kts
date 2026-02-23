@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,8 +8,15 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// 릴리스 서명: android/key.properties 파일이 있으면 사용 (없으면 debug 서명)
+val keystorePropertiesFile = rootProject.file("key.properties")
+val useReleaseSigning = keystorePropertiesFile.exists()
+val keystoreProperties = if (useReleaseSigning) {
+    Properties().apply { load(FileInputStream(keystorePropertiesFile)) }
+} else null
+
 android {
-    namespace = "com.example.meal_app"
+    namespace = "com.todaysunbap.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,11 +29,19 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    signingConfigs {
+        if (useReleaseSigning && keystoreProperties != null) {
+            create("release") {
+                keyAlias = keystoreProperties!!["keyAlias"] as String
+                keyPassword = keystoreProperties!!["keyPassword"] as String
+                storeFile = rootProject.file(keystoreProperties!!["storeFile"] as String)
+                storePassword = keystoreProperties!!["storePassword"] as String
+            }
+        }
+    }
+
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.meal_app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        applicationId = "com.todaysunbap.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -32,9 +50,11 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (useReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
