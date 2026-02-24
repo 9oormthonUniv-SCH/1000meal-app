@@ -116,6 +116,14 @@ class _MapScreenState extends State<MapScreen> {
             }
             _markerIconCache.removeWhere((key, _) => !targets.contains(key));
           });
+          // 지도가 이미 준비된 상태면 여기서 바로 마커 적용 (didUpdateWidget race 회피)
+          if (mounted && _mapController != null) {
+            final items = context.read<StoreListViewModel>().items;
+            final markersToApply = _buildMarkersFromItems(items);
+            if (markersToApply.isNotEmpty) {
+              _mapController!.addMarker(markers: markersToApply);
+            }
+          }
         })
         .whenComplete(() => _buildingMarkerIcons = false);
   }
@@ -172,12 +180,9 @@ class _MapScreenState extends State<MapScreen> {
     await context.read<StoreListViewModel>().load();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final vm = context.watch<StoreListViewModel>();
-    _ensureMarkerIcons(vm.items);
-    // 아이콘이 준비된 마커만 전달해야 진입 시 핀이 바로 표시됨 (null 아이콘은 제외)
-    final markers = vm.items
+  /// 아이콘이 준비된 매장만 Marker 목록으로 만든다. (지도 준비 시점 재적용·build 공용)
+  List<Marker> _buildMarkersFromItems(List<StoreListItem> items) {
+    return items
         .where((s) => s.lat != null && s.lng != null)
         .where((s) => _markerIconCache['${s.id}_${s.remain}'] != null)
         .map((s) {
@@ -190,6 +195,13 @@ class _MapScreenState extends State<MapScreen> {
         icon: _markerIconCache[key]!,
       );
     }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<StoreListViewModel>();
+    _ensureMarkerIcons(vm.items);
+    final markers = _buildMarkersFromItems(vm.items);
 
     final center = markers.isNotEmpty
         ? markers.first.latLng
@@ -230,6 +242,17 @@ class _MapScreenState extends State<MapScreen> {
               child: KakaoMap(
                 onMapCreated: (controller) {
                   _mapController = controller;
+                  // 지도 준비 직후: 현재 마커가 있으면 적용
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted || _mapController == null) return;
+                    final list = context.read<StoreListViewModel>().items;
+                    final currentMarkers = _buildMarkersFromItems(list);
+                    if (currentMarkers.isNotEmpty) {
+                      _mapController!.addMarker(markers: currentMarkers);
+                    }
+                  });
+                  // 지도 준비 직후 한 번 새로고침해서, 아직 마커가 없었던 경우에도 didUpdateWidget으로 마커가 그려지게 함
+                  if (mounted) _refresh();
                 },
                 //마커 교체 -> Figma 참고, 마커 클릭 시 마커쪽으로 화면 이동
                 onMarkerTap: (markerId, _, __) => _handleMarkerTap(markerId),
