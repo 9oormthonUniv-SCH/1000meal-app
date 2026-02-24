@@ -73,7 +73,9 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return const HomePage();
       case 1:
-        return const MapScreen();
+        return MapScreen(
+          onBack: () => setState(() => _selectedIndex = 0),
+        );
       case 2:
         return QrScanScreen(
           onExit: () => setState(() => _selectedIndex = 0),
@@ -94,12 +96,16 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 지도·QR(카메라) 탭에서는 바텀 네비 숨김
+    final showBottomNav = _selectedIndex != 1 && _selectedIndex != 2;
     return Scaffold(
       body: _buildBody(),
-      bottomNavigationBar: BottomNavbar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
+      bottomNavigationBar: showBottomNav
+          ? BottomNavbar(
+              currentIndex: _selectedIndex,
+              onTap: _onItemTapped,
+            )
+          : null,
     );
   }
 }

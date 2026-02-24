@@ -16,8 +16,14 @@ class _SignupIdScreenState extends State<SignupIdScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SignupViewModel>().loadDraft();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final vm = context.read<SignupViewModel>();
+      // 로그인에서 회원가입으로 진입한 경우에만 초기화(학번→이름 화면에서 뒤로 온 경우는 유지)
+      if (!vm.fromCredentials) {
+        vm.reset();
+        await vm.clearDraft();
+      }
+      await vm.loadDraft();
     });
   }
 
@@ -87,6 +93,7 @@ class _SignupIdScreenState extends State<SignupIdScreen> {
                       ),
                       onPressed: vm.canNextFromId
                           ? () async {
+                              vm.markFromCredentials();
                               await vm.saveDraft();
                               if (!context.mounted) return;
                               Navigator.of(context).pushNamed('/signup/credentials');

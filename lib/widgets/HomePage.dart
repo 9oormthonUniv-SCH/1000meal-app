@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:meal_app/widgets/StoreSection.dart';
 import 'package:meal_app/widgets/app_text_logo.dart';
 import 'package:provider/provider.dart';
@@ -74,22 +73,8 @@ class _HomePageState extends State<HomePage> {
         ),
 
         // 뒤로가기 버튼 공간 없애기
-        actions: [
-          IconButton(
-            onPressed: () {
-              // 알림 페이지는 별도 커밋(FCM) 범위에서 처리
-              if (kDebugMode) debugPrint("알림 클릭");
-            },
-            icon: SvgPicture.asset(
-              'assets/icon/alarm.svg',
-              width: 22,
-              height: 22,
-              fit: BoxFit.contain,
-            ),
-          ),
-
-          const SizedBox(width: 16),
-        ],
+        // 알림 버튼: 미구현으로 숨김 (FCM 도입 후 복구)
+        actions: const [],
       ),
       body: LayoutBuilder(
         // 화면 크기에 따라 레이아웃 조정

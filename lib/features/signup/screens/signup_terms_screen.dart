@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// 이용약관·개인정보 수집 및 이용 동의 전문 (내용 보기용)
 class SignupTermsScreen extends StatelessWidget {
   static const routeName = '/signup/terms';
 
@@ -7,26 +8,85 @@ class SignupTermsScreen extends StatelessWidget {
 
   const SignupTermsScreen({super.key, required this.doc});
 
+  static const String _termsOfService = '''
+제1조 (목적)
+본 약관은 오늘순밥(이하 "서비스")이 제공하는 천원의 아침밥 관련 서비스 이용과 관련하여 회사와 이용자 간의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.
+
+제2조 (정의)
+① "서비스"란 회사가 제공하는 천원의 아침밥 예약·조회·QR 이용 등 관련 모든 서비스를 의미합니다.
+② "이용자"란 본 약관에 따라 서비스를 이용하는 회원 및 비회원을 말합니다.
+③ "회원"이란 서비스에 가입하여 이용자 아이디를 부여받은 자를 말합니다.
+
+제3조 (약관의 효력 및 변경)
+① 본 약관은 서비스 화면에 게시하거나 기타의 방법으로 공지함으로써 효력이 발생합니다.
+② 회사는 필요한 경우 관련 법령을 위반하지 않는 범위에서 본 약관을 변경할 수 있으며, 변경된 약관은 제1항과 같은 방법으로 공지합니다.
+③ 이용자가 변경된 약관에 동의하지 않는 경우 서비스 이용을 중단하고 탈퇴할 수 있습니다.
+
+제4조 (서비스의 제공)
+회사는 다음과 같은 서비스를 제공합니다.
+- 천원의 아침밥 매장 정보 조회
+- QR 코드를 통한 식사 이용·등록
+- 공지사항 및 운영 안내
+
+제5조 (서비스 이용)
+이용자는 서비스를 이용함에 있어 관련 법령 및 본 약관을 준수하여야 하며, 회사의 동의 없이 서비스를 영리 목적으로 이용할 수 없습니다.
+
+제6조 (개인정보의 보호)
+회사는 이용자의 개인정보를 「개인정보 수집 및 이용 동의」에 따라 수집·이용·관리하며, 관련 법령을 준수합니다.
+''';
+
+  static const String _privacyPolicy = '''
+제1조 (개인정보의 수집·이용 목적)
+회사는 다음의 목적을 위해 개인정보를 수집·이용합니다.
+- 회원 가입·관리 및 본인 확인
+- 천원의 아침밥 서비스 제공(예약·QR 이용·공지 등)
+- 고객 문의 및 불만 처리
+- 서비스 개선 및 신규 서비스 개발
+
+제2조 (수집하는 개인정보 항목)
+① 필수 항목: 아이디, 비밀번호, 이름, 이메일 주소
+② 서비스 이용 과정에서 자동 수집: 접속 로그, 접속 IP 정보, 서비스 이용 기록 등
+
+제3조 (개인정보의 보유·이용 기간)
+이용자의 개인정보는 원칙적으로 개인정보 수집 및 이용 목적이 달성된 후에는 지체 없이 파기합니다. 단, 관련 법령에 따라 보존할 필요가 있는 경우 해당 기간 동안 보관합니다.
+
+제4조 (개인정보의 제3자 제공)
+회사는 이용자의 개인정보를 원칙적으로 제3자에게 제공하지 않습니다. 다만, 법령에 의해 요구되는 경우 등 예외적으로 제공할 수 있습니다.
+
+제5조 (이용자의 권리)
+이용자는 언제든지 자신의 개인정보를 조회하거나 수정·삭제·처리정지를 요청할 수 있으며, 회사는 이에 대해 지체 없이 조치합니다.
+
+제6조 (개인정보의 안전성 확보)
+회사는 개인정보의 안전한 처리를 위해 기술적·관리적 보호조치를 취하고 있습니다.
+''';
+
   @override
   Widget build(BuildContext context) {
     final title = doc == 'privacy' ? '개인정보 수집 및 이용 동의' : '이용약관';
+    final content = doc == 'privacy' ? _privacyPolicy : _termsOfService;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('약관')),
+      appBar: AppBar(title: Text(title)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 12),
               Expanded(
                 child: SingleChildScrollView(
                   child: Text(
-                    '여기에 ${doc == 'privacy' ? '개인정보 처리방침' : '이용약관'} 전문을 넣어주세요.\n'
-                    '임시 문구입니다. 추후 마크다운/서버 콘텐츠로 교체 가능합니다.',
-                    style: const TextStyle(fontSize: 14, height: 1.6, color: Color(0xFF374151)),
+                    content.trim(),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.6,
+                      color: Color(0xFF374151),
+                    ),
                   ),
                 ),
               ),

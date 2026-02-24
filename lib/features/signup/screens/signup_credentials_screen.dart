@@ -20,6 +20,7 @@ class _SignupCredentialsScreenState extends State<SignupCredentialsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final vm = context.read<SignupViewModel>();
+      vm.resetCredentialsState();
       await vm.loadDraft();
       if (!mounted) return;
       if (vm.id.trim().isEmpty) {

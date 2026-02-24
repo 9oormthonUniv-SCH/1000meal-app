@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../store/models/store_models.dart';
 import '../../store/screens/store_detail_screen.dart';
@@ -101,16 +100,7 @@ class StoreBottomSheet extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              IconButton(
-                                onPressed: () {
-                                  if (kDebugMode) debugPrint('즐겨찾기');
-                                  //즐겨찾기 클릭 시 아이콘 변경 로직 + 즐겨찾기 리스트에 포함되도록 하는 로직 들어가야 함.
-                                },
-                                icon: Icon(Icons.star, color: Colors.grey[400]),
-                                highlightColor: Colors.orange.withOpacity(0.2),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                              ),
+                              // 즐겨찾기: 미구현으로 숨김
                             ],
                           ),
                         ),

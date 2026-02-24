@@ -13,7 +13,10 @@ import '../widgets/refresh.dart';
 import '../widgets/zoom_controls.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  const MapScreen({super.key, this.onBack});
+
+  /// 탭으로 표시될 때 뒤로가기 대신 호출 (null이면 Navigator.pop)
+  final VoidCallback? onBack;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -172,17 +175,18 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     final vm = context.watch<StoreListViewModel>();
     _ensureMarkerIcons(vm.items);
-    final markers = vm.items.where((s) => s.lat != null && s.lng != null).map((
-      s,
-    ) {
+    // 아이콘이 준비된 마커만 전달해야 진입 시 핀이 바로 표시됨 (null 아이콘은 제외)
+    final markers = vm.items
+        .where((s) => s.lat != null && s.lng != null)
+        .where((s) => _markerIconCache['${s.id}_${s.remain}'] != null)
+        .map((s) {
       final key = '${s.id}_${s.remain}';
-      final icon = _markerIconCache[key];
       return Marker(
         markerId: s.id.toString(),
         latLng: LatLng(s.lat!, s.lng!),
         width: _markerWidth.round(),
         height: _markerHeight.round(),
-        icon: icon,
+        icon: _markerIconCache[key]!,
       );
     }).toList();
 
@@ -208,7 +212,14 @@ class _MapScreenState extends State<MapScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            final onBack = widget.onBack;
+            if (onBack != null) {
+              onBack();
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
         ),
       ),
       body: SafeArea(
