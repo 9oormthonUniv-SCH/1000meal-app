@@ -235,56 +235,65 @@ class _MapScreenState extends State<MapScreen> {
           },
         ),
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: KakaoMap(
-                onMapCreated: (controller) {
-                  _mapController = controller;
-                  // 지도 준비 직후: 현재 마커가 있으면 적용
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (!mounted || _mapController == null) return;
-                    final list = context.read<StoreListViewModel>().items;
-                    final currentMarkers = _buildMarkersFromItems(list);
-                    if (currentMarkers.isNotEmpty) {
-                      _mapController!.addMarker(markers: currentMarkers);
-                    }
-                  });
-                  // 지도 준비 직후 한 번 새로고침해서, 아직 마커가 없었던 경우에도 didUpdateWidget으로 마커가 그려지게 함
-                  if (mounted) _refresh();
-                },
-                //마커 교체 -> Figma 참고, 마커 클릭 시 마커쪽으로 화면 이동
-                onMarkerTap: (markerId, _, __) => _handleMarkerTap(markerId),
-                center: center,
-                markers: markers,
-              ),
-            ),
-            if (vm.loading && vm.items.isEmpty)
-              const Center(child: CircularProgressIndicator()),
-            if (vm.errorMessage != null && vm.items.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    vm.errorMessage!,
-                    style: const TextStyle(color: Colors.redAccent),
-                  ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final padding = MediaQuery.of(context).padding;
+          final bottomInset = padding.bottom;
+          const baseBottom = 16.0;
+          final refreshBottom = _isBottomSheetOpen
+              ? kStoreBottomSheetHeight + 8
+              : baseBottom + bottomInset;
+          final zoomBottom = baseBottom + bottomInset;
+
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: KakaoMap(
+                  onMapCreated: (controller) {
+                    _mapController = controller;
+                    // 지도 준비 직후: 현재 마커가 있으면 적용
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (!mounted || _mapController == null) return;
+                      final list = context.read<StoreListViewModel>().items;
+                      final currentMarkers = _buildMarkersFromItems(list);
+                      if (currentMarkers.isNotEmpty) {
+                        _mapController!.addMarker(markers: currentMarkers);
+                      }
+                    });
+                    // 지도 준비 직후 한 번 새로고침해서, 아직 마커가 없었던 경우에도 didUpdateWidget으로 마커가 그려지게 함
+                    if (mounted) _refresh();
+                  },
+                  onMarkerTap: (markerId, _, __) => _handleMarkerTap(markerId),
+                  center: center,
+                  markers: markers,
                 ),
               ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: _isBottomSheetOpen ? kStoreBottomSheetHeight + 8 : 16,
-              child: Center(child: MapRefreshButton(onPressed: _refresh)),
-            ),
-            Positioned(
-              right: 16,
-              bottom: 16,
-              child: MapZoomControls(onZoomIn: _zoomIn, onZoomOut: _zoomOut),
-            ),
-          ],
-        ),
+              if (vm.loading && vm.items.isEmpty)
+                const Center(child: CircularProgressIndicator()),
+              if (vm.errorMessage != null && vm.items.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      vm.errorMessage!,
+                      style: const TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+                ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: refreshBottom,
+                child: Center(child: MapRefreshButton(onPressed: _refresh)),
+              ),
+              Positioned(
+                right: baseBottom + padding.right,
+                bottom: zoomBottom,
+                child: MapZoomControls(onZoomIn: _zoomIn, onZoomOut: _zoomOut),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
