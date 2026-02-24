@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/role.dart';
 import '../viewmodels/login_view_model.dart';
+import '../viewmodels/signup_view_model.dart';
 
 class LoginScreen extends StatelessWidget {
   static const routeName = '/login';
@@ -334,7 +335,15 @@ class _BottomLinks extends StatelessWidget {
         ),
         const Text('|', style: TextStyle(fontSize: 12, color: Color(0xFFD1D5DB))),
         TextButton(
-          onPressed: enabled ? () => Navigator.of(context).pushNamed('/signup') : null,
+          onPressed: enabled
+              ? () {
+                  Navigator.of(context).pushNamed('/signup').then((_) {
+                    if (context.mounted) {
+                      context.read<SignupViewModel>().clearFromCredentialsFlag();
+                    }
+                  });
+                }
+              : null,
           style: style,
           child: const Text('회원가입'),
         ),

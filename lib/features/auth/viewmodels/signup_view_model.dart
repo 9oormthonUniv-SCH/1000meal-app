@@ -80,6 +80,54 @@ class SignupViewModel extends ChangeNotifier {
   bool submitting = false;
   String? submitError;
 
+  /// 학번 → 이름/이메일 화면으로 넘어간 뒤 뒤로가기로 돌아온 경우, 재진입 시 reset 하지 않기 위한 플래그
+  bool _fromCredentials = false;
+  bool get fromCredentials => _fromCredentials;
+  void markFromCredentials() {
+    _fromCredentials = true;
+    notifyListeners();
+  }
+  void clearFromCredentialsFlag() {
+    _fromCredentials = false;
+    notifyListeners();
+  }
+
+  /// 회원가입 플로우 재진입 시(로그인 화면에서 다시 회원가입 진입) 필드·상태 전부 초기화
+  void reset() {
+    id = '';
+    checkingId = false;
+    idOk = null;
+    idErrorMessage = null;
+    name = '';
+    pw = '';
+    pw2 = '';
+    email = '';
+    agreeTos = false;
+    agreePrivacy = false;
+    emailSent = false;
+    emailCode = '';
+    verified = false;
+    sendingEmail = false;
+    verifyingEmail = false;
+    emailError = null;
+    submitting = false;
+    submitError = null;
+    notifyListeners();
+  }
+
+  /// 이름/이메일 페이지 진입 시 인증·제출 관련 상태만 초기화(뒤로가기 후 재진입 시 verified 등 잔류 방지)
+  void resetCredentialsState() {
+    emailSent = false;
+    emailCode = '';
+    verified = false;
+    sendingEmail = false;
+    verifyingEmail = false;
+    emailError = null;
+    submitting = false;
+    submitError = null;
+    notifyListeners();
+  }
+
   // 요구사항: 8~16자, 영문/숫자/특수문자 모두 포함(공백 불가)
   final RegExp pwdRule = RegExp(
     r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*().,_-])[A-Za-z\d!@#$%^&*().,_-]{8,16}$',

@@ -82,6 +82,23 @@ class _MyPageScreenState extends State<MyPageScreen> {
       );
     }
 
+    // 로그아웃 직후: me는 null인데 _hasToken이 아직 true면 토큰 재확인 후 게스트로 전환
+    if (widget.fromMainTab && vm.me == null && _hasToken == true) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final token = await context.read<AuthRepository>().getAccessToken();
+        if (!mounted) return;
+        setState(() {
+          _hasToken = token != null && token.isNotEmpty;
+        });
+      });
+      return _buildScaffold(
+        context,
+        showBack: showBack,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     if (vm.me == null) {
       return _buildScaffold(
         context,
