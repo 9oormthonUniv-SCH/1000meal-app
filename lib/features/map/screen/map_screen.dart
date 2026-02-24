@@ -45,6 +45,7 @@ class _MapScreenState extends State<MapScreen> {
     super.didChangeDependencies();
     if (_loaded) return;
     _loaded = true;
+    // 진입 즉시 로드 시작(홈에서 이미 로드됐어도 notify 시 재빌드되어 핀 갱신됨)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<StoreListViewModel>().load();
@@ -141,7 +142,7 @@ class _MapScreenState extends State<MapScreen> {
       if (isSameCenter) {
         _mapController!.setLevel(2);
       } else {
-        final target = LatLng(store.lat! - 0.003, store.lng!);
+        final target = LatLng(store.lat! - 0.001, store.lng!);
         _mapController!.panTo(target);
       }
     }
