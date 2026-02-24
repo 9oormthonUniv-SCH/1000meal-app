@@ -81,8 +81,9 @@ class _StoreDetailView extends StatelessWidget {
     }
 
     return SingleChildScrollView(
-      //appbar 아래로 스크롤 가능
-      padding: EdgeInsets.zero,
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).padding.bottom + 24,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -152,21 +153,21 @@ class _StoreDetailView extends StatelessWidget {
             width: double.infinity,
             color: const Color(0xFFF1F1F1),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 10, 10, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _WeeklyMenuSection(detail: detail, onReload: vm.load),
-                const SizedBox(height: 20),
-                const Text(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _WeeklyMenuSection(detail: detail, onReload: vm.load),
+              const SizedBox(height: 24),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
                   '다른 매장 보기',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 12),
-                _buildOtherStores(context, vm),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              _buildOtherStores(context, vm),
+            ],
           ),
         ],
       ),
@@ -178,33 +179,26 @@ class _StoreDetailView extends StatelessWidget {
     if (stores.isEmpty) {
       return const SizedBox.shrink();
     }
-    final screenWidth = MediaQuery.of(context).size.width;
     return SizedBox(
-      height: 189,
-      child: Transform.translate(
-        offset: const Offset(-20, 0),
-        child: SizedBox(
-          width: screenWidth,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: stores.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final store = stores[index];
-              return OtherStoreCard(
-                store: store,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => StoreDetailScreen(
-                      storeId: store.id,
-                    ), // 탭 시 해당 매장 상세 페이지로 이동
-                  ),
+      height: 213,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+        itemCount: stores.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final store = stores[index];
+          return OtherStoreCard(
+            store: store,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => StoreDetailScreen(
+                  storeId: store.id,
                 ),
-              );
-            },
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -346,19 +340,22 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
     final weekly = widget.detail.weeklyMenuResponse;
     final today = kstTodayYmd();
 
-    final titleRow = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          '일주일 메뉴',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        IconButton(
-          onPressed: widget.onReload,
-          icon: const Icon(Icons.refresh, color: Color(0xFF9CA3AF)),
-          tooltip: '새로고침',
-        ),
-      ],
+    final titleRow = Padding(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            '일주일 메뉴',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          ),
+          IconButton(
+            onPressed: widget.onReload,
+            icon: const Icon(Icons.refresh, color: Color(0xFF9CA3AF)),
+            tooltip: '새로고침',
+          ),
+        ],
+      ),
     );
 
     if (weekly == null) {
@@ -367,7 +364,10 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
         children: [
           titleRow,
           const SizedBox(height: 8),
-          const Text('메뉴 정보를 불러올 수 없습니다.', style: TextStyle(color: Color(0xFF9CA3AF))),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Text('메뉴 정보를 불러올 수 없습니다.', style: TextStyle(color: Color(0xFF9CA3AF))),
+          ),
         ],
       );
     }
@@ -379,7 +379,10 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
         children: [
           titleRow,
           const SizedBox(height: 8),
-          const Text('표시할 메뉴가 없습니다.', style: TextStyle(color: Color(0xFF9CA3AF))),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Text('표시할 메뉴가 없습니다.', style: TextStyle(color: Color(0xFF9CA3AF))),
+          ),
         ],
       );
     }
@@ -396,10 +399,11 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
 
     Widget buildCardsForGroup(StoreDetailDayGroup? group) {
       return SizedBox(
-        height: 160,
+        height: 176,
         child: ListView.builder(
           controller: controllerForGroup(group),
           scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           itemCount: days.length,
           itemBuilder: (context, index) {
             final d = days[index];
@@ -450,29 +454,38 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
         if (singleGroup) ...[
           buildCardsForGroup(null),
           const SizedBox(height: 10),
-          Text(
-            '남은 수량 : ${singleRemain()}개',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFFFF6E3F),
-            ),
-          ),
-        ] else ...[
-          for (final g in groups) ...[
-            Text(
-              g.name,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827)),
-            ),
-            const SizedBox(height: 8),
-            buildCardsForGroup(g),
-            const SizedBox(height: 10),
-            Text(
-              '남은 수량 : ${groupRemain(g.groupId)}개',
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              '남은 수량 : ${singleRemain()}개',
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFFFF6E3F),
+              ),
+            ),
+          ),
+        ] else ...[
+          for (final g in groups) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                g.name,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827)),
+              ),
+            ),
+            const SizedBox(height: 8),
+            buildCardsForGroup(g),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                '남은 수량 : ${groupRemain(g.groupId)}개',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFFF6E3F),
+                ),
               ),
             ),
             const SizedBox(height: 18),
