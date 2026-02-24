@@ -13,7 +13,10 @@ import '../widgets/refresh.dart';
 import '../widgets/zoom_controls.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  const MapScreen({super.key, this.onBack});
+
+  /// 탭으로 표시될 때 뒤로가기 대신 호출 (null이면 Navigator.pop)
+  final VoidCallback? onBack;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -42,6 +45,7 @@ class _MapScreenState extends State<MapScreen> {
     super.didChangeDependencies();
     if (_loaded) return;
     _loaded = true;
+    // 진입 즉시 로드 시작(홈에서 이미 로드됐어도 notify 시 재빌드되어 핀 갱신됨)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<StoreListViewModel>().load();
@@ -112,6 +116,14 @@ class _MapScreenState extends State<MapScreen> {
             }
             _markerIconCache.removeWhere((key, _) => !targets.contains(key));
           });
+          // 지도가 이미 준비된 상태면 여기서 바로 마커 적용 (didUpdateWidget race 회피)
+          if (mounted && _mapController != null) {
+            final items = context.read<StoreListViewModel>().items;
+            final markersToApply = _buildMarkersFromItems(items);
+            if (markersToApply.isNotEmpty) {
+              _mapController!.addMarker(markers: markersToApply);
+            }
+          }
         })
         .whenComplete(() => _buildingMarkerIcons = false);
   }
@@ -138,7 +150,7 @@ class _MapScreenState extends State<MapScreen> {
       if (isSameCenter) {
         _mapController!.setLevel(2);
       } else {
-        final target = LatLng(store.lat! - 0.003, store.lng!);
+        final target = LatLng(store.lat! - 0.001, store.lng!);
         _mapController!.panTo(target);
       }
     }
@@ -168,23 +180,28 @@ class _MapScreenState extends State<MapScreen> {
     await context.read<StoreListViewModel>().load();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final vm = context.watch<StoreListViewModel>();
-    _ensureMarkerIcons(vm.items);
-    final markers = vm.items.where((s) => s.lat != null && s.lng != null).map((
-      s,
-    ) {
+  /// 아이콘이 준비된 매장만 Marker 목록으로 만든다. (지도 준비 시점 재적용·build 공용)
+  List<Marker> _buildMarkersFromItems(List<StoreListItem> items) {
+    return items
+        .where((s) => s.lat != null && s.lng != null)
+        .where((s) => _markerIconCache['${s.id}_${s.remain}'] != null)
+        .map((s) {
       final key = '${s.id}_${s.remain}';
-      final icon = _markerIconCache[key];
       return Marker(
         markerId: s.id.toString(),
         latLng: LatLng(s.lat!, s.lng!),
         width: _markerWidth.round(),
         height: _markerHeight.round(),
-        icon: icon,
+        icon: _markerIconCache[key]!,
       );
     }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<StoreListViewModel>();
+    _ensureMarkerIcons(vm.items);
+    final markers = _buildMarkersFromItems(vm.items);
 
     final center = markers.isNotEmpty
         ? markers.first.latLng
@@ -208,48 +225,75 @@ class _MapScreenState extends State<MapScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            final onBack = widget.onBack;
+            if (onBack != null) {
+              onBack();
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
         ),
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: KakaoMap(
-                onMapCreated: (controller) {
-                  _mapController = controller;
-                },
-                //마커 교체 -> Figma 참고, 마커 클릭 시 마커쪽으로 화면 이동
-                onMarkerTap: (markerId, _, __) => _handleMarkerTap(markerId),
-                center: center,
-                markers: markers,
-              ),
-            ),
-            if (vm.loading && vm.items.isEmpty)
-              const Center(child: CircularProgressIndicator()),
-            if (vm.errorMessage != null && vm.items.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    vm.errorMessage!,
-                    style: const TextStyle(color: Colors.redAccent),
-                  ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final padding = MediaQuery.of(context).padding;
+          final bottomInset = padding.bottom;
+          const baseBottom = 16.0;
+          final refreshBottom = _isBottomSheetOpen
+              ? kStoreBottomSheetHeight + 8
+              : baseBottom + bottomInset;
+          final zoomBottom = baseBottom + bottomInset;
+
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: KakaoMap(
+                  onMapCreated: (controller) {
+                    _mapController = controller;
+                    // 지도 준비 직후: 현재 마커가 있으면 적용
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (!mounted || _mapController == null) return;
+                      final list = context.read<StoreListViewModel>().items;
+                      final currentMarkers = _buildMarkersFromItems(list);
+                      if (currentMarkers.isNotEmpty) {
+                        _mapController!.addMarker(markers: currentMarkers);
+                      }
+                    });
+                    // 지도 준비 직후 한 번 새로고침해서, 아직 마커가 없었던 경우에도 didUpdateWidget으로 마커가 그려지게 함
+                    if (mounted) _refresh();
+                  },
+                  onMarkerTap: (markerId, _, __) => _handleMarkerTap(markerId),
+                  center: center,
+                  markers: markers,
                 ),
               ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: _isBottomSheetOpen ? kStoreBottomSheetHeight + 8 : 16,
-              child: Center(child: MapRefreshButton(onPressed: _refresh)),
-            ),
-            Positioned(
-              right: 16,
-              bottom: 16,
-              child: MapZoomControls(onZoomIn: _zoomIn, onZoomOut: _zoomOut),
-            ),
-          ],
-        ),
+              if (vm.loading && vm.items.isEmpty)
+                const Center(child: CircularProgressIndicator()),
+              if (vm.errorMessage != null && vm.items.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      vm.errorMessage!,
+                      style: const TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+                ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: refreshBottom,
+                child: Center(child: MapRefreshButton(onPressed: _refresh)),
+              ),
+              Positioned(
+                right: baseBottom + padding.right,
+                bottom: zoomBottom,
+                child: MapZoomControls(onZoomIn: _zoomIn, onZoomOut: _zoomOut),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

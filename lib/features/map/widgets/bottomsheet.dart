@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../store/models/store_models.dart';
 import '../../store/screens/store_detail_screen.dart';
 
-const double kStoreBottomSheetHeight = 317;
+/// 단일 그룹일 때와 다중 그룹일 때 레이아웃이 달라져 높이 가변 (대략 기준)
+const double kStoreBottomSheetHeightBase = 317;
+const double kStoreBottomSheetRowHeight = 40;
+
+/// 맵 화면에서 새로고침 버튼 위치 계산용 (다중 그룹 시 시트가 더 높아지므로 여유값 사용)
+const double kStoreBottomSheetHeight = 400;
+
+double storeBottomSheetHeight(StoreListItem store) {
+  final groups = store.menuGroups;
+  if (groups.length <= 1) return kStoreBottomSheetHeightBase;
+  return kStoreBottomSheetHeightBase + (groups.length - 1) * kStoreBottomSheetRowHeight;
+}
 
 Future<void> showStoreBottomSheet(BuildContext context, StoreListItem store) {
   return showModalBottomSheet<void>(
@@ -30,14 +41,22 @@ class StoreBottomSheet extends StatelessWidget {
         ? const Color(0xFFF97316)
         : const Color(0xFF9CA3AF);
     final statusText = isOpen ? '영업 중' : '영업 종료';
-    final menusText = store.menus.isNotEmpty
-        ? store.menus.join(', ')
-        : '메뉴 정보 없음';
+    final tm = store.todayMenu;
+    final groups = store.menuGroups;
+    final sortedGroups = List<TodayMenuGroup>.from(groups)
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final singleGroup = sortedGroups.length <= 1;
+    final menuFallback = isOpen ? '메뉴 정보 없음' : '오늘 휴무';
+
+    final hasPhone = (store.phone ?? '').trim().isNotEmpty &&
+        store.phone != '010-0000-0000';
+    final bottomHeight = storeBottomSheetHeight(store);
 
     return SafeArea(
       top: false,
+      bottom: false,
       child: SizedBox(
-        height: kStoreBottomSheetHeight,
+        height: bottomHeight,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -48,7 +67,7 @@ class StoreBottomSheet extends StatelessWidget {
                 children: [
                   Center(
                     child: Container(
-                      width: 40,
+                      width: 48,
                       height: 4,
                       decoration: BoxDecoration(
                         color: const Color(0xFFE5E7EB),
@@ -56,7 +75,7 @@ class StoreBottomSheet extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -78,8 +97,7 @@ class StoreBottomSheet extends StatelessWidget {
                                   clipBehavior: Clip.none,
                                   children: [
                                     Text(
-                                      store
-                                          .name, //ontap() -> Navigator to StoreDetailScreen
+                                      store.name,
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
@@ -101,16 +119,7 @@ class StoreBottomSheet extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              IconButton(
-                                onPressed: () {
-                                  if (kDebugMode) debugPrint('즐겨찾기');
-                                  //즐겨찾기 클릭 시 아이콘 변경 로직 + 즐겨찾기 리스트에 포함되도록 하는 로직 들어가야 함.
-                                },
-                                icon: Icon(Icons.star, color: Colors.grey[400]),
-                                highlightColor: Colors.orange.withOpacity(0.2),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                              ),
+                              // 즐겨찾기: 미구현 시 공간만 유지
                             ],
                           ),
                         ),
@@ -128,106 +137,219 @@ class StoreBottomSheet extends StatelessWidget {
                       ),
                     ),
                   ],
-                  if ((store.phone ?? '').isNotEmpty) ...[
+                  if (hasPhone) ...[
                     const SizedBox(height: 4),
+                    GestureDetector(
+                      onTap: () => launchUrl(Uri.parse('tel:${store.phone}')),
+                      child: Text(
+                        '📞 ${store.phone}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF767676),
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ] else ...[
+                    const SizedBox(height: 4),
+                    const Text(
+                      '전화번호 미등록',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  Text(
+                    statusText,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  if ((store.hours ?? '').isNotEmpty)
                     Text(
-                      '${store.phone}',
+                      store.hours!,
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                         color: Color(0xFF767676),
                       ),
                     ),
-                  ],
-                  const SizedBox(height: 25),
-                  Text(
-                    //영업 중 or 영업 종료
-                    statusText,
-                    style: TextStyle(color: statusColor, fontSize: 12),
-                  ),
-                  const SizedBox(height: 2),
-                  if ((store.hours ?? '').isNotEmpty) ...[
-                    Text(
-                      '천원의 아침밥 운영 시간: ${store.hours!}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF767676),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-            Container(
-              height: 105,
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(20, 13, 20, 20),
-              decoration: const BoxDecoration(color: Color(0xFFF97316)),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '오늘의 천밥',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF97316),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        '오늘의 천밥',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
-                        //const SizedBox(height: 6),
+                      ),
+                      if (tm == null) ...[
+                        const SizedBox(height: 4),
                         Text(
-                          menusText,
+                          menuFallback,
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: Colors.white,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 3),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 5),
-                          child: Text(
-                            ' ${store.remain}개 ',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                      ] else if (singleGroup) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                store.singleGroupMenusText.isEmpty
+                                    ? menuFallback
+                                    : store.singleGroupMenusText,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${store.firstGroupStock}개',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const Text(
+                                  '남았어요!',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          '남았어요!',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.white,
-                          ),
+                      ] else ...[
+                        const SizedBox(height: 8),
+                        ...sortedGroups.map(
+                          (group) => _MapStoreCardGroupRow(group: group),
                         ),
                       ],
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MapStoreCardGroupRow extends StatelessWidget {
+  final TodayMenuGroup group;
+
+  const _MapStoreCardGroupRow({required this.group});
+
+  @override
+  Widget build(BuildContext context) {
+    final menuText = group.menus.isNotEmpty
+        ? group.menus.map((m) => m.name).join(', ')
+        : '—';
+    final stock = group.stock;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 6, right: 8),
+                  child: SizedBox(
+                    width: 6,
+                    height: 6,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    menuText.isEmpty ? '—' : menuText,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${stock}개',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const Text(
+                '남았어요!',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

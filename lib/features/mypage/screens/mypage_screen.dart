@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
@@ -83,6 +82,23 @@ class _MyPageScreenState extends State<MyPageScreen> {
       );
     }
 
+    // 로그아웃 직후: me는 null인데 _hasToken이 아직 true면 토큰 재확인 후 게스트로 전환
+    if (widget.fromMainTab && vm.me == null && _hasToken == true) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final token = await context.read<AuthRepository>().getAccessToken();
+        if (!mounted) return;
+        setState(() {
+          _hasToken = token != null && token.isNotEmpty;
+        });
+      });
+      return _buildScaffold(
+        context,
+        showBack: showBack,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     if (vm.me == null) {
       return _buildScaffold(
         context,
@@ -120,20 +136,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 onPressed: () => Navigator.of(context).maybePop(),
               )
             : null,
-        actions: [
-          IconButton(
-            icon: SvgPicture.asset(
-              'assets/icon/alarm.svg',
-              width: 22,
-              height: 22,
-              colorFilter: const ColorFilter.mode(Color(0xFF9CA3AF), BlendMode.srcIn),
-            ),
-            onPressed: () {
-              // 알림 페이지는 별도 커밋(FCM) 범위에서 처리
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
+        // 알림 버튼: 미구현으로 숨김 (FCM 도입 후 복구)
+        actions: const [],
       ),
       body: body,
     );
@@ -293,7 +297,8 @@ class _Body extends StatelessWidget {
                   onTap: () async {
                     await vm.logout();
                     if (!context.mounted) return;
-                    Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
+                    // 로그아웃 후 마이페이지 탭에 머물면 me=null 상태로 무한 로딩될 수 있으므로 홈(0)으로 이동
+                    Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 0);
                   },
                   trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
                 ),
