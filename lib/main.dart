@@ -92,7 +92,7 @@ class MyApp extends StatelessWidget {
     final authRepo = AuthRepository(api: authApi, tokenStorage: tokenStorage);
     final adminRepo = AdminRepository(authRepo: authRepo, api: adminApi);
     final storeApi = StoreApi(dioClient);
-    final storeRepo = StoreRepository(storeApi);
+    final storeRepo = StoreRepository(storeApi, authRepo);
     final noticeApi = NoticeApi(dioClient);
     final noticeRepo = NoticeRepository(authRepo: authRepo, api: noticeApi);
     final qrApi = QrApi(dioClient);
@@ -241,7 +241,9 @@ class MyApp extends StatelessWidget {
             child: Builder(
               builder: (context) {
                 final args = ModalRoute.of(context)?.settings.arguments;
-                final id = args is int ? args : int.tryParse((args ?? '').toString());
+                final id = args is int
+                    ? args
+                    : int.tryParse((args ?? '').toString());
                 if (id == null) {
                   return const Scaffold(
                     body: SafeArea(child: Center(child: Text('잘못된 접근입니다.'))),
@@ -253,7 +255,9 @@ class MyApp extends StatelessWidget {
           ),
           NoticeDetailScreen.routeName: (context) {
             final args = ModalRoute.of(context)?.settings.arguments;
-            final id = args is int ? args : int.tryParse((args ?? '').toString());
+            final id = args is int
+                ? args
+                : int.tryParse((args ?? '').toString());
             if (id == null) {
               return const Scaffold(
                 body: SafeArea(child: Center(child: Text('잘못된 접근입니다.'))),

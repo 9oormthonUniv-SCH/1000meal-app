@@ -12,7 +12,6 @@ class StoreListItem {
   final double? lat;
   final double? lng;
   final bool isFavorite;
-
   StoreListItem({
     required this.id,
     required this.name,
