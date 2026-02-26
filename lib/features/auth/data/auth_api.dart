@@ -25,6 +25,19 @@ class AuthApi {
     return LoginResponse.fromJson(_unwrapData(root));
   }
 
+  /// FCM 토큰을 백엔드에 등록 (웹과 동일: POST /fcm/tokens, body { token, platform }, 헤더 Authorization).
+  Future<void> registerFcmToken({
+    required String token,
+    required String fcmToken,
+    required String platform,
+  }) async {
+    await _client.post<Object>(
+      '/fcm/tokens',
+      headers: {'Authorization': 'Bearer $token'},
+      data: {'token': fcmToken, 'platform': platform},
+    );
+  }
+
   Future<MeResponse> getMe(String token) async {
     final root = await _client.get<Map<String, dynamic>>(
       '/auth/me',

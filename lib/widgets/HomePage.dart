@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 
 import '../features/auth/models/role.dart';
+import '../features/mypage/screens/notification_settings_screen.dart';
 import '../features/auth/repositories/auth_repository.dart';
 import '../features/notice/viewmodels/notice_list_view_model.dart';
 import '../features/notice/widgets/notice_list_section.dart';
@@ -72,9 +73,13 @@ class _HomePageState extends State<HomePage> {
           fit: BoxFit.contain,
         ),
 
-        // 뒤로가기 버튼 공간 없애기
-        // 알림 버튼: 미구현으로 숨김 (FCM 도입 후 복구)
-        actions: const [],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined, color: Color(0xFF111827)),
+            onPressed: () => Navigator.of(context)
+                .pushNamed(NotificationSettingsScreen.routeName),
+          ),
+        ],
       ),
       body: LayoutBuilder(
         // 화면 크기에 따라 레이아웃 조정
