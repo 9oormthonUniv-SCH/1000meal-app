@@ -60,7 +60,7 @@ class StoreApi {
         .toList();
   }
 
-  //GET /api/v1/favorite/stores/{storeId} 즐겨찾기 매장 ID 목록 조회
+  //GET /api/v1/favorites/stores/{storeId} 즐겨찾기 매장 ID 목록 조회
   Future<List<int>> getFavoriteStoreIds({required String token}) async {
     final root = await _client.get<Object>(
       '/favorites/stores',
@@ -83,7 +83,7 @@ class StoreApi {
     required String token,
   }) async {
     final root = await _client.post<Object>(
-      '/favorite/stores/$storeId',
+      '/favorites/stores/$storeId',
       headers: {'Authorization': 'Bearer $token'},
     );
     final data = _unwrapData(root);
@@ -99,7 +99,7 @@ class StoreApi {
     required String token,
   }) async {
     final root = await _client.delete<Object>(
-      '/favorite/stores/$storeId',
+      '/favorites/stores/$storeId',
       headers: {'Authorization': 'Bearer $token'},
     );
     final data = _unwrapData(root);
