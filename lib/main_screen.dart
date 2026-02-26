@@ -21,6 +21,8 @@ class _MainScreenState extends State<MainScreen> {
   bool _didInit = false;
   Role? _role;
   bool _roleLoaded = false;
+  /// QR 탭에서 당일 등록 완료(auth) 화면일 때만 true → 이때만 바텀바 표시
+  bool _isQrAuthScreen = false;
 
   @override
   void didChangeDependencies() {
@@ -79,6 +81,7 @@ class _MainScreenState extends State<MainScreen> {
       case 2:
         return QrScanScreen(
           onExit: () => setState(() => _selectedIndex = 0),
+          onQrViewChanged: (isAuth) => setState(() => _isQrAuthScreen = isAuth),
         );
       case 3:
         // 마이페이지에서만 분기:
@@ -96,8 +99,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 지도·QR(카메라) 탭에서는 바텀 네비 숨김
-    final showBottomNav = _selectedIndex != 1 && _selectedIndex != 2;
+    // 지도 탭은 바텀바 숨김. QR 탭은 당일 등록 완료(auth) 화면일 때만 바텀바 표시
+    final showBottomNav = _selectedIndex != 1 && (_selectedIndex != 2 || _isQrAuthScreen);
     return Scaffold(
       body: _buildBody(),
       bottomNavigationBar: showBottomNav

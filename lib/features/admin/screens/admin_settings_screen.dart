@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_snackbar.dart';
 import '../../auth/screens/find_account_screen.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../mypage/screens/change_email_screen.dart';
@@ -75,9 +76,7 @@ class AdminSettingsScreen extends StatelessWidget {
                     if (success) {
                       Navigator.of(context).pushNamedAndRemoveUntil(LoginScreen.routeName, (r) => false);
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(vm.errorMessage ?? '회원 탈퇴에 실패했습니다. 다시 시도해주세요.')),
-                      );
+                      AppSnackBar.show(context, vm.errorMessage ?? '회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
                     }
                   },
           ),

@@ -46,11 +46,9 @@ class DioClient {
       );
       return res.data as T;
     } on DioException catch (e) {
-      throw ApiException(
-        e.message ?? '네트워크 오류가 발생했습니다.',
-        statusCode: e.response?.statusCode,
-        details: e.response?.data,
-      );
+      final code = e.response?.statusCode;
+      final msg = _userFriendlyMessage(code, e.message);
+      throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
 
@@ -69,12 +67,20 @@ class DioClient {
       );
       return res.data as T;
     } on DioException catch (e) {
-      throw ApiException(
-        e.message ?? '네트워크 오류가 발생했습니다.',
-        statusCode: e.response?.statusCode,
-        details: e.response?.data,
-      );
+      final code = e.response?.statusCode;
+      final msg = _userFriendlyMessage(code, e.message);
+      throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
+  }
+
+  static String _userFriendlyMessage(int? statusCode, String? dioMessage) {
+    if (statusCode == 404) {
+      return '요청한 정보를 찾을 수 없습니다.';
+    }
+    if (statusCode != null && statusCode >= 500) {
+      return '서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+    }
+    return dioMessage ?? '네트워크 오류가 발생했습니다.';
   }
 
   Future<T> put<T>(
@@ -92,11 +98,9 @@ class DioClient {
       );
       return res.data as T;
     } on DioException catch (e) {
-      throw ApiException(
-        e.message ?? '네트워크 오류가 발생했습니다.',
-        statusCode: e.response?.statusCode,
-        details: e.response?.data,
-      );
+      final code = e.response?.statusCode;
+      final msg = _userFriendlyMessage(code, e.message);
+      throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
 
@@ -115,11 +119,9 @@ class DioClient {
       );
       return res.data as T;
     } on DioException catch (e) {
-      throw ApiException(
-        e.message ?? '네트워크 오류가 발생했습니다.',
-        statusCode: e.response?.statusCode,
-        details: e.response?.data,
-      );
+      final code = e.response?.statusCode;
+      final msg = _userFriendlyMessage(code, e.message);
+      throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
 
@@ -138,11 +140,9 @@ class DioClient {
       );
       return res.data as T;
     } on DioException catch (e) {
-      throw ApiException(
-        e.message ?? '네트워크 오류가 발생했습니다.',
-        statusCode: e.response?.statusCode,
-        details: e.response?.data,
-      );
+      final code = e.response?.statusCode;
+      final msg = _userFriendlyMessage(code, e.message);
+      throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
 }

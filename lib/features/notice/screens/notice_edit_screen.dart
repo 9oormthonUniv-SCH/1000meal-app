@@ -8,6 +8,7 @@ import 'dart:io';
 
 import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
+import '../../../common/widgets/app_snackbar.dart';
 import '../models/notice_models.dart';
 import '../repositories/notice_repository.dart';
 import '../viewmodels/notice_list_view_model.dart';
@@ -98,7 +99,7 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
     } catch (e) {
       if (!mounted) return;
       final msg = (e is ApiException) ? mapErrorToMessage(e, responseData: e.details) : '수정 실패';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      AppSnackBar.show(context, msg);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -142,7 +143,7 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                     if (_pickedImages.length > 5) _pickedImages.removeRange(5, _pickedImages.length);
                   });
                   if (images.length > 5) {
-                    ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('이미지는 최대 5장까지 첨부할 수 있어요.')));
+                    AppSnackBar.show(this.context, '이미지는 최대 5장까지 첨부할 수 있어요.');
                   }
                 },
               ),
@@ -160,7 +161,7 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                     }
                   });
                   if (_pickedImages.length >= 5) {
-                    ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('이미지는 최대 5장까지 첨부할 수 있어요.')));
+                    AppSnackBar.show(this.context, '이미지는 최대 5장까지 첨부할 수 있어요.');
                   }
                 },
               ),
@@ -235,18 +236,14 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
           debugPrint('[이미지 등록 API 실패] statusCode=$code details=$body message=$e');
         }
         if (!mounted) return false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이미지 등록(서버 저장)에 실패했어요. 다시 시도해주세요.')),
-        );
+        AppSnackBar.show(context, '이미지 등록(서버 저장)에 실패했어요. 다시 시도해주세요.');
         return false;
       }
     }
 
     if (failures.isNotEmpty) {
       if (!mounted) return false;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('일부 이미지 업로드 실패: ${failures.take(2).join(', ')}${failures.length > 2 ? ' 외 ${failures.length - 2}개' : ''}')),
-      );
+      AppSnackBar.show(context, '일부 이미지 업로드 실패: ${failures.take(2).join(', ')}${failures.length > 2 ? ' 외 ${failures.length - 2}개' : ''}');
       return false;
     }
     setState(() => _pickedImages.clear());
@@ -414,9 +411,7 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                         const SizedBox(height: 8),
                         InkWell(
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('About 화면은 다음 작업에서 연결됩니다.')),
-                            );
+                            AppSnackBar.show(context, 'About 화면은 다음 작업에서 연결됩니다.');
                           },
                           child: const Text(
                             'About 오늘손밥',

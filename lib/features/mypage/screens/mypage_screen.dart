@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
+import '../../../common/widgets/app_snackbar.dart';
 import '../../auth/models/role.dart';
 import '../../auth/repositories/auth_repository.dart';
 import '../viewmodels/mypage_view_model.dart';
@@ -317,9 +318,7 @@ class _Body extends StatelessWidget {
                     if (success) {
                       Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(vm.errorMessage ?? '회원 탈퇴에 실패했습니다. 다시 시도해주세요.')),
-                      );
+                      AppSnackBar.show(context, vm.errorMessage ?? '회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
                     }
                   },
                   trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),

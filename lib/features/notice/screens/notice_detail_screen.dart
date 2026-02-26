@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
+import '../../../common/widgets/app_snackbar.dart';
 import '../models/notice_models.dart';
 import '../repositories/notice_repository.dart';
 import '../viewmodels/notice_list_view_model.dart';
@@ -100,11 +101,11 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
 
       if (!mounted) return;
       Navigator.of(context).maybePop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('삭제되었습니다.')));
+      AppSnackBar.show(context, '삭제되었습니다.');
     } catch (e) {
       if (!mounted) return;
       final msg = (e is ApiException) ? mapErrorToMessage(e, responseData: e.details) : '삭제 실패';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      AppSnackBar.show(context, msg);
     }
   }
 
@@ -265,9 +266,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
           const SizedBox(height: 8),
           InkWell(
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('About 화면은 다음 작업에서 연결됩니다.')),
-              );
+              AppSnackBar.show(context, 'About 화면은 다음 작업에서 연결됩니다.');
             },
             child: const Text(
               'About 오늘손밥',

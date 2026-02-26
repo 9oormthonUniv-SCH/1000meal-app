@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_snackbar.dart';
 import '../../auth/repositories/auth_repository.dart';
 import 'admin_settings_screen.dart';
 import '../viewmodels/admin_home_view_model.dart';
@@ -185,7 +186,7 @@ class _AdminHomeRedirectState extends State<AdminHomeScreen> {
 }
 
 void _showToast(BuildContext context, String msg) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), duration: const Duration(milliseconds: 900)));
+  AppSnackBar.show(context, msg, duration: const Duration(milliseconds: 900));
 }
 
 class _OpenStatusCard extends StatelessWidget {

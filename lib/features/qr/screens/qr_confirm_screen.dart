@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -7,6 +8,8 @@ class QrConfirmScreen extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onBack;
   final VoidCallback onConfirm;
+  /// 디버그 빌드에서만 사용. 보낼 qrToken 끝 8자 표시 (개발 시 파싱 검증용).
+  final String? debugTokenSuffix;
 
   const QrConfirmScreen({
     super.key,
@@ -14,6 +17,7 @@ class QrConfirmScreen extends StatelessWidget {
     required this.isLoading,
     required this.onBack,
     required this.onConfirm,
+    this.debugTokenSuffix,
   });
 
   @override
@@ -73,6 +77,13 @@ class QrConfirmScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
               const SizedBox(height: 48),
+              if (kDebugMode && debugTokenSuffix != null && debugTokenSuffix!.isNotEmpty) ...[
+                Text(
+                  '보낼 토큰(끝): …$debugTokenSuffix',
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+              ],
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

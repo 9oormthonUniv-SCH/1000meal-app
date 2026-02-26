@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/utils/week_kst.dart';
+import '../../../common/widgets/app_snackbar.dart';
 import '../models/menu_models.dart';
 import '../viewmodels/admin_menu_edit_view_model.dart';
 
@@ -119,12 +120,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                       await editVm.save();
                       if (!context.mounted) return;
                       if (editVm.errorMessage != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(editVm.errorMessage!),
-                            backgroundColor: const Color(0xFFEF4444),
-                          ),
-                        );
+                        AppSnackBar.show(context, editVm.errorMessage!);
                       }
                     },
                 style: ElevatedButton.styleFrom(
@@ -203,12 +199,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                                   final hasMenus = await context.read<AdminMenuEditViewModel>().toggleFrequentMenu();
                                   if (!context.mounted) return;
                                   if (!hasMenus) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('자주 쓰는 메뉴가 없습니다'),
-                                        duration: Duration(milliseconds: 1500),
-                                      ),
-                                    );
+                                    AppSnackBar.show(context, '자주 쓰는 메뉴가 없습니다', duration: const Duration(milliseconds: 1500));
                                   }
                                 },
                                 showFrequentMenu: vm.showFrequentMenu,

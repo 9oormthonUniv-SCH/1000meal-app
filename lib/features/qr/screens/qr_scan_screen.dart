@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../common/config/app_config.dart';
 import '../../../common/dio/api_exception.dart';
+import '../../../common/widgets/app_snackbar.dart';
 import '../data/qr_api.dart';
 import '../models/qr_models.dart';
 import '../../auth/repositories/auth_repository.dart';
@@ -14,13 +15,27 @@ import 'qr_confirm_screen.dart';
 
 enum _QrView { loading, camera, confirm, auth }
 
+/// 사용자 노출 메시지 (예외/안내 통일)
+abstract class _QrMessages {
+  static const alreadyUsedToday = '오늘 이미 명부 등록을 완료했습니다.';
+  static const noStoreInfoInQr = 'QR 코드에 매장 정보가 없습니다. 매장에 배포된 오늘순밥 QR을 스캔해 주세요.';
+  static const notStoreQr = '인식된 QR이 오늘순밥 매장 QR이 아닙니다. 매장에 배포된 전용 QR을 스캔해 주세요.';
+  static const invalidStoreQr = '올바른 매장 QR이 아닙니다. 매장에 배포된 오늘순밥 QR을 스캔해 주세요.';
+  static const loginRequired = '로그인이 필요합니다.';
+  static const storeNotFound = '해당 매장을 찾을 수 없습니다. QR 코드를 확인해 주세요.';
+  static const registerFailed = '명부 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+  static const testScanLoginRequired = '테스트 스캔은 로그인 후 사용할 수 있습니다.';
+}
+
 /// QR 탭: 진입 시 당일 등록 여부에 따라 인증 화면 또는 카메라.
 /// 스캔 → 확인 화면 → 확인 시 POST → 인증 화면. 인증 화면에서 카메라로 돌아가기 / X 동작.
 class QrScanScreen extends StatefulWidget {
-  const QrScanScreen({super.key, this.onExit});
+  const QrScanScreen({super.key, this.onExit, this.onQrViewChanged});
 
   /// 카메라 화면에서 X 탭 시(인증 화면에서 온 경우 제외) 호출. null이면 무시.
   final VoidCallback? onExit;
+  /// auth(당일 등록 완료) 화면 표시 여부. 바텀바 표시 제어용.
+  final void Function(bool isAuthScreen)? onQrViewChanged;
 
   @override
   State<QrScanScreen> createState() => _QrScanScreenState();
@@ -85,27 +100,43 @@ class _QrScanScreenState extends State<QrScanScreen> {
   }
 
   /// QR 인식에 쓰는 URL 형식:
-  /// 1) 쿼리: "https://아무도메인/경로?qrToken=매장토큰" → qrToken 추출.
-  /// 2) .env에 APP_DOWNLOAD_URL이 있으면: 반드시 그 URL로 시작 + qrToken 쿼리 또는 path 마지막 세그먼트.
-  /// 3) APP_DOWNLOAD_URL이 없으면: 아무 URL에서 qrToken 쿼리 또는 path 마지막 세그먼트만 있으면 인식.
+  /// 1) 스캔 문자열이 36자 UUID이면 그대로 토큰으로 사용 (QR에 UUID만 넣은 경우).
+  /// 2) 쿼리: "https://아무도메인/경로?qrToken=매장토큰" → qrToken 추출.
+  /// 3) path 마지막 세그먼트가 토큰인 경우.
+  /// 반환 전 trim, UUID 형식이면 대문자로 통일.
   String? _parseQrTokenFromUrl(String url) {
+    final trimmed = url.trim();
+    if (trimmed.length == 36 && _isValidQrToken(trimmed)) {
+      return trimmed.toUpperCase();
+    }
     final uri = Uri.tryParse(url);
     if (uri == null) return null;
+    String? token;
     final queryToken = uri.queryParameters['qrToken'];
     if (queryToken != null && queryToken.isNotEmpty) {
       final base = AppConfig.appDownloadUrlBase;
       if (base != null && base.isNotEmpty) {
         if (!url.startsWith(base)) return null;
       }
-      return queryToken;
-    }
-    final segments = uri.pathSegments;
-    if (segments.isNotEmpty) {
+      token = queryToken.trim();
+    } else {
+      final segments = uri.pathSegments;
+      if (segments.isEmpty) return null;
       final base = AppConfig.appDownloadUrlBase;
       if (base != null && base.isNotEmpty && !url.startsWith(base)) return null;
-      return segments.last;
+      token = segments.last.trim();
     }
-    return null;
+    if (token == null || token.isEmpty) return null;
+    if (RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$').hasMatch(token)) {
+      token = token.toUpperCase();
+    }
+    return token;
+  }
+
+  /// 백엔드가 매장 식별에 쓰는 qrToken 형식: UUID (36자, 8-4-4-4-12)
+  static bool _isValidQrToken(String token) {
+    if (token.length != 36) return false;
+    return RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$').hasMatch(token);
   }
 
   /// 스캔된 URL이 "앱 다운로드" 고정 링크인지 (qrToken 없을 때 안내용).
@@ -130,23 +161,23 @@ class _QrScanScreenState extends State<QrScanScreen> {
         _lastProcessedUrl = url;
         _lastProcessedAt = now;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('오늘 이미 명부 등록을 완료했습니다')),
-      );
+      AppSnackBar.show(context, _QrMessages.alreadyUsedToday);
       return;
     }
 
     final qrToken = _parseQrTokenFromUrl(url);
+    if (kDebugMode) {
+      debugPrint('[QR] 스캔 raw(${url.length}): "$url" → qrToken: ${qrToken ?? "null"}');
+    }
     if (qrToken == null) {
-      if (_isAppDownloadUrl(url)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('QR 코드에 매장 정보가 없습니다. 매장 QR을 스캔해 주세요.')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('오늘순밥 앱을 다운로드한 후, 앱 내 카메라로 매장 QR을 스캔해 주세요.')),
-        );
-      }
+      AppSnackBar.show(
+        context,
+        _isAppDownloadUrl(url) ? _QrMessages.noStoreInfoInQr : _QrMessages.notStoreQr,
+      );
+      return;
+    }
+    if (!_isValidQrToken(qrToken)) {
+      AppSnackBar.show(context, _QrMessages.invalidStoreQr);
       return;
     }
 
@@ -162,9 +193,7 @@ class _QrScanScreenState extends State<QrScanScreen> {
       if (!mounted) return;
       if (token == null || token.isEmpty) {
         setState(() => _isProcessing = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('로그인이 필요합니다.')),
-        );
+        AppSnackBar.show(context, _QrMessages.loginRequired);
         return;
       }
       String storeName = '매장';
@@ -219,8 +248,13 @@ class _QrScanScreenState extends State<QrScanScreen> {
       } catch (e, _) {
         if (!mounted) return;
         setState(() => _isProcessing = false);
-        final msg = e is ApiException ? e.message : '명부 등록에 실패했습니다.';
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        String msg = _QrMessages.registerFailed;
+        if (e is ApiException) {
+          msg = e.statusCode == 404
+              ? _QrMessages.storeNotFound
+              : (e.message.isNotEmpty ? e.message : _QrMessages.registerFailed);
+        }
+        AppSnackBar.show(context, msg);
       }
     });
   }
@@ -241,8 +275,13 @@ class _QrScanScreenState extends State<QrScanScreen> {
     }
   }
 
+  void _notifyAuthScreenVisible() {
+    widget.onQrViewChanged?.call(_view == _QrView.auth);
+  }
+
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _notifyAuthScreenVisible());
     if (_view == _QrView.loading) {
       return const Scaffold(
         backgroundColor: Color(0xFF111827),
@@ -253,11 +292,14 @@ class _QrScanScreenState extends State<QrScanScreen> {
     }
 
     if (_view == _QrView.confirm) {
+      final token = _pendingQrToken ?? '';
+      final suffix = token.length >= 8 ? token.substring(token.length - 8) : token;
       return QrConfirmScreen(
         storeName: _pendingStoreName,
         isLoading: _isProcessing,
         onBack: _onConfirmBack,
         onConfirm: _onConfirmSubmit,
+        debugTokenSuffix: kDebugMode ? suffix : null,
       );
     }
 
@@ -286,12 +328,17 @@ class _QrScanScreenState extends State<QrScanScreen> {
     final token = await authRepo.getAccessToken();
     if (!mounted) return;
     if (token == null || token.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('테스트 스캔은 로그인 후 사용할 수 있습니다.')),
-      );
+      AppSnackBar.show(context, _QrMessages.testScanLoginRequired);
       return;
     }
-    const testToken = 'E722A795-B214-43E8-B8AE-A336ED0FBDC4';
+    const testUrl = 'https://15.164.105.225.nip.io/api/v1/qr?qrToken=E722A795-B214-43E8-B8AE-A336ED0FBDC4';
+    final testToken = _parseQrTokenFromUrl(testUrl);
+    if (testToken == null || !_isValidQrToken(testToken)) {
+      if (mounted) {
+        AppSnackBar.show(context, _QrMessages.invalidStoreQr);
+      }
+      return;
+    }
     String storeName = '매장';
     try {
       final name = await qrApi.getStoreNameByQrToken(testToken, token);

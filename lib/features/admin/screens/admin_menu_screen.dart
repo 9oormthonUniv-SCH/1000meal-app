@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/utils/week_kst.dart';
+import '../../../common/widgets/app_snackbar.dart';
 import '../models/admin_menu_week.dart';
 import 'admin_frequent_menu_screen.dart';
 import 'admin_menu_edit_screen.dart';
@@ -72,9 +73,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
               onPressed: () {
                 final gid = vm.selectedGroupId ?? (vm.groups.isNotEmpty ? vm.groups.first.id : null);
                 if (gid == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('먼저 메뉴 그룹을 선택해 주세요')),
-                  );
+                  AppSnackBar.show(context, '먼저 메뉴 그룹을 선택해 주세요');
                   return;
                 }
                 Navigator.of(context).pushNamed(AdminFrequentMenuScreen.routeName, arguments: gid);
