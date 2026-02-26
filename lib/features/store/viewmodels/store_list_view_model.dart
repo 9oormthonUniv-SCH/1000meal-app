@@ -51,17 +51,21 @@ class StoreListViewModel extends ChangeNotifier {
     _favoriteUpdating.add(storeId);
     errorMessage = null;
 
+    if (!items.any((s) => s.id == storeId)) {
+      items = [store, ...items];
+    }
+
     final prev = store.isFavorite;
     _updateFavoriteLocal(storeId, !prev);
     notifyListeners();
 
     try {
       if (prev) {
-        final res = await _repo.unfavoriteStore(storeId);
-        _updateFavoriteLocal(storeId, res.favorite);
+        await _repo.unfavoriteStore(storeId);
+        _updateFavoriteLocal(storeId, !prev);
       } else {
-        final res = await _repo.favoriteStore(storeId);
-        _updateFavoriteLocal(storeId, res.favorite);
+        await _repo.favoriteStore(storeId);
+        _updateFavoriteLocal(storeId, !prev);
       }
     } catch (e) {
       _updateFavoriteLocal(storeId, prev);
