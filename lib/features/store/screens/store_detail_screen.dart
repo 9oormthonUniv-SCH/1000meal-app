@@ -526,15 +526,12 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
         if (singleGroup) ...[
           buildCardsForGroup(null),
           const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              '남은 수량 : ${singleRemain()}개',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFFF6E3F),
-              ),
+          Text(
+            '남은 수량 : ${singleRemain()}개',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFFF6E3F),
             ),
           ),
         ] else ...[
@@ -566,9 +563,9 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
             ),
             const SizedBox(height: 18),
           ],
-        ],
-      ],
-    );
+        ], // else
+      ], // children
+    ); // Column
   }
 
   String _formatMmDd(String ymd) {
