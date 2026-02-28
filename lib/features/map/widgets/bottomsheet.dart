@@ -133,26 +133,7 @@ class StoreBottomSheet extends StatelessWidget {
                                   ],
                                 ),
                               ),
-<<<<<<< HEAD
                               FavoriteButton(store: currentStore),
-=======
-                              IconButton(
-                                onPressed: () {
-                                  if (kDebugMode) debugPrint('즐겨찾기');
-                                  vm.toggleFavorite(currentStore);
-                                },
-                                icon: SvgPicture.asset(
-                                  currentStore.isFavorite
-                                      ? 'assets/icon/favorite_star_on.svg'
-                                      : 'assets/icon/favorite_star_off.svg',
-                                  width: 24,
-                                  height: 24,
-                                ),
-                                highlightColor: Colors.orange.withOpacity(0.2),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                              ),
->>>>>>> b2e41d7 (feat(favorite): 바텀시트/매장상세 즐겨찾기 아이콘 토근 연동)
                             ],
                           ),
                         ),

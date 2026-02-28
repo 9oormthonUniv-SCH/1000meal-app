@@ -16,10 +16,8 @@ class FavoriteButton extends StatelessWidget {
       onPressed: () => vm.toggleFavorite(store),
       icon: SvgPicture.asset(
         isFavorite
-            ? 'assets/icon/favorite_star.svg'
-            : 'assets/icon/favorite_star.svg',
-        // ? 'assets/icon/favorite_star_on.svg'
-        // : 'assets/icon/favorite_star_off.svg',
+            ? 'assets/icon/favorite_star_on.svg'
+            : 'assets/icon/favorite_star_off.svg',
         width: 24,
         height: 24,
       ),
