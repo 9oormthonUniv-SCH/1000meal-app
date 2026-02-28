@@ -52,9 +52,6 @@ class StoreBottomSheet extends StatelessWidget {
     final statusText = isOpen ? '영업 중' : '영업 종료';
     final groups = currentStore.menuGroups;
     final isMultiGroup = groups.length >= 2;
-    final menusText = currentStore.menus.isNotEmpty
-        ? currentStore.menus.join(', ')
-        : '메뉴 정보 없음';
     final tm = currentStore.todayMenu;
     final sortedGroups = List<TodayMenuGroup>.from(groups)
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
