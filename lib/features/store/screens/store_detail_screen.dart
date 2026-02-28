@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/utils/kst_date.dart';
 import '../models/store_models.dart';
 import '../repositories/store_repository.dart';
 import '../viewmodels/store_detail_view_model.dart';
+import '../viewmodels/store_list_view_model.dart';
 import '../widgets/other_store_card.dart';
 import '../widgets/weekly_menu_card.dart';
 
@@ -59,6 +62,7 @@ class _StoreDetailView extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context, StoreDetailViewModel vm) {
+    final listVm = context.watch<StoreListViewModel>();
     if (vm.loading && vm.detail == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -79,6 +83,24 @@ class _StoreDetailView extends StatelessWidget {
     if (detail == null) {
       return const Center(child: Text('매장 정보가 없습니다.'));
     }
+
+    final currentStore = listVm.items.firstWhere(
+      (s) => s.id == detail.id,
+      orElse: () => StoreListItem(
+        id: detail.id,
+        name: detail.name,
+        imageUrl: detail.imageUrl,
+        address: detail.address,
+        phone: detail.phone,
+        hours: detail.hours,
+        menus: const [],
+        remain: detail.remain ?? 0,
+        open: detail.open,
+        todayMenu: null,
+        lat: null,
+        lng: null,
+      ),
+    );
 
     return SingleChildScrollView(
       padding: EdgeInsets.only(
@@ -114,12 +136,35 @@ class _StoreDetailView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      detail.name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            detail.name,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            if (kDebugMode) debugPrint('즐겨찾기');
+                            listVm.toggleFavorite(currentStore);
+                          },
+                          icon: SvgPicture.asset(
+                            currentStore.isFavorite
+                                ? 'assets/icon/favorite_star_on.svg'
+                                : 'assets/icon/favorite_star_off.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                          highlightColor: Colors.orange.withOpacity(0.2),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     if (detail.address != null && detail.address!.isNotEmpty)
@@ -192,9 +237,7 @@ class _StoreDetailView extends StatelessWidget {
             store: store,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => StoreDetailScreen(
-                  storeId: store.id,
-                ),
+                builder: (_) => StoreDetailScreen(storeId: store.id),
               ),
             ),
           );
@@ -273,7 +316,8 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
   static const _cardGap = 12.0;
 
   final ScrollController _singleController = ScrollController();
-  final Map<int, ScrollController> _groupControllers = <int, ScrollController>{};
+  final Map<int, ScrollController> _groupControllers =
+      <int, ScrollController>{};
 
   @override
   void dispose() {
@@ -287,14 +331,19 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToTodayIfPossible());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _jumpToTodayIfPossible(),
+    );
   }
 
   @override
   void didUpdateWidget(covariant _WeeklyMenuSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.detail.weeklyMenuResponse != widget.detail.weeklyMenuResponse) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToTodayIfPossible());
+    if (oldWidget.detail.weeklyMenuResponse !=
+        widget.detail.weeklyMenuResponse) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _jumpToTodayIfPossible(),
+      );
     }
   }
 
@@ -330,7 +379,9 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
 
   List<StoreWeeklyMenuDay> _weekdayMenus(WeeklyMenuResponse weekly) {
     const weekdays = {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'};
-    final list = weekly.dailyMenus.where((d) => weekdays.contains(d.dayOfWeek)).toList();
+    final list = weekly.dailyMenus
+        .where((d) => weekdays.contains(d.dayOfWeek))
+        .toList();
     list.sort((a, b) => a.date.compareTo(b.date));
     return list;
   }
@@ -366,7 +417,10 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
           const SizedBox(height: 8),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text('메뉴 정보를 불러올 수 없습니다.', style: TextStyle(color: Color(0xFF9CA3AF))),
+            child: Text(
+              '메뉴 정보를 불러올 수 없습니다.',
+              style: TextStyle(color: Color(0xFF9CA3AF)),
+            ),
           ),
         ],
       );
@@ -381,7 +435,10 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
           const SizedBox(height: 8),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text('표시할 메뉴가 없습니다.', style: TextStyle(color: Color(0xFF9CA3AF))),
+            child: Text(
+              '표시할 메뉴가 없습니다.',
+              style: TextStyle(color: Color(0xFF9CA3AF)),
+            ),
           ),
         ],
       );
@@ -389,12 +446,16 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
 
     // 그룹 목록(첫 날 기준, sortOrder)
     final first = days.first;
-    final groups = [...first.groups]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final groups = [...first.groups]
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     final singleGroup = groups.length <= 1;
 
     ScrollController controllerForGroup(StoreDetailDayGroup? group) {
       if (group == null) return _singleController;
-      return _groupControllers.putIfAbsent(group.groupId, () => ScrollController());
+      return _groupControllers.putIfAbsent(
+        group.groupId,
+        () => ScrollController(),
+      );
     }
 
     Widget buildCardsForGroup(StoreDetailDayGroup? group) {
@@ -411,7 +472,8 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
             final dayLabel = _korDayLabel(d.dayOfWeek);
             final items = group == null
                 ? d.groups.expand((g) => g.menus).toList(growable: false)
-                : (d.groups.firstWhere(
+                : (d.groups
+                      .firstWhere(
                         (g) => g.groupId == group.groupId,
                         orElse: () => StoreDetailDayGroup(
                           groupId: group.groupId,
@@ -421,7 +483,8 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
                           capacity: 0,
                           menus: const [],
                         ),
-                      ).menus);
+                      )
+                      .menus);
             return WeeklyMenuCard(
               dateLabel: dateLabel,
               dayLabel: dayLabel,
@@ -433,16 +496,25 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
     }
 
     int singleRemain() {
-      final todayDaily = days.where((d) => d.date == today).cast<StoreWeeklyMenuDay?>().firstWhere((_) => true, orElse: () => null);
+      final todayDaily = days
+          .where((d) => d.date == today)
+          .cast<StoreWeeklyMenuDay?>()
+          .firstWhere((_) => true, orElse: () => null);
       if (todayDaily == null) return widget.detail.remain ?? 0;
       if (todayDaily.groups.isNotEmpty) return todayDaily.groups.first.stock;
       return widget.detail.remain ?? 0;
     }
 
     int groupRemain(int groupId) {
-      final todayDaily = days.where((d) => d.date == today).cast<StoreWeeklyMenuDay?>().firstWhere((_) => true, orElse: () => null);
+      final todayDaily = days
+          .where((d) => d.date == today)
+          .cast<StoreWeeklyMenuDay?>()
+          .firstWhere((_) => true, orElse: () => null);
       if (todayDaily == null) return 0;
-      final g = todayDaily.groups.where((e) => e.groupId == groupId).cast<StoreDetailDayGroup?>().firstWhere((_) => true, orElse: () => null);
+      final g = todayDaily.groups
+          .where((e) => e.groupId == groupId)
+          .cast<StoreDetailDayGroup?>()
+          .firstWhere((_) => true, orElse: () => null);
       return g?.stock ?? 0;
     }
 
@@ -454,15 +526,12 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
         if (singleGroup) ...[
           buildCardsForGroup(null),
           const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              '남은 수량 : ${singleRemain()}개',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFFF6E3F),
-              ),
+          Text(
+            '남은 수량 : ${singleRemain()}개',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFFF6E3F),
             ),
           ),
         ] else ...[
@@ -471,7 +540,11 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 g.name,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827)),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -490,9 +563,9 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
             ),
             const SizedBox(height: 18),
           ],
-        ],
-      ],
-    );
+        ], // else
+      ], // children
+    ); // Column
   }
 
   String _formatMmDd(String ymd) {

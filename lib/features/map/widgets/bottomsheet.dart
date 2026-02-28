@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import './_favorite_button.dart';
 import '../../store/models/store_models.dart';
 import '../../store/screens/store_detail_screen.dart';
+import '../../store/viewmodels/store_list_view_model.dart';
 
 /// 단일 그룹일 때와 다중 그룹일 때 레이아웃이 달라져 높이 가변 (대략 기준)
 const double kStoreBottomSheetHeightBase = 317;
@@ -14,7 +17,8 @@ const double kStoreBottomSheetHeight = 400;
 double storeBottomSheetHeight(StoreListItem store) {
   final groups = store.menuGroups;
   if (groups.length <= 1) return kStoreBottomSheetHeightBase;
-  return kStoreBottomSheetHeightBase + (groups.length - 1) * kStoreBottomSheetRowHeight;
+  return kStoreBottomSheetHeightBase +
+      (groups.length - 1) * kStoreBottomSheetRowHeight;
 }
 
 Future<void> showStoreBottomSheet(BuildContext context, StoreListItem store) {
@@ -36,21 +40,28 @@ class StoreBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOpen = store.open ?? false;
+    final vm = context.watch<StoreListViewModel>();
+    final currentStore = vm.items.firstWhere(
+      (s) => s.id == store.id,
+      orElse: () => store,
+    );
+    final isOpen = currentStore.open ?? false;
     final statusColor = isOpen
         ? const Color(0xFFF97316)
         : const Color(0xFF9CA3AF);
     final statusText = isOpen ? '영업 중' : '영업 종료';
-    final tm = store.todayMenu;
-    final groups = store.menuGroups;
+    final groups = currentStore.menuGroups;
+    final isMultiGroup = groups.length >= 2;
+    final tm = currentStore.todayMenu;
     final sortedGroups = List<TodayMenuGroup>.from(groups)
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     final singleGroup = sortedGroups.length <= 1;
     final menuFallback = isOpen ? '메뉴 정보 없음' : '오늘 휴무';
 
-    final hasPhone = (store.phone ?? '').trim().isNotEmpty &&
-        store.phone != '010-0000-0000';
-    final bottomHeight = storeBottomSheetHeight(store);
+    final hasPhone =
+        (currentStore.phone ?? '').trim().isNotEmpty &&
+        currentStore.phone != '010-0000-0000';
+    final bottomHeight = storeBottomSheetHeight(currentStore);
 
     return SafeArea(
       top: false,
@@ -85,7 +96,7 @@ class StoreBottomSheet extends StatelessWidget {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) =>
-                                    StoreDetailScreen(storeId: store.id),
+                                    StoreDetailScreen(storeId: currentStore.id),
                               ),
                             );
                           },
@@ -97,7 +108,7 @@ class StoreBottomSheet extends StatelessWidget {
                                   clipBehavior: Clip.none,
                                   children: [
                                     Text(
-                                      store.name,
+                                      currentStore.name,
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
@@ -119,17 +130,17 @@ class StoreBottomSheet extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              // 즐겨찾기: 미구현 시 공간만 유지
+                              FavoriteButton(store: currentStore),
                             ],
                           ),
                         ),
                       ),
                     ],
                   ),
-                  if ((store.address ?? '').isNotEmpty) ...[
+                  if ((currentStore.address ?? '').isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Text(
-                      store.address!,
+                      currentStore.address!,
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
@@ -140,9 +151,10 @@ class StoreBottomSheet extends StatelessWidget {
                   if (hasPhone) ...[
                     const SizedBox(height: 4),
                     GestureDetector(
-                      onTap: () => launchUrl(Uri.parse('tel:${store.phone}')),
+                      onTap: () =>
+                          launchUrl(Uri.parse('tel:${currentStore.phone}')),
                       child: Text(
-                        '📞 ${store.phone}',
+                        '📞 ${currentStore.phone}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
@@ -172,9 +184,9 @@ class StoreBottomSheet extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  if ((store.hours ?? '').isNotEmpty)
+                  if ((currentStore.hours ?? '').isNotEmpty)
                     Text(
-                      store.hours!,
+                      currentStore.hours!,
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
@@ -189,9 +201,7 @@ class StoreBottomSheet extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF97316),
-                ),
+                decoration: const BoxDecoration(color: Color(0xFFF97316)),
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,9 +232,9 @@ class StoreBottomSheet extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                store.singleGroupMenusText.isEmpty
+                                currentStore.singleGroupMenusText.isEmpty
                                     ? menuFallback
-                                    : store.singleGroupMenusText,
+                                    : currentStore.singleGroupMenusText,
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w400,
@@ -240,7 +250,7 @@ class StoreBottomSheet extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  '${store.firstGroupStock}개',
+                                  '${currentStore.firstGroupStock}개',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,

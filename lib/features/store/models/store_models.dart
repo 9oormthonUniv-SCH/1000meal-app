@@ -11,7 +11,7 @@ class StoreListItem {
   final TodayMenu? todayMenu;
   final double? lat;
   final double? lng;
-
+  final bool isFavorite;
   StoreListItem({
     required this.id,
     required this.name,
@@ -25,7 +25,40 @@ class StoreListItem {
     required this.todayMenu,
     this.lat,
     this.lng,
+    this.isFavorite = false,
   });
+
+  StoreListItem copyWith({
+    bool? isFavorite,
+    int? id,
+    String? name,
+    String? imageUrl,
+    String? address,
+    String? phone,
+    String? hours,
+    List<String>? menus,
+    int? remain,
+    bool? open,
+    TodayMenu? todayMenu,
+    double? lat,
+    double? lng,
+  }) {
+    return StoreListItem(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      imageUrl: imageUrl ?? this.imageUrl,
+      address: address ?? this.address,
+      phone: phone ?? this.phone,
+      hours: hours ?? this.hours,
+      menus: menus ?? this.menus,
+      remain: remain ?? this.remain,
+      open: open ?? this.open,
+      todayMenu: todayMenu ?? this.todayMenu,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      isFavorite: isFavorite ?? this.isFavorite,
+    );
+  }
 
   List<TodayMenuGroup> get menuGroups =>
       todayMenu?.menuGroups ?? const <TodayMenuGroup>[];
@@ -131,6 +164,7 @@ class StoreListItem {
       todayMenu: parsedTodayMenu,
       lat: toDouble(json['lat'] ?? json['latitude']),
       lng: toDouble(json['lng'] ?? json['longitude'] ?? json['lon']),
+      isFavorite: json['isFavorite'] == true || json['is_favorite'] == true,
     );
   }
 }
