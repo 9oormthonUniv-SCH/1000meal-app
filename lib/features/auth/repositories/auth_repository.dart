@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 import '../../../common/dio/api_exception.dart';
 import '../../../common/storage/token_storage.dart';
 import '../../users/models/me_response.dart';
@@ -21,7 +25,31 @@ class AuthRepository {
     if (res.accessToken.isEmpty) throw ApiException('로그인에 실패했습니다.');
     await _tokenStorage.setAccessToken(res.accessToken);
     final me = await _api.getMe(res.accessToken);
+    await _registerFcmTokenIfAvailable(res.accessToken);
     return me.role;
+  }
+
+  /// FCM 토큰이 있으면 백엔드에 등록 (로그인 직후·앱 실행 시 호출).
+  Future<void> registerFcmTokenIfLoggedIn() async {
+    final token = await _tokenStorage.getAccessToken();
+    if (token == null || token.isEmpty) return;
+    await _registerFcmTokenIfAvailable(token);
+  }
+
+  Future<void> _registerFcmTokenIfAvailable(String accessToken) async {
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null && fcmToken.isNotEmpty) {
+        final platform = Platform.isIOS ? 'IOS' : 'ANDROID';
+        await _api.registerFcmToken(
+          token: accessToken,
+          fcmToken: fcmToken,
+          platform: platform,
+        );
+      }
+    } catch (_) {
+      // 등록 실패해도 로그인/앱 흐름은 유지
+    }
   }
 
   Future<String?> getAccessToken() => _tokenStorage.getAccessToken();

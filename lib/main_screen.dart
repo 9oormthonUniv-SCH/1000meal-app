@@ -55,6 +55,7 @@ class _MainScreenState extends State<MainScreen> {
         _role = me.role;
         _roleLoaded = true;
       });
+      await repo.registerFcmTokenIfLoggedIn();
     } catch (_) {
       if (!mounted) return;
       setState(() {

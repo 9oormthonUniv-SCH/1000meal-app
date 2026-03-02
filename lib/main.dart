@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart' as kakao;
 import 'package:provider/provider.dart';
@@ -8,6 +12,8 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import 'common/config/app_config.dart';
+import 'common/notification/fcm_notification_storage.dart';
+import 'common/notification/push_notification_handler.dart';
 import 'common/dio/dio_client.dart';
 import 'common/storage/token_storage.dart';
 import 'features/auth/data/auth_api.dart';
@@ -46,6 +52,7 @@ import 'features/notice/screens/notice_edit_screen.dart';
 import 'features/qr/data/qr_api.dart';
 import 'features/mypage/screens/change_email_screen.dart';
 import 'features/mypage/screens/mypage_screen.dart';
+import 'features/mypage/screens/notification_settings_screen.dart';
 import 'features/mypage/viewmodels/change_email_view_model.dart';
 import 'features/mypage/viewmodels/mypage_view_model.dart';
 import 'features/signup/screens/signup_credentials_screen.dart';
@@ -54,8 +61,97 @@ import 'features/signup/screens/signup_terms_screen.dart';
 import 'providers/auth_provider.dart';
 import 'package:meal_app/main_screen.dart';
 
+/// FCM 백그라운드 수신 시 호출 (top-level 함수 필수)
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await saveRemoteMessageToStorage(message);
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase 초기화 (실패 시 앱은 그대로 실행, FCM만 비활성화)
+  bool firebaseOk = false;
+  try {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    firebaseOk = true;
+  } catch (e, st) {
+    if (kDebugMode) {
+      debugPrint('Firebase 초기화 실패 (앱은 계속 실행): $e');
+      debugPrint('$st');
+    }
+  }
+
+  if (firebaseOk) {
+    // iOS: 알림 권한 요청 후에만 APNs 토큰이 설정됨 → 그다음 FCM 토큰 발급 가능
+    if (Platform.isIOS) {
+      await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    }
+
+    await initPushNotificationDisplay();
+    setupForegroundMessageHandler();
+
+    // 알림 탭으로 앱 진입 시 해당 메시지도 저장 (알림 페이지에 기록 남기기)
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      saveRemoteMessageToStorage(initialMessage);
+    }
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      saveRemoteMessageToStorage(message);
+    });
+
+    void printFcmToken(String? token) {
+      if (!kDebugMode) return;
+      if (token != null) {
+        debugPrint('FCM Token: $token');
+      } else {
+        debugPrint('FCM Token: (null) - 권한 또는 설정 확인');
+      }
+    }
+
+    // 토큰 갱신 시에도 출력 (iOS에서 APNs 토큰이 늦게 오면 여기서 처음 토큰 출력됨)
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      printFcmToken(newToken);
+    });
+
+    try {
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
+      printFcmToken(fcmToken);
+      // iOS에서 APNs 토큰이 아직 안 와서 실패한 경우, 잠시 후 재시도
+      if (fcmToken == null && Platform.isIOS) {
+        Future.delayed(const Duration(seconds: 3), () async {
+          try {
+            final retryToken = await FirebaseMessaging.instance.getToken();
+            printFcmToken(retryToken);
+          } catch (_) {}
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('FCM 토큰 조회 실패: $e');
+      if (Platform.isIOS) {
+        Future.delayed(const Duration(seconds: 3), () async {
+          try {
+            final retryToken = await FirebaseMessaging.instance.getToken();
+            if (kDebugMode && retryToken != null) {
+              debugPrint('FCM Token (재시도 성공): $retryToken');
+            }
+          } catch (_) {}
+        });
+      }
+    }
+  }
 
   // AppConfig 로드
   await AppConfig.load();
@@ -267,6 +363,8 @@ class MyApp extends StatelessWidget {
           },
           // MyPage should be accessible for guests too (shows guest UI when not logged in).
           MyPageScreen.routeName: (_) => const MyPageScreen(),
+          NotificationSettingsScreen.routeName: (_) =>
+              const NotificationSettingsScreen(),
           ChangeEmailScreen.routeName: (_) => const ChangeEmailScreen(),
           // signup
           '/signup': (_) => const SignupIdScreen(),

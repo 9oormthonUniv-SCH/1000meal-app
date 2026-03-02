@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 
 import '../../../common/widgets/app_snackbar.dart';
+import 'notification_settings_screen.dart';
 import '../../auth/models/role.dart';
 import '../../auth/repositories/auth_repository.dart';
 import '../viewmodels/mypage_view_model.dart';
@@ -137,8 +138,13 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 onPressed: () => Navigator.of(context).maybePop(),
               )
             : null,
-        // 알림 버튼: 미구현으로 숨김 (FCM 도입 후 복구)
-        actions: const [],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined, color: Color(0xFF111827)),
+            onPressed: () =>
+                Navigator.of(context).pushNamed(NotificationSettingsScreen.routeName),
+          ),
+        ],
       ),
       body: body,
     );
