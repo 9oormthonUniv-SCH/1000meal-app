@@ -62,12 +62,13 @@ class StoreBottomSheet extends StatelessWidget {
         (currentStore.phone ?? '').trim().isNotEmpty &&
         currentStore.phone != '010-0000-0000';
     final bottomHeight = storeBottomSheetHeight(currentStore);
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return SafeArea(
       top: false,
       bottom: false,
       child: SizedBox(
-        height: bottomHeight,
+        height: bottomHeight + bottomInset,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

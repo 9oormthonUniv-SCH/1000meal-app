@@ -57,7 +57,10 @@ class _StoreDetailView extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: SafeArea(child: _buildBody(context, vm)),
+      body: SafeArea(
+        bottom: false,
+        child: _buildBody(context, vm),
+      ),
     );
   }
 
@@ -103,9 +106,7 @@ class _StoreDetailView extends StatelessWidget {
     );
 
     return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).padding.bottom + 24,
-      ),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -526,12 +527,15 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
         if (singleGroup) ...[
           buildCardsForGroup(null),
           const SizedBox(height: 10),
-          Text(
-            '남은 수량 : ${singleRemain()}개',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFFFF6E3F),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              '남은 수량 : ${singleRemain()}개',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFFF6E3F),
+              ),
             ),
           ),
         ] else ...[

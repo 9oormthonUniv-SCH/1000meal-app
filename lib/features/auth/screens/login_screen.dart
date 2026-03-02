@@ -17,7 +17,11 @@ class LoginScreen extends StatelessWidget {
     final primary = isStudent ? const Color(0xFFF97316) : const Color(0xFF60A5FA);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
         title: const Text(''),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -49,10 +53,12 @@ class LoginScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const _LabeledTextField(
+                    _LabeledTextField(
                       label: '아이디',
-                      hint: '학번 8자리를 입력해주세요',
-                      keyboardType: TextInputType.number,
+                      studentHint: '학번 8자리를 입력해주세요',
+                      adminHint: '아이디를 입력해주세요',
+                      studentKeyboardType: TextInputType.number,
+                      adminKeyboardType: TextInputType.text,
                     ),
                     const SizedBox(height: 12),
                     _PasswordField(
@@ -249,14 +255,23 @@ class _HeroCopy extends StatelessWidget {
 
 class _LabeledTextField extends StatelessWidget {
   final String label;
-  final String hint;
-  final TextInputType? keyboardType;
+  final String studentHint;
+  final String adminHint;
+  final TextInputType studentKeyboardType;
+  final TextInputType adminKeyboardType;
 
-  const _LabeledTextField({required this.label, required this.hint, this.keyboardType});
+  const _LabeledTextField({
+    required this.label,
+    required this.studentHint,
+    required this.adminHint,
+    required this.studentKeyboardType,
+    required this.adminKeyboardType,
+  });
 
   @override
   Widget build(BuildContext context) {
     final vm = context.read<LoginViewModel>();
+    final isStudent = vm.role == Role.student;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -264,9 +279,9 @@ class _LabeledTextField extends StatelessWidget {
         const SizedBox(height: 8),
         TextField(
           enabled: !vm.loading,
-          keyboardType: keyboardType,
+          keyboardType: isStudent ? studentKeyboardType : adminKeyboardType,
           decoration: InputDecoration(
-            hintText: vm.role == Role.student ? hint : '아이디를 입력해주세요',
+            hintText: isStudent ? studentHint : adminHint,
             border: const UnderlineInputBorder(),
           ),
           onChanged: vm.setUserId,
