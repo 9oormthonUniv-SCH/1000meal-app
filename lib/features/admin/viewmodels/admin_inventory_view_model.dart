@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
 import '../../../common/utils/kst_date.dart';
 import '../models/menu_models.dart';
+import '../models/store_models.dart';
 import '../repositories/admin_repository.dart';
 
 class AdminInventoryViewModel extends ChangeNotifier {
@@ -47,22 +50,35 @@ class AdminInventoryViewModel extends ChangeNotifier {
     return g?.stock ?? 0;
   }
 
+  /// 실기기/느린 네트워크 대비 25초.
+  static const Duration _loadTimeout = Duration(seconds: 25);
+  /// 모바일에서 Future.timeout이 안 먹을 수 있어 Timer로 반드시 로딩 해제.
+  static const Duration _loadTimerSafety = Duration(seconds: 28);
+  /// 버튼 적용(저장) 시 API가 멈추면 무한 로딩 방지.
+  static const Duration _saveTimeout = Duration(seconds: 15);
+
   Future<void> loadToday() async {
+    if (loading) return;
     loading = true;
     errorMessage = null;
     notifyListeners();
 
+    Timer? safetyTimer;
+    safetyTimer = Timer(_loadTimerSafety, () {
+      if (loading) {
+        loading = false;
+        errorMessage = '로딩 시간이 초과되었습니다. 네트워크를 확인해 주세요.';
+        notifyListeners();
+      }
+    });
+
     try {
-      // 매장 영업 여부는 스토어 상세 API 기준으로 사용 (재고 페이지 진입 시 팝업/비활성 스타일 정확 반영)
-      final storeFuture = _repo.getStoreDetail();
-      final res = await _repo.getDailyMenu(date: date);
-      daily = res;
-      final store = await storeFuture;
-      open = store.open;
-      _groupStocks
-        ..clear()
-        ..addEntries((res?.groups ?? const <DailyMenuGroupItem>[]).map((g) => MapEntry(g.id, g.stock)));
-      _lastSavedTotalStock = totalStock;
+      await _loadTodayInternal().timeout(
+        _loadTimeout,
+        onTimeout: () => throw TimeoutException('로딩 시간이 초과되었습니다. 네트워크를 확인해 주세요.'),
+      );
+    } on TimeoutException catch (e) {
+      errorMessage = e.message ?? '로딩 시간이 초과되었습니다. 네트워크를 확인해 주세요.';
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);
@@ -70,9 +86,27 @@ class AdminInventoryViewModel extends ChangeNotifier {
         errorMessage = '오늘 재고 불러오기 실패';
       }
     } finally {
+      safetyTimer.cancel();
       loading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> _loadTodayInternal() async {
+    // 두 API를 Future.wait로 동시에 대기. 한쪽만 멈춰도 전체가 타임아웃되어 loading이 해제됨.
+    final results = await Future.wait<Object?>([
+      _repo.getDailyMenu(date: date),
+      _repo.getStoreDetail(),
+    ]);
+    final res = results[0] as DailyMenuResponse?;
+    final store = results[1] as StoreDetail;
+
+    daily = res;
+    open = store.open;
+    _groupStocks
+      ..clear()
+      ..addEntries((res?.groups ?? const <DailyMenuGroupItem>[]).map((g) => MapEntry(g.id, g.stock)));
+    _lastSavedTotalStock = totalStock;
   }
 
   void closeModal() {
@@ -88,14 +122,18 @@ class AdminInventoryViewModel extends ChangeNotifier {
   }
 
   Future<void> confirmOpenAndUnlock() async {
-    // modal confirm: 실제 영업 토글 API 호출 (요구사항)
     saving = true;
     errorMessage = null;
     notifyListeners();
     try {
-      await _repo.toggleStoreStatus();
+      await _repo.toggleStoreStatus().timeout(
+        _saveTimeout,
+        onTimeout: () => throw TimeoutException('처리 시간이 초과되었습니다. 네트워크를 확인해 주세요.'),
+      );
       open = true;
       showOpenModal = false;
+    } on TimeoutException catch (e) {
+      errorMessage = e.message ?? '처리 시간이 초과되었습니다. 네트워크를 확인해 주세요.';
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);
@@ -109,14 +147,18 @@ class AdminInventoryViewModel extends ChangeNotifier {
   }
 
   Future<void> confirmCloseAndLock() async {
-    // modal confirm: 실제 영업 토글 API 호출 (요구사항)
     saving = true;
     errorMessage = null;
     notifyListeners();
     try {
-      await _repo.toggleStoreStatus();
+      await _repo.toggleStoreStatus().timeout(
+        _saveTimeout,
+        onTimeout: () => throw TimeoutException('처리 시간이 초과되었습니다. 네트워크를 확인해 주세요.'),
+      );
       open = false;
       showCloseModal = false;
+    } on TimeoutException catch (e) {
+      errorMessage = e.message ?? '처리 시간이 초과되었습니다. 네트워크를 확인해 주세요.';
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);
@@ -168,13 +210,18 @@ class AdminInventoryViewModel extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
     try {
-      await _repo.updateMenuGroupStock(groupId: groupId, stock: stock);
+      await _repo.updateMenuGroupStock(groupId: groupId, stock: stock).timeout(
+        _saveTimeout,
+        onTimeout: () => throw TimeoutException('처리 시간이 초과되었습니다. 네트워크를 확인해 주세요.'),
+      );
       final nextTotal = totalStock;
       // 영업 중 상태에서 총 재고가 0으로 떨어졌을 때, 영업 종료 전환 모달 제안
       if (open && nextTotal == 0 && _lastSavedTotalStock > 0) {
         showCloseModal = true;
       }
       _lastSavedTotalStock = nextTotal;
+    } on TimeoutException catch (e) {
+      errorMessage = e.message ?? '처리 시간이 초과되었습니다. 네트워크를 확인해 주세요.';
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);
@@ -204,7 +251,10 @@ class AdminInventoryViewModel extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
     try {
-      final res = await _repo.deductMenuGroupStock(groupId: groupId, deductionUnit: unit);
+      final res = await _repo.deductMenuGroupStock(groupId: groupId, deductionUnit: unit).timeout(
+        _saveTimeout,
+        onTimeout: () => throw TimeoutException('처리 시간이 초과되었습니다. 네트워크를 확인해 주세요.'),
+      );
       final nextStock = (res['stock'] is int) ? res['stock'] as int : int.tryParse('${res['stock']}') ?? groupStock(groupId);
       _groupStocks[groupId] = nextStock < 0 ? 0 : nextStock;
       final nextTotal = totalStock;
@@ -212,6 +262,8 @@ class AdminInventoryViewModel extends ChangeNotifier {
         showCloseModal = true;
       }
       _lastSavedTotalStock = nextTotal;
+    } on TimeoutException catch (e) {
+      errorMessage = e.message ?? '처리 시간이 초과되었습니다. 네트워크를 확인해 주세요.';
     } catch (e) {
       if (e is ApiException) {
         errorMessage = mapErrorToMessage(e, responseData: e.details);

@@ -202,6 +202,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider.value(value: authRepo),
+        Provider.value(value: loginPreferenceStorage),
         Provider.value(value: qrApi),
         Provider.value(value: adminApi),
         Provider.value(value: adminRepo),

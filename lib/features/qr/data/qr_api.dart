@@ -31,12 +31,12 @@ class QrApi {
     }
   }
 
-  /// qrToken으로 매장 이름 조회 (GET /qr/stores?qrToken= 또는 동일 형식). 없으면 null.
+  /// qrToken으로 매장 이름 조회. GET /api/v1/qr/stores/{qrToken} (단일 객체 응답).
   Future<String?> getStoreNameByQrToken(String qrToken, String accessToken) async {
     try {
+      final url = '${AppConfig.apiBaseUrl}/qr/stores/${Uri.encodeComponent(qrToken)}';
       final res = await _client.get<Map<String, dynamic>>(
-        '/qr/stores',
-        queryParameters: {'qrToken': qrToken},
+        url,
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -45,8 +45,11 @@ class QrApi {
       if (res == null) return null;
       final data = res['data'];
       if (data is! Map<String, dynamic>) return null;
-      final name = data['storeName'] ?? data['name'];
-      return name?.toString();
+      final menuGroup = data['menuGroupName']?.toString().trim();
+      final store = data['storeName']?.toString().trim();
+      if (menuGroup != null && menuGroup.isNotEmpty) return menuGroup;
+      if (store != null && store.isNotEmpty) return store;
+      return store ?? menuGroup;
     } on ApiException catch (_) {
       return null;
     }

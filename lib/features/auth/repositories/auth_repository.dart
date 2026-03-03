@@ -32,6 +32,9 @@ class AuthRepository {
     final res = await _api.login(LoginRequest(role: role, userId: userId, password: password));
     if (res.accessToken.isEmpty) throw ApiException('로그인에 실패했습니다.');
     await _tokenStorage.setAccessToken(res.accessToken);
+    if (res.refreshToken != null && res.refreshToken!.isNotEmpty) {
+      await _tokenStorage.setRefreshToken(res.refreshToken!);
+    }
     final accountKey = getAccountIdFromToken(res.accessToken);
     if (accountKey != null && accountKey.isNotEmpty) {
       await setCurrentAccountKeyForNotifications(accountKey);
@@ -104,6 +107,27 @@ class AuthRepository {
   }
 
   Future<String?> getAccessToken() => _tokenStorage.getAccessToken();
+
+  /// Refresh Token으로 새 Access Token 발급 후 저장. 성공 시 새 accessToken 반환, 실패 시 예외.
+  Future<String> refreshAccessToken() async {
+    final refreshToken = await _tokenStorage.getRefreshToken();
+    if (refreshToken == null || refreshToken.isEmpty) {
+      throw ApiException('로그인이 필요합니다.');
+    }
+    final res = await _api.refresh(refreshToken);
+    if (res.accessToken.isEmpty) throw ApiException('토큰 갱신에 실패했습니다.');
+    await _tokenStorage.setAccessToken(res.accessToken);
+    return res.accessToken;
+  }
+
+  /// 토큰만 삭제 (로그인 설정·알림 키는 유지). 자동 로그인 테스트용.
+  Future<void> clearTokensOnly() async {
+    try {
+      await _tokenStorage.clear().timeout(const Duration(seconds: 2));
+    } catch (_) {
+      // ignore
+    }
+  }
 
   /// Best-effort logout.
   /// Some platforms/plugins may hang on secure storage operations in edge cases.

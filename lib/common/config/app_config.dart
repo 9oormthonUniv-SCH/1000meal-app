@@ -9,14 +9,18 @@ class AppConfig {
     await dotenv.load(fileName: _envFile);
   }
 
-  static String get apiBaseUrl {
+  static String get _normalizedApiUrl {
     final raw = dotenv.env['NEXT_PUBLIC_API_URL']?.trim();
     if (raw == null || raw.isEmpty) {
       throw StateError('NEXT_PUBLIC_API_URL is missing in $_envFile');
     }
-    final normalized = raw.endsWith('/') ? raw.substring(0, raw.length - 1) : raw;
-    return '$normalized/api/v1';
+    return raw.endsWith('/') ? raw.substring(0, raw.length - 1) : raw;
   }
+
+  /// 도메인 루트 (api/v1 제외). 예: https://1000meal.shop
+  static String get apiRootUrl => _normalizedApiUrl;
+
+  static String get apiBaseUrl => '$_normalizedApiUrl/api/v1';
 
   /// 앱 다운로드/소개 고정 URL. QR이 이 base로 시작하고 qrToken 파라미터가 있으면 인앱 명부 등록 플로우.
   static String? get appDownloadUrlBase {

@@ -54,6 +54,8 @@ class _QrScanScreenState extends State<QrScanScreen> {
   String? _pendingQrToken;
   String _pendingStoreName = '매장';
   bool _isProcessing = false;
+  String _authName = '';
+  String _authUserId = '';
   String? _lastProcessedUrl;
   DateTime? _lastProcessedAt;
   static const _cooldown = Duration(seconds: 2);
@@ -232,6 +234,13 @@ class _QrScanScreenState extends State<QrScanScreen> {
       }
       try {
         final usage = await qrApi.reportQrUsageByToken(token, t);
+        String authName = '';
+        String authUserId = '';
+        try {
+          final me = await authRepo.getMe();
+          authName = me.name?.trim() ?? '';
+          authUserId = me.username.trim();
+        } catch (_) {}
         if (!mounted) return;
         setState(() {
           _todayUsage = QrTodayResponse(
@@ -241,6 +250,8 @@ class _QrScanScreenState extends State<QrScanScreen> {
             usedAt: usage.usedAt,
             usedDate: usage.usedDate,
           );
+          _authName = authName;
+          _authUserId = authUserId;
           _pendingQrToken = null;
           _isProcessing = false;
           _view = _QrView.auth;
@@ -250,11 +261,19 @@ class _QrScanScreenState extends State<QrScanScreen> {
         setState(() => _isProcessing = false);
         String msg = _QrMessages.registerFailed;
         if (e is ApiException) {
-          msg = e.statusCode == 404
-              ? _QrMessages.storeNotFound
-              : (e.message.isNotEmpty ? e.message : _QrMessages.registerFailed);
+          if (e.statusCode == 409) {
+            final d = e.details;
+            msg = (d is Map && d['message'] != null)
+                ? d['message'].toString().trim()
+                : '오늘 이미 이용했습니다.';
+            if (msg.isEmpty) msg = '오늘 이미 이용했습니다.';
+          } else if (e.statusCode == 404) {
+            msg = _QrMessages.storeNotFound;
+          } else if (e.message.isNotEmpty) {
+            msg = e.message;
+          }
         }
-        AppSnackBar.show(context, msg);
+        AppSnackBar.show(context, msg, centered: true);
       }
     });
   }
@@ -306,6 +325,8 @@ class _QrScanScreenState extends State<QrScanScreen> {
     if (_view == _QrView.auth) {
       return QrAuthScreen(
         today: _todayUsage!,
+        name: _authName,
+        userId: _authUserId,
         onBackToCamera: _goToCameraFromAuth,
       );
     }
@@ -331,7 +352,7 @@ class _QrScanScreenState extends State<QrScanScreen> {
       AppSnackBar.show(context, _QrMessages.testScanLoginRequired);
       return;
     }
-    const testUrl = 'https://15.164.105.225.nip.io/api/v1/qr?qrToken=E722A795-B214-43E8-B8AE-A336ED0FBDC4';
+    const testUrl = 'https://1000meal.shop/qr/stores/?qrToken=E722A795-B214-43E8-B8AE-A336ED0FBDC4';
     final testToken = _parseQrTokenFromUrl(testUrl);
     if (testToken == null || !_isValidQrToken(testToken)) {
       if (mounted) {
@@ -343,9 +364,7 @@ class _QrScanScreenState extends State<QrScanScreen> {
     try {
       final name = await qrApi.getStoreNameByQrToken(testToken, token);
       if (name != null && name.isNotEmpty) storeName = name;
-    } catch (_) {
-      // API 없거나 실패 시 기본 "매장"으로 진행
-    }
+    } catch (_) {}
     if (!mounted) return;
     setState(() {
       _pendingQrToken = testToken;

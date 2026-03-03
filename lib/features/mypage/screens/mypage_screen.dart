@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
@@ -231,6 +232,18 @@ class _Body extends StatelessWidget {
             color: Colors.white,
             child: Column(
               children: [
+                if (kDebugMode)
+                  _MenuItem(
+                    label: '자동 로그인 테스트 (토큰 삭제 후 재진입)',
+                    labelColor: Colors.grey,
+                    onTap: () async {
+                      await context.read<AuthRepository>().clearTokensOnly();
+                      if (!context.mounted) return;
+                      Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false);
+                    },
+                    trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
+                  ),
+                if (kDebugMode) const Divider(height: 1, color: Color(0xFFE5E7EB)),
                 _MenuItem(
                   label: '로그아웃',
                   onTap: () async {

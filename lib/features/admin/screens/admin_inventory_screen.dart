@@ -145,6 +145,27 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
             ),
           ),
 
+          // 재고 차감/적용 중 로딩 (알림 등 지연 시 중복 탭 방지)
+          if (vm.saving)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.2),
+                child: const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: Color(0xFF54AAFF)),
+                      SizedBox(height: 12),
+                      Text(
+                        '저장 중...',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
           // 영업 전 모달: "영업중"만 54AAFF, 아니오 F1F1F1/767676, 네 54AAFF/FFFFFF
           if (vm.showOpenModal)
             Positioned.fill(

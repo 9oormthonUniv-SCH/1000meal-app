@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 import '../../../widgets/app_text_logo.dart';
+import '../../auth/repositories/auth_repository.dart';
+import '../../users/models/me_response.dart';
 import '../models/qr_models.dart';
 
-/// 인증 화면: 당일 등록 완료 카드 + 카메라로 돌아가기 (바텀시트 제외 화면 중앙 그라데이션)
+/// 인증 화면: 당일 등록 완료 + 카메라로 돌아가기
 class QrAuthScreen extends StatefulWidget {
   final QrTodayResponse today;
+  /// 표시용 이름 (API name). 카드 좌하단 위쪽.
+  final String name;
+  /// 사용자 아이디(학번 등). 카드 좌하단 아래쪽.
+  final String userId;
   final VoidCallback onBackToCamera;
 
   const QrAuthScreen({
     super.key,
     required this.today,
+    this.name = '',
+    this.userId = '',
     required this.onBackToCamera,
   });
 
@@ -20,142 +28,167 @@ class QrAuthScreen extends StatefulWidget {
 }
 
 class _QrAuthScreenState extends State<QrAuthScreen> {
-  static const double _logoAreaHeight = 66;
+  Future<MeResponse?>? _meFuture;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_meFuture == null && widget.name.isEmpty && widget.userId.isEmpty) {
+      _meFuture = context.read<AuthRepository>().getMe().catchError((_) => null);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final bodyHeight = constraints.maxHeight;
-          return Stack(
-            children: [
-              _buildGradientLayer(bodyHeight),
-              _buildLogoHeader(),
-              _buildCenterCard(),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildGradientLayer(double bodyHeight) {
-    return ClipRect(
-      clipper: _BelowLogoRectClipper(_logoAreaHeight),
-      child: SizedBox(
-        height: bodyHeight,
-        width: double.infinity,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFFFF6E3F).withOpacity(0.0),
-                const Color(0xFFFF6E3F).withOpacity(0.15),
-                const Color(0xFFFF6E3F).withOpacity(0.5),
-                const Color(0xFFFF6E3F).withOpacity(0.15),
-                const Color(0xFFFF6E3F).withOpacity(0.0),
-              ],
-              stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: AppTextLogoWidget(),
             ),
-          ),
+            const SizedBox(height: 0),
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _AuthReturnCameraButton(onPressed: widget.onBackToCamera),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Center(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final w = constraints.maxWidth * 0.80;
+                              final hasPassedData =
+                                  widget.name.isNotEmpty || widget.userId.isNotEmpty;
+                              final name = hasPassedData
+                                  ? widget.name
+                                  : null;
+                              final userId = hasPassedData
+                                  ? widget.userId
+                                  : null;
+                              if (!hasPassedData) {
+                                return FutureBuilder<MeResponse?>(
+                                  future: _meFuture,
+                                  builder: (context, snapshot) {
+                                    final me = snapshot.data;
+                                    return _buildCard(
+                                      width: w,
+                                      storeName: widget.today.storeName,
+                                      name: me?.name?.trim() ?? '',
+                                      userId: me?.username.trim() ?? '',
+                                    );
+                                  },
+                                );
+                              }
+                              return _buildCard(
+                                width: w,
+                                storeName: widget.today.storeName,
+                                name: name ?? '',
+                                userId: userId ?? '',
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          '명부 등록이 완료되었습니다\n직원에게 화면을 보여주세요',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFF383230),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildLogoHeader() {
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 16),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: AppTextLogoWidget(),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCenterCard() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _AuthReturnCameraButton(onPressed: widget.onBackToCamera),
-          const SizedBox(height: 24),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 36),
-            constraints: const BoxConstraints(minWidth: 300, maxWidth: 420),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
-                  blurRadius: 20,
-                  offset: const Offset(0, 0),
-                ),
-              ],
+  Widget _buildCard({
+    required double width,
+    required String storeName,
+    required String name,
+    required String userId,
+  }) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: SizedBox(
+        width: width,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Image.asset(
+              'assets/Card.png',
+              width: width,
+              fit: BoxFit.contain,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (widget.today.storeName.isNotEmpty)
-                  Text(
-                    widget.today.storeName,
-                    style: const TextStyle(
-                      color: Color(0xFFFF6E3F),
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
+            Positioned(
+              left: 24,
+              top: 24,
+              right: 24,
+              child: Text(
+                storeName.isNotEmpty ? storeName : '매장',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Positioned(
+              left: 24,
+              bottom: 24,
+              right: 24,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (name.isNotEmpty)
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                const SizedBox(height: 24),
-                SvgPicture.asset(
-                  'assets/icon/QR_Active.svg',
-                  width: 88,
-                  height: 88,
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  '명부 등록이 완료되었습니다\n직원에게 화면을 보여주세요',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF383230),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    height: 1.5,
-                  ),
-                ),
-              ],
+                  if (userId.isNotEmpty) ...[
+                    if (name.isNotEmpty) const SizedBox(height: 4),
+                    Text(
+                      userId,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
-}
-
-/// 로고 아래만 보이게 클리핑 (그라데이션 = 바텀 제외 전체 화면, 표시 = 로고 아래만)
-class _BelowLogoRectClipper extends CustomClipper<Rect> {
-  final double topInset;
-
-  const _BelowLogoRectClipper(this.topInset);
-
-  @override
-  Rect getClip(Size size) =>
-      Rect.fromLTWH(0, topInset, size.width, size.height - topInset);
-
-  @override
-  bool shouldReclip(covariant _BelowLogoRectClipper old) =>
-      old.topInset != topInset;
 }
 
 class _AuthReturnCameraButton extends StatelessWidget {
