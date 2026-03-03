@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
 import '../../../common/widgets/app_snackbar.dart';
 import '../models/notice_models.dart';
 import '../repositories/notice_repository.dart';
@@ -75,19 +77,11 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
       listVm = null;
     }
 
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('공지 삭제'),
-        content: const Text('정말 삭제할까요?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('취소')),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('삭제', style: TextStyle(color: Color(0xFFEF4444))),
-          ),
-        ],
-      ),
+    final ok = await AppConfirmDialog.showDelete(
+      context,
+      content: '이 동작은 취소할 수 없습니다\n삭제하시겠습니까?',
+      cancelLabel: '아니요',
+      confirmLabel: '삭제',
     );
     if (ok != true) return;
     if (!mounted) return;
@@ -260,7 +254,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
           _adminButtons(isAdmin: isAdmin),
           const SizedBox(height: 40),
           const Text(
-            '이메일 문의: cheonbab@sch.ac.kr',
+            '이메일 문의: jeong01101095@gmail.com',
             style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
           ),
           const SizedBox(height: 8),
@@ -284,15 +278,8 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        title: const SizedBox.shrink(),
+      appBar: const AppBarCommon(
+        title: '',
       ),
       body: SafeArea(child: body),
     );

@@ -40,7 +40,7 @@ class _NoticeListSectionState extends State<NoticeListSection> {
               Text(
                 vm.errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Color(0xFF6B7280)),
+                style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
               ),
               const SizedBox(height: 12),
               TextButton(
@@ -48,6 +48,16 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                 child: const Text('다시 시도'),
               ),
             ],
+          ),
+        ),
+      );
+    } else if (vm.notices.isEmpty) {
+      content = Center(
+        child: Text(
+          '등록된 공지사항이 없습니다.',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF6B7280),
           ),
         ),
       );

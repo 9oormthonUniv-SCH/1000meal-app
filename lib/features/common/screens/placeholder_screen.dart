@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../auth/repositories/auth_repository.dart';
+import '../../../common/widgets/app_bar_common.dart';
 import '../../auth/models/role.dart';
 import 'package:provider/provider.dart';
 
@@ -12,7 +13,7 @@ class PlaceholderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBarCommon(title: title),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

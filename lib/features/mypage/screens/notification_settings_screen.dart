@@ -1,12 +1,8 @@
-import 'dart:io';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
 
 import '../../../common/notification/fcm_notification_storage.dart';
-import '../../../common/widgets/app_snackbar.dart';
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/notification_list_item.dart';
 
 /// 알림 화면 (웹 notification 페이지와 동일: 수신 알림 목록 + 설정 안내)
 class NotificationSettingsScreen extends StatefulWidget {
@@ -22,29 +18,42 @@ class NotificationSettingsScreen extends StatefulWidget {
 class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
   List<StoredFcmNotification> _list = [];
   bool _loading = true;
-  String? _fcmToken;
-  NotificationSettings? _settings;
+  bool _isLoggedInForNotifications = false;
+  final Set<String> _readIds = {};
 
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final notifications = await readStoredFcmNotifications();
-      final token = await FirebaseMessaging.instance.getToken();
-      NotificationSettings? settings;
-      if (Platform.isIOS) {
-        settings = await FirebaseMessaging.instance.getNotificationSettings();
+      final accountKey = await getCurrentAccountKeyForNotifications();
+      if (accountKey == null || accountKey.isEmpty) {
+        if (!mounted) return;
+        setState(() {
+          _list = [];
+          _readIds.clear();
+          _isLoggedInForNotifications = false;
+          _loading = false;
+        });
+        return;
       }
+      final notifications = await readStoredFcmNotifications();
+      final readIds = await readFcmNotificationReadIds();
       if (!mounted) return;
       setState(() {
         _list = notifications;
-        _fcmToken = token;
-        _settings = settings;
+        _readIds.clear();
+        _readIds.addAll(readIds);
+        _isLoggedInForNotifications = true;
         _loading = false;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
     }
+  }
+
+  void _markAsRead(String id) {
+    setState(() => _readIds.add(id));
+    addFcmNotificationReadId(id);
   }
 
   @override
@@ -57,26 +66,13 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: const Text(
-          '알림',
-          style: TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
+      appBar: AppBarCommon(
+        showBack: true,
+        title: '알림',
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFF374151)),
+            icon: const Icon(Icons.refresh, color: Color(0xFF111827)),
             onPressed: _loading ? null : () => _load(),
             tooltip: '새로고침',
           ),
@@ -91,7 +87,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                     child: Text(
-                      '아직 받은 알림이 없습니다.',
+                      _isLoggedInForNotifications ? '아직 받은 알림이 없습니다.' : '로그인 후 알림을 확인할 수 있습니다.',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -100,126 +96,48 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   )
                 else
                   Expanded(
-                    child: ListView.separated(
+                    child: ListView.builder(
                       itemCount: _list.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final item = _list[index];
-                        final time = _formatTime(item.createdAt);
-                        return Container(
-                          color: const Color(0xFFFFF7ED), // orange-50
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[300],
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.title,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF111827),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      item.body,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey[700],
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                time,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[500],
-                                ),
-                              ),
-                            ],
+                        final timeRight = _formatTimeAgo(item.createdAt);
+                        final isRead = _readIds.contains(item.id);
+                        return NotificationListItem(
+                          title: item.title,
+                          body: item.body,
+                          timeRight: timeRight,
+                          isRead: isRead,
+                          onTap: () => _markAsRead(item.id),
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         );
                       },
                     ),
                   ),
-                SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (Platform.isIOS && _settings != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(
-                              '권한: ${_authorizationStatusText(_settings!.authorizationStatus)}',
-                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                            ),
-                          ),
-                        OutlinedButton.icon(
-                          onPressed: () {
-                            AppSnackBar.show(
-                              context,
-                              Platform.isIOS
-                                  ? '설정 > 알림에서 이 앱 알림을 켜주세요.'
-                                  : '설정 > 앱 > 오늘순밥 > 알림에서 허용해 주세요.',
-                            );
-                          },
-                          icon: const Icon(Icons.settings, size: 20),
-                          label: const Text('앱 설정에서 알림 허용하기'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFFF97316),
-                            side: const BorderSide(color: Color(0xFFF97316)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ],
             ),
     );
   }
 
-  String _formatTime(String createdAt) {
+  /// "몇 분 전", "몇 시간 전", "몇 일 전" 형식
+  String _formatTimeAgo(String createdAt) {
     try {
       final dt = DateTime.parse(createdAt);
-      return DateFormat('MM.dd HH:mm').format(dt);
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+      if (diff.inMinutes < 1) return '방금 전';
+      if (diff.inMinutes < 60) return '${diff.inMinutes}분 전';
+      if (diff.inHours < 24) return '${diff.inHours}시간 전';
+      if (diff.inDays < 31) return '${diff.inDays}일 전';
+      return '${diff.inDays ~/ 30}달 전';
     } catch (_) {
       return '';
-    }
-  }
-
-  String _authorizationStatusText(AuthorizationStatus status) {
-    switch (status) {
-      case AuthorizationStatus.authorized:
-        return '허용됨';
-      case AuthorizationStatus.denied:
-        return '거부됨';
-      case AuthorizationStatus.notDetermined:
-        return '미선택';
-      case AuthorizationStatus.provisional:
-        return '임시 허용';
     }
   }
 }

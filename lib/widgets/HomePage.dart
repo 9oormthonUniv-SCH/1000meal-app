@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:meal_app/widgets/StoreSection.dart';
 import 'package:meal_app/widgets/app_text_logo.dart';
+import '../common/widgets/app_bar_common.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
@@ -58,21 +59,11 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
+      appBar: AppBarCommon(
+        showBack: false,
         toolbarHeight: 60,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0, // 스크롤 시 색상 변경 방지
+        titleWidget: const AppTextLogoWidget(),
         centerTitle: false,
-        automaticallyImplyLeading: false,
-        titleSpacing: AppTextLogo.leftPadding,
-        title: Image.asset(
-          AppTextLogo.assetPath,
-          width: AppTextLogo.width,
-          height: AppTextLogo.height,
-          fit: BoxFit.contain,
-        ),
-
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined, color: Color(0xFF111827)),

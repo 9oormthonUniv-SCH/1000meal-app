@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/utils/external_link.dart';
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_button.dart';
+import '../../../common/widgets/app_checkbox.dart';
 import '../../auth/viewmodels/signup_view_model.dart';
 import 'signup_terms_screen.dart';
 
@@ -34,7 +37,7 @@ class _SignupCredentialsScreenState extends State<SignupCredentialsScreen> {
     final vm = context.watch<SignupViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('')),
+      appBar: const AppBarCommon(title: ''),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -84,39 +87,20 @@ class _SignupCredentialsScreenState extends State<SignupCredentialsScreen> {
                   Text(vm.submitError!, style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626))),
                 ],
                 const SizedBox(height: 18),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF97316),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    ).copyWith(
-                      backgroundColor: WidgetStateProperty.resolveWith((states) {
-                        if (states.contains(WidgetState.disabled)) {
-                          return const Color(0xFFF97316).withValues(alpha: 0.4);
-                        }
-                        return const Color(0xFFF97316);
-                      }),
-                    ),
-                    onPressed: (!vm.submitting && vm.canSubmit)
-                        ? () async {
-                            await vm.saveDraft();
-                            final ok = await vm.submit();
-                            if (!context.mounted) return;
-                            if (ok) {
-                              Navigator.of(context).pushReplacementNamed('/login');
-                            }
+                AppButton(
+                  label: '본인 인증 후 가입하기',
+                  variant: AppButtonVariant.primary,
+                  onPressed: (!vm.submitting && vm.canSubmit)
+                      ? () async {
+                          await vm.saveDraft();
+                          final ok = await vm.submit();
+                          if (!context.mounted) return;
+                          if (ok) {
+                            Navigator.of(context).pushReplacementNamed('/login');
                           }
-                        : null,
-                    child: vm.submitting
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text('본인 인증 후 가입하기', style: TextStyle(fontWeight: FontWeight.w600)),
-                  ),
+                        }
+                      : null,
+                  loading: vm.submitting,
                 ),
                 const SizedBox(height: 12),
               ],
@@ -442,10 +426,9 @@ class _Agreements extends StatelessWidget {
           onTap: () => onToggleAll(!agreeAll),
           child: Row(
             children: [
-              Checkbox(
+              AppCheckbox(
                 value: agreeAll,
                 onChanged: (v) => onToggleAll(v ?? false),
-                activeColor: const Color(0xFFF97316),
               ),
               const SizedBox(width: 6),
               const Text('모두 동의합니다', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -494,12 +477,9 @@ class _AgreementRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Checkbox(
+        AppCheckbox(
           value: checked,
           onChanged: (v) => onToggle(v ?? false),
-          activeColor: const Color(0xFFF97316),
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
         ),
         Expanded(
           child: Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF374151))),

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
 import '../viewmodels/admin_frequent_menu_edit_view_model.dart';
 
 class AdminFrequentMenuEditScreen extends StatefulWidget {
@@ -39,17 +41,7 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
 
   Future<bool> _confirmDiscardIfDirty(AdminFrequentMenuEditViewModel vm) async {
     if (!vm.dirty) return true;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('변경사항이 있어요'),
-        content: const Text('저장하지 않고 나갈까요?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('취소')),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('나가기')),
-        ],
-      ),
-    );
+    final ok = await AppConfirmDialog.showDiscard(context);
     return ok ?? false;
   }
 
@@ -75,34 +67,14 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
 
     // 확인 모달
     if (vm.showConfirm && vm.pendingAction != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('변경사항이 있어요'),
-            content: const Text('저장하지 않고 나갈까요?'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  context.read<AdminFrequentMenuEditViewModel>().setShowConfirm(false);
-                  context.read<AdminFrequentMenuEditViewModel>().setPendingAction(null);
-                  Navigator.of(context).pop();
-                },
-                child: const Text('취소'),
-              ),
-              TextButton(
-                onPressed: () {
-                  context.read<AdminFrequentMenuEditViewModel>().setShowConfirm(false);
-                  final action = context.read<AdminFrequentMenuEditViewModel>().pendingAction;
-                  context.read<AdminFrequentMenuEditViewModel>().setPendingAction(null);
-                  Navigator.of(context).pop();
-                  action?.call();
-                },
-                child: const Text('나가기'),
-              ),
-            ],
-          ),
-        );
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final vm2 = context.read<AdminFrequentMenuEditViewModel>();
+        final action = vm2.pendingAction;
+        vm2.setShowConfirm(false);
+        vm2.setPendingAction(null);
+        if (!mounted) return;
+        final ok = await AppConfirmDialog.showDiscard(context);
+        if (ok == true && action != null) action();
       });
     }
 
@@ -112,22 +84,16 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
         return ok;
       },
       child: Scaffold(
-        appBar: AppBar(
+        appBar: AppBarCommon(
           toolbarHeight: 48,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          title: Text(widget.presetId == null ? '자주 쓰는 메뉴 추가' : '자주 쓰는 메뉴 수정',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+          title: widget.presetId == null ? '자주 쓰는 메뉴 추가' : '자주 쓰는 메뉴 수정',
           centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-            onPressed: () async {
-              final ok = await _confirmDiscardIfDirty(vm);
-              if (!ok) return;
-              if (!context.mounted) return;
-              Navigator.of(context).maybePop();
-            },
-          ),
+          onBackPressed: () async {
+            final ok = await _confirmDiscardIfDirty(vm);
+            if (!ok) return;
+            if (!context.mounted) return;
+            Navigator.of(context).maybePop();
+          },
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 12),

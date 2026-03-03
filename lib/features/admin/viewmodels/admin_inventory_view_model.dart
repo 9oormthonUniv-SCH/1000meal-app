@@ -53,9 +53,12 @@ class AdminInventoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // 매장 영업 여부는 스토어 상세 API 기준으로 사용 (재고 페이지 진입 시 팝업/비활성 스타일 정확 반영)
+      final storeFuture = _repo.getStoreDetail();
       final res = await _repo.getDailyMenu(date: date);
       daily = res;
-      open = res?.open ?? false;
+      final store = await storeFuture;
+      open = store.open;
       _groupStocks
         ..clear()
         ..addEntries((res?.groups ?? const <DailyMenuGroupItem>[]).map((g) => MapEntry(g.id, g.stock)));
@@ -75,6 +78,12 @@ class AdminInventoryViewModel extends ChangeNotifier {
   void closeModal() {
     showOpenModal = false;
     showCloseModal = false;
+    // 영업 종료 상태에서 재고를 바꾸다가 모달에서 아니요 선택 시 로컬 재고를 서버 값으로 복구
+    if (!open && daily != null) {
+      _groupStocks.clear();
+      _groupStocks.addEntries((daily!.groups ?? const <DailyMenuGroupItem>[]).map((g) => MapEntry(g.id, g.stock)));
+      _lastSavedTotalStock = totalStock;
+    }
     notifyListeners();
   }
 
@@ -137,13 +146,22 @@ class AdminInventoryViewModel extends ChangeNotifier {
   }
 
   void setGroupStockFromInput(int groupId, String raw) {
+    if (!open) {
+      showOpenModal = true;
+      notifyListeners();
+      return;
+    }
     final parsed = int.tryParse(raw.trim()) ?? 0;
     _groupStocks[groupId] = parsed < 0 ? 0 : parsed;
     notifyListeners();
   }
 
   Future<void> commitGroupStock(int groupId) async {
-    if (!open) return;
+    if (!open) {
+      showOpenModal = true;
+      notifyListeners();
+      return;
+    }
     final stock = _groupStocks[groupId] ?? 0;
 
     saving = true;

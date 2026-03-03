@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../common/widgets/app_bar_common.dart';
+
 /// 이용약관·개인정보 수집 및 이용 동의 전문 (내용 보기용)
 class SignupTermsScreen extends StatelessWidget {
   static const routeName = '/signup/terms';
@@ -64,7 +66,7 @@ class SignupTermsScreen extends StatelessWidget {
     final content = doc == 'privacy' ? _privacyPolicy : _termsOfService;
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBarCommon(title: title),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/utils/external_link.dart';
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_button.dart';
+import '../../../common/widgets/app_segment_tabs.dart';
 import '../viewmodels/find_account_view_model.dart';
 
 class FindAccountScreen extends StatefulWidget {
@@ -29,7 +32,8 @@ class _FindAccountScreenState extends State<FindAccountScreen> {
     final vm = context.watch<FindAccountViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('')),
+      backgroundColor: const Color(0xFFFFFFFF),
+      appBar: const AppBarCommon(title: ''),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -37,9 +41,14 @@ class _FindAccountScreenState extends State<FindAccountScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 8),
-              _FindAccountTabs(
-                tab: vm.tab,
-                onChanged: (vm.loading || vm.verifying) ? null : vm.setTab,
+              AppSegmentTabs<FindAccountTab>(
+                value: vm.tab,
+                enabled: !vm.loading && !vm.verifying,
+                onChanged: vm.setTab,
+                tabs: const [
+                  AppSegmentTab(label: '아이디 찾기', value: FindAccountTab.id),
+                  AppSegmentTab(label: '비밀번호 찾기', value: FindAccountTab.pw),
+                ],
               ),
               const SizedBox(height: 12),
               Expanded(
@@ -56,51 +65,6 @@ class _FindAccountScreenState extends State<FindAccountScreen> {
   }
 }
 
-class _FindAccountTabs extends StatelessWidget {
-  final FindAccountTab tab;
-  final ValueChanged<FindAccountTab>? onChanged;
-
-  const _FindAccountTabs({required this.tab, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    Widget tabButton({required String label, required FindAccountTab value}) {
-      final active = tab == value;
-      return Expanded(
-        child: InkWell(
-          onTap: onChanged == null ? null : () => onChanged!(value),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: active ? const Color(0xFFF97316) : const Color(0xFFE5E7EB),
-                  width: active ? 2 : 1,
-                ),
-              ),
-            ),
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: active ? const Color(0xFFF97316) : const Color(0xFF9CA3AF),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Row(
-      children: [
-        tabButton(label: '아이디 찾기', value: FindAccountTab.id),
-        tabButton(label: '비밀번호 찾기', value: FindAccountTab.pw),
-      ],
-    );
-  }
-}
-
 class _FindIdForm extends StatelessWidget {
   const _FindIdForm();
 
@@ -111,34 +75,29 @@ class _FindIdForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const Text('이름', style: TextStyle(fontSize: 14, color: Color(0xFF374151))),
+        const SizedBox(height: 8),
         TextField(
-          decoration: const InputDecoration(hintText: '이름', border: UnderlineInputBorder()),
+          decoration: const InputDecoration(hintText: '이름 입력', border: UnderlineInputBorder()),
           onChanged: vm.setName,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
+        const Text('이메일', style: TextStyle(fontSize: 14, color: Color(0xFF374151))),
+        const SizedBox(height: 8),
         TextField(
-          decoration: const InputDecoration(hintText: '이메일', border: UnderlineInputBorder()),
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            hintText: '예) cheonbab@sch.ac.kr',
+            border: UnderlineInputBorder(),
+          ),
           onChanged: vm.setEmail,
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 48,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF97316),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ).copyWith(
-              backgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.disabled)) return const Color(0xFFF97316).withValues(alpha: 0.4);
-                return const Color(0xFFF97316);
-              }),
-            ),
-            onPressed: (vm.name.trim().isNotEmpty && vm.email.trim().isNotEmpty && !vm.loading) ? vm.findId : null,
-            child: vm.loading
-                ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('확인', style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
+        AppButton(
+          label: '확인',
+          variant: AppButtonVariant.primary,
+          onPressed: (vm.name.trim().isNotEmpty && vm.email.trim().isNotEmpty && !vm.loading) ? vm.findId : null,
+          loading: vm.loading,
         ),
         if (vm.foundUserId != null) ...[
           const SizedBox(height: 16),
@@ -182,30 +141,21 @@ class _ResetPasswordForm extends StatelessWidget {
               child: TextField(
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                  hintText: '예) cheonbab@cheon.ac.kr',
+                  hintText: '예) cheonbab@sch.ac.kr',
                   border: UnderlineInputBorder(),
                 ),
                 onChanged: vm.setResetEmail,
               ),
             ),
             const SizedBox(width: 8),
-            SizedBox(
-              height: 40,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF97316),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ).copyWith(
-                  backgroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.disabled)) return const Color(0xFFF97316).withValues(alpha: 0.5);
-                    return const Color(0xFFF97316);
-                  }),
-                ),
+            IntrinsicWidth(
+              child: AppButton(
+                label: '인증 요청',
+                variant: AppButtonVariant.primary,
+                height: 45,
+                minWidth: 0,
                 onPressed: (vm.resetEmail.trim().isNotEmpty && !vm.loading) ? vm.requestResetEmail : null,
-                child: vm.loading
-                    ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('인증 요청', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                loading: vm.loading,
               ),
             ),
           ],
@@ -255,32 +205,19 @@ class _ResetPasswordForm extends StatelessWidget {
           onChanged: vm.setNewPw2,
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 48,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF97316),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ).copyWith(
-              backgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.disabled)) return const Color(0xFFF97316).withValues(alpha: 0.5);
-                return const Color(0xFFF97316);
-              }),
-            ),
-            onPressed: (vm.token.trim().isNotEmpty && vm.newPw.isNotEmpty && vm.newPw2.isNotEmpty && !vm.verifying)
-                ? () async {
-                    await vm.confirmResetPassword();
-                    if (!context.mounted) return;
-                    if (vm.error == null && vm.success != null) {
-                      Navigator.of(context).pushReplacementNamed('/');
-                    }
+        AppButton(
+          label: '비밀번호 변경',
+          variant: AppButtonVariant.primary,
+          onPressed: (vm.token.trim().isNotEmpty && vm.newPw.isNotEmpty && vm.newPw2.isNotEmpty && !vm.verifying)
+              ? () async {
+                  await vm.confirmResetPassword();
+                  if (!context.mounted) return;
+                  if (vm.error == null && vm.success != null) {
+                    Navigator.of(context).pushReplacementNamed('/');
                   }
-                : null,
-            child: vm.verifying
-                ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('비밀번호 변경', style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
+                }
+              : null,
+          loading: vm.verifying,
         ),
       ],
     );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_button.dart';
 import '../models/role.dart';
 import '../viewmodels/login_view_model.dart';
 import '../viewmodels/signup_view_model.dart';
@@ -18,94 +20,221 @@ class LoginScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        title: const Text(''),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            final nav = Navigator.of(context);
-            // 로그인 화면이 initialRoute로 열린 경우(스택에 이전 화면 없음)에는 pop이 불가능하므로 홈으로 fallback
-            if (nav.canPop()) {
-              nav.pop();
-            } else {
-              nav.pushReplacementNamed('/');
-            }
-          },
-        ),
+      appBar: const AppBarCommon(
+        title: '',
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _RoleTabs(
-                role: vm.role,
-                onChanged: vm.loading ? null : vm.setRole,
-              ),
-              const SizedBox(height: 18),
-              _HeroCopy(role: vm.role),
-              const SizedBox(height: 18),
-              Form(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _LabeledTextField(
-                      label: '아이디',
-                      studentHint: '학번 8자리를 입력해주세요',
-                      adminHint: '아이디를 입력해주세요',
-                      studentKeyboardType: TextInputType.number,
-                      adminKeyboardType: TextInputType.text,
-                    ),
-                    const SizedBox(height: 12),
-                    _PasswordField(
-                      enabled: !vm.loading,
-                      onChanged: vm.setPassword,
-                      errorText: vm.errorMessage,
-                    ),
-                    const SizedBox(height: 16),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeInOut,
-                      decoration: BoxDecoration(
-                        color: vm.canSubmit ? primary : primary.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: SizedBox(
-                        height: 48,
-                        child: TextButton(
-                          onPressed: vm.canSubmit
-                              ? () async {
-                                  final role = await vm.submit();
-                                  if (!context.mounted || role == null) return;
-                                  Navigator.of(context).pushReplacementNamed(
-                                    role == Role.admin ? '/admin' : '/',
-                                  );
-                                }
-                              : null,
-                          child: vm.loading
-                              ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                )
-                              : const Text(
-                                  '로그인',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                                ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _BottomLinks(enabled: !vm.loading),
-                  ],
-                ),
-              ),
-            ],
+        child: _LoginBody(primary: primary),
+      ),
+    );
+  }
+}
+
+class _LoginBody extends StatefulWidget {
+  final Color primary;
+
+  const _LoginBody({required this.primary});
+
+  @override
+  State<_LoginBody> createState() => _LoginBodyState();
+}
+
+class _LoginBodyState extends State<_LoginBody> {
+  late final TextEditingController _userIdController;
+  late final TextEditingController _passwordController;
+
+  @override
+  void initState() {
+    super.initState();
+    _userIdController = TextEditingController();
+    _passwordController = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final vm = context.read<LoginViewModel>();
+      await vm.loadSavedPreferences();
+      if (!mounted) return;
+      _userIdController.text = vm.userId;
+      _passwordController.text = vm.password;
+      // 로그아웃 후 진입한 경우 자동 로그인 하지 않음(다른 계정 로그인 가능). 앱 재실행 시에만 자동 로그인.
+      final skipAutoLogin = await vm.shouldSkipAutoLoginThisTime();
+      if (!mounted) return;
+      if (!skipAutoLogin &&
+          vm.autoLoginOption &&
+          vm.userId.trim().isNotEmpty &&
+          vm.password.isNotEmpty &&
+          vm.canSubmit) {
+        final role = await vm.submit();
+        if (!mounted) return;
+        if (role != null) {
+          Navigator.of(context).pushReplacementNamed(
+            role == Role.admin ? '/admin' : '/',
+          );
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _userIdController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<LoginViewModel>();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _RoleTabs(
+            role: vm.role,
+            onChanged: vm.loading ? null : vm.setRole,
           ),
+          const SizedBox(height: 18),
+          _HeroCopy(role: vm.role),
+          const SizedBox(height: 18),
+          Form(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _LabeledTextField(
+                  controller: _userIdController,
+                  label: '아이디',
+                  studentHint: '학번 8자리를 입력해주세요',
+                  adminHint: '아이디를 입력해주세요',
+                  studentKeyboardType: TextInputType.number,
+                  adminKeyboardType: TextInputType.text,
+                  onChanged: vm.setUserId,
+                ),
+                const SizedBox(height: 12),
+                _PasswordField(
+                  controller: _passwordController,
+                  enabled: !vm.loading,
+                  onChanged: vm.setPassword,
+                  errorText: vm.errorMessage,
+                ),
+                const SizedBox(height: 12),
+                _LoginOptions(
+                  primary: widget.primary,
+                  saveUserId: vm.saveUserIdOption,
+                  autoLogin: vm.autoLoginOption,
+                  onSaveUserIdChanged: vm.setSaveUserIdOption,
+                  onAutoLoginChanged: vm.setAutoLoginOption,
+                  loading: vm.loading,
+                ),
+                const SizedBox(height: 16),
+                AppButton(
+                  label: '로그인',
+                  variant: AppButtonVariant.primary,
+                  backgroundColor: widget.primary,
+                  onPressed: vm.canSubmit
+                      ? () async {
+                          final role = await vm.submit();
+                          if (!context.mounted || role == null) return;
+                          Navigator.of(context).pushReplacementNamed(
+                            role == Role.admin ? '/admin' : '/',
+                          );
+                        }
+                      : null,
+                  loading: vm.loading,
+                ),
+                const SizedBox(height: 12),
+                _BottomLinks(enabled: !vm.loading),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoginOptions extends StatelessWidget {
+  final Color primary;
+  final bool saveUserId;
+  final bool autoLogin;
+  final ValueChanged<bool> onSaveUserIdChanged;
+  final ValueChanged<bool> onAutoLoginChanged;
+  final bool loading;
+
+  const _LoginOptions({
+    required this.primary,
+    required this.saveUserId,
+    required this.autoLogin,
+    required this.onSaveUserIdChanged,
+    required this.onAutoLoginChanged,
+    required this.loading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _OptionChip(
+          label: '아이디 저장',
+          value: saveUserId,
+          primary: primary,
+          onChanged: loading ? null : onSaveUserIdChanged,
+        ),
+        const SizedBox(width: 16),
+        _OptionChip(
+          label: '자동 로그인',
+          value: autoLogin,
+          primary: primary,
+          onChanged: loading ? null : onAutoLoginChanged,
+        ),
+      ],
+    );
+  }
+}
+
+class _OptionChip extends StatelessWidget {
+  final String label;
+  final bool value;
+  final Color primary;
+  final ValueChanged<bool>? onChanged;
+
+  const _OptionChip({
+    required this.label,
+    required this.value,
+    required this.primary,
+    this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onChanged == null ? null : () => onChanged!(!value),
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: Checkbox(
+                value: value,
+                onChanged: onChanged == null ? null : (v) => onChanged!(v ?? false),
+                activeColor: primary,
+                fillColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) return primary;
+                  return null;
+                }),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: value ? primary : const Color(0xFF6B7280),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -254,18 +383,22 @@ class _HeroCopy extends StatelessWidget {
 }
 
 class _LabeledTextField extends StatelessWidget {
+  final TextEditingController controller;
   final String label;
   final String studentHint;
   final String adminHint;
   final TextInputType studentKeyboardType;
   final TextInputType adminKeyboardType;
+  final ValueChanged<String> onChanged;
 
   const _LabeledTextField({
+    required this.controller,
     required this.label,
     required this.studentHint,
     required this.adminHint,
     required this.studentKeyboardType,
     required this.adminKeyboardType,
+    required this.onChanged,
   });
 
   @override
@@ -278,13 +411,14 @@ class _LabeledTextField extends StatelessWidget {
         Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF4B5563))),
         const SizedBox(height: 8),
         TextField(
+          controller: controller,
           enabled: !vm.loading,
           keyboardType: isStudent ? studentKeyboardType : adminKeyboardType,
           decoration: InputDecoration(
             hintText: isStudent ? studentHint : adminHint,
             border: const UnderlineInputBorder(),
           ),
-          onChanged: vm.setUserId,
+          onChanged: onChanged,
         ),
       ],
     );
@@ -292,11 +426,17 @@ class _LabeledTextField extends StatelessWidget {
 }
 
 class _PasswordField extends StatelessWidget {
+  final TextEditingController controller;
   final bool enabled;
   final ValueChanged<String> onChanged;
   final String? errorText;
 
-  const _PasswordField({required this.enabled, required this.onChanged, required this.errorText});
+  const _PasswordField({
+    required this.controller,
+    required this.enabled,
+    required this.onChanged,
+    required this.errorText,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -306,6 +446,7 @@ class _PasswordField extends StatelessWidget {
         const Text('비밀번호', style: TextStyle(fontSize: 14, color: Color(0xFF4B5563))),
         const SizedBox(height: 8),
         TextField(
+          controller: controller,
           enabled: enabled,
           obscureText: true,
           decoration: const InputDecoration(border: UnderlineInputBorder()),

@@ -16,6 +16,7 @@ import 'common/notification/fcm_notification_storage.dart';
 import 'common/notification/push_notification_handler.dart';
 import 'common/dio/dio_client.dart';
 import 'common/storage/token_storage.dart';
+import 'common/storage/login_preference_storage.dart';
 import 'features/auth/data/auth_api.dart';
 import 'features/auth/repositories/auth_repository.dart';
 import 'features/auth/screens/find_account_screen.dart';
@@ -182,10 +183,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokenStorage = TokenStorage();
+    final loginPreferenceStorage = LoginPreferenceStorage();
     final dioClient = DioClient.create();
     final authApi = AuthApi(dioClient);
     final adminApi = AdminApi(dioClient);
-    final authRepo = AuthRepository(api: authApi, tokenStorage: tokenStorage);
+    final authRepo = AuthRepository(
+      api: authApi,
+      tokenStorage: tokenStorage,
+      loginPreferenceStorage: loginPreferenceStorage,
+    );
     final adminRepo = AdminRepository(authRepo: authRepo, api: adminApi);
     final storeApi = StoreApi(dioClient);
     final storeRepo = StoreRepository(storeApi, authRepo);
@@ -203,7 +209,7 @@ class MyApp extends StatelessWidget {
         Provider.value(value: storeRepo),
         Provider.value(value: noticeApi),
         Provider.value(value: noticeRepo),
-        ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo)),
+        ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo, loginPreferenceStorage)),
         ChangeNotifierProvider(create: (_) => SignupViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => MyPageViewModel(authRepo)),
@@ -226,7 +232,10 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: '1000meal App',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(useMaterial3: true),
+        theme: ThemeData(
+          useMaterial3: true,
+          scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+        ),
         // App entry should be the home (MainScreen). Login is an explicit flow.
         initialRoute: '/',
         routes: {

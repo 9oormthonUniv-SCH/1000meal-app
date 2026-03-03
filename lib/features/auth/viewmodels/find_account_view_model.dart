@@ -37,7 +37,8 @@ class FindAccountViewModel extends ChangeNotifier {
     } else {
       tab = FindAccountTab.id;
     }
-    notifyListeners();
+    // didChangeDependencies는 빌드 단계에서 호출되므로 notifyListeners()를 다음 프레임으로 연기
+    WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
   }
 
   void setTab(FindAccountTab v) {

@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../common/widgets/app_bar_common.dart';
+
 /// "'매장이름'에서 명부를 등록하시겠습니까?" 확인 화면
 class QrConfirmScreen extends StatelessWidget {
   final String storeName;
@@ -24,14 +26,10 @@ class QrConfirmScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: isLoading ? null : onBack,
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+      appBar: AppBarCommon(
+        title: '',
+        onBackPressed: onBack,
+        backEnabled: !isLoading,
       ),
       body: SafeArea(
         child: Padding(

@@ -30,6 +30,10 @@ String mapErrorToMessage(Object error, {Object? responseData}) {
   }
 
   if (error is ApiException && error.message.isNotEmpty) return error.message;
+  final msg = error.toString().toLowerCase();
+  if (msg.contains('socket') || msg.contains('connection') || msg.contains('network') || msg.contains('internet')) {
+    return '인터넷 연결을 확인해주세요.';
+  }
   return '요청 처리 중 오류가 발생했습니다.';
 }
 

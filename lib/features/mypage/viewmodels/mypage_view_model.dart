@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../auth/repositories/auth_repository.dart';
 import '../../users/models/me_response.dart';
 import '../../../common/dio/api_exception.dart';
 import '../../../common/dio/api_error_mapper.dart';
+
+const String _keyPushAgreed = 'mypage_push_notification_agreed';
 
 class MyPageViewModel extends ChangeNotifier {
   MyPageViewModel(this._repo);
@@ -15,6 +18,9 @@ class MyPageViewModel extends ChangeNotifier {
   String? errorMessage;
   bool shouldRelogin = false;
 
+  /// 푸시 알림 동의 여부 (로컬 저장)
+  bool pushNotificationAgreed = false;
+
   Future<void> load() async {
     loading = true;
     errorMessage = null;
@@ -23,6 +29,9 @@ class MyPageViewModel extends ChangeNotifier {
 
     try {
       me = await _repo.getMe();
+      pushNotificationAgreed = await _repo.getPushPermissionStatus();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyPushAgreed, pushNotificationAgreed);
     } catch (e) {
       if (e is ApiException) {
         // 토큰 만료/미보유 등은 로그인으로 유도
@@ -47,6 +56,20 @@ class MyPageViewModel extends ChangeNotifier {
     shouldRelogin = false;
     notifyListeners();
     await _repo.logout();
+  }
+
+  /// 푸시 알림 동의 토글: 실제 권한 요청/등록과 연동
+  Future<void> setPushNotificationAgreed(bool value) async {
+    if (value) {
+      final granted = await _repo.requestPushPermission();
+      pushNotificationAgreed = granted;
+      if (granted) await _repo.registerFcmTokenIfLoggedIn();
+    } else {
+      pushNotificationAgreed = false;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyPushAgreed, pushNotificationAgreed);
+    notifyListeners();
   }
 
   Future<bool> deleteAccount() async {

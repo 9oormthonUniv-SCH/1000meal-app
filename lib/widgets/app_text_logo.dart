@@ -7,6 +7,8 @@ class AppTextLogo {
   static const double leftPadding = 20;
 
   static const String assetPath = 'assets/icon/Textlogo.png';
+  /// 어두운 배경(QR 카메라 등)용 흰색 로고
+  static const String assetPathWhite = 'assets/icon/TextlogoWhite.png';
 }
 
 /// 좌측 상단용 텍스트 로고 위젯 (QR/인증 화면과 동일한 크기·여백)

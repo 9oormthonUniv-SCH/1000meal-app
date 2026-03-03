@@ -48,7 +48,7 @@ class QrCameraView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(left: AppTextLogo.leftPadding),
                       child: Image.asset(
-                        AppTextLogo.assetPath,
+                        AppTextLogo.assetPathWhite,
                         width: AppTextLogo.width,
                         height: AppTextLogo.height,
                         fit: BoxFit.contain,
@@ -95,13 +95,16 @@ class _ScanOverlay extends StatelessWidget {
 
   static const double _frameSize = 260;
   static const double _radius = 20;
+  /// 스캔 사각형을 화면 중앙보다 살짝 위로 (양수 = 아래, 음수 = 위)
+  static const double _frameOffsetY = -120;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final center = Offset(
-            constraints.maxWidth / 2, constraints.maxHeight / 2);
+            constraints.maxWidth / 2,
+            constraints.maxHeight / 2 + _frameOffsetY);
         final left = center.dx - _frameSize / 2;
         final top = center.dy - _frameSize / 2;
         final holeRect = RRect.fromRectAndRadius(
