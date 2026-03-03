@@ -149,21 +149,37 @@ class _StoreDetailView extends StatelessWidget {
                             ),
                           ),
                         ),
-                        IconButton(
-                          onPressed: () {
-                            if (kDebugMode) debugPrint('즐겨찾기');
-                            listVm.toggleFavorite(currentStore);
+                        Selector<StoreListViewModel, bool>(
+                          selector: (_, listVM) {
+                            final list = listVM.items.where((s) => s.id == detail.id).toList();
+                            return list.isNotEmpty ? list.first.isFavorite : currentStore.isFavorite;
                           },
-                          icon: SvgPicture.asset(
-                            currentStore.isFavorite
-                                ? 'assets/icon/favorite_star_on.svg'
-                                : 'assets/icon/favorite_star_off.svg',
-                            width: 24,
-                            height: 24,
+                          builder: (_, isFavorite, __) => IconButton(
+                            onPressed: () async {
+                              final store = listVm.items
+                                  .where((s) => s.id == detail.id)
+                                  .toList();
+                              final toToggle = store.isNotEmpty ? store.first : currentStore;
+                              await listVm.toggleFavorite(toToggle);
+                              if (!context.mounted) return;
+                              final msg = listVm.errorMessage;
+                              if (msg != null && msg.isNotEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(msg)),
+                                );
+                              }
+                            },
+                            icon: SvgPicture.asset(
+                              isFavorite
+                                  ? 'assets/icon/favorite_star_on.svg'
+                                  : 'assets/icon/favorite_star_off.svg',
+                              width: 24,
+                              height: 24,
+                            ),
+                            highlightColor: Colors.orange.withOpacity(0.2),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
                           ),
-                          highlightColor: Colors.orange.withOpacity(0.2),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
                         ),
                       ],
                     ),
