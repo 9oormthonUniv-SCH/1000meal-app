@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:collection/collection.dart';
 
 import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
@@ -12,9 +13,12 @@ class AdminMenuEditViewModel extends ChangeNotifier {
     this._repo, {
     String? initialDate,
     required this.groupId,
-  })  :
-        selectedId = initialDate?.isNotEmpty == true ? initialDate! : kstTodayYmd(),
-        mondayId = mondayOfYmd(initialDate?.isNotEmpty == true ? initialDate! : kstTodayYmd());
+  }) : selectedId = initialDate?.isNotEmpty == true
+           ? initialDate!
+           : kstTodayYmd(),
+       mondayId = mondayOfYmd(
+         initialDate?.isNotEmpty == true ? initialDate! : kstTodayYmd(),
+       );
 
   final AdminRepository _repo;
 
@@ -30,6 +34,7 @@ class AdminMenuEditViewModel extends ChangeNotifier {
   String? errorMessage;
 
   List<String> menus = [];
+  List<String> _initialMenus = []; // 서버에서 불러온 초기 메뉴 (dirty 비교용)
   String groupName = '';
 
   bool showSavedToast = false;
@@ -51,8 +56,12 @@ class AdminMenuEditViewModel extends ChangeNotifier {
     try {
       final res = await _repo.getDailyMenu(date: selectedId);
       final groups = res?.groups ?? const <DailyMenuGroupItem>[];
-      final group = groups.where((g) => g.id == groupId).cast<DailyMenuGroupItem?>().firstWhere((_) => true, orElse: () => null);
+      final group = groups
+          .where((g) => g.id == groupId)
+          .cast<DailyMenuGroupItem?>()
+          .firstWhere((_) => true, orElse: () => null);
       menus = group?.menus ?? <String>[];
+      _initialMenus = List<String>.from(menus);
       groupName = group?.name ?? '';
       dirty = false;
     } catch (e) {
@@ -72,12 +81,16 @@ class AdminMenuEditViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _updateDirty() {
+    dirty = !const ListEquality<String>().equals(menus, _initialMenus);
+  }
+
   void addMenu([String? menuText]) {
     final text = (menuText ?? input).trim();
     if (text.isEmpty) return;
     menus = [...menus, text];
     if (menuText == null) input = '';
-    dirty = true;
+    _updateDirty();
     notifyListeners();
   }
 
@@ -86,7 +99,7 @@ class AdminMenuEditViewModel extends ChangeNotifier {
     final next = List<String>.from(menus);
     next.removeAt(idx);
     menus = next;
-    dirty = true;
+    _updateDirty();
     notifyListeners();
   }
 
@@ -97,7 +110,12 @@ class AdminMenuEditViewModel extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
     try {
-      await _repo.upsertMenuGroupMenus(groupId: groupId!, date: selectedId, menus: menus);
+      await _repo.upsertMenuGroupMenus(
+        groupId: groupId!,
+        date: selectedId,
+        menus: menus,
+      );
+      _initialMenus = List<String>.from(menus);
       dirty = false;
       showSavedToast = true;
     } catch (e) {
@@ -158,9 +176,13 @@ class AdminMenuEditViewModel extends ChangeNotifier {
   Future<void> selectFrequentMenu(FavoriteGroup group) async {
     if (groupId == null) return;
     try {
-      final detail = await _repo.getMenuPresetDetail(groupId: groupId!, presetId: group.id);
+      final detail = await _repo.getMenuPresetDetail(
+        groupId: groupId!,
+        presetId: group.id,
+      );
       menus = [...menus, ...detail.menus];
-      dirty = true;
+      //프리셋 메뉴를 추가한 후 dirty 상태 업데이트
+      _updateDirty();
       showFrequentMenu = false;
       notifyListeners();
     } catch (_) {
@@ -181,4 +203,3 @@ class AdminMenuEditViewModel extends ChangeNotifier {
     await selectDate(nextMonday);
   }
 }
-

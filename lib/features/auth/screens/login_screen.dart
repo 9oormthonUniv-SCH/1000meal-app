@@ -16,7 +16,9 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<LoginViewModel>();
     final isStudent = vm.role == Role.student;
-    final primary = isStudent ? const Color(0xFFF97316) : const Color(0xFF60A5FA);
+    final primary = isStudent
+        ? const Color(0xFFF97316)
+        : const Color(0xFF60A5FA);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -256,7 +258,9 @@ class _RoleTabs extends StatelessWidget {
       builder: (context, constraints) {
         final tabWidth = constraints.maxWidth / 2;
         final isStudent = role == Role.student;
-        final underlineColor = isStudent ? const Color(0xFFF97316) : const Color(0xFF60A5FA);
+        final underlineColor = isStudent
+            ? const Color(0xFFF97316)
+            : const Color(0xFF60A5FA);
 
         return Stack(
           alignment: Alignment.bottomCenter,
@@ -267,14 +271,18 @@ class _RoleTabs extends StatelessWidget {
                   child: _RoleTabButton(
                     label: '일반',
                     active: isStudent,
-                    onTap: onChanged == null ? null : () => onChanged!(Role.student),
+                    onTap: onChanged == null
+                        ? null
+                        : () => onChanged!(Role.student),
                   ),
                 ),
                 Expanded(
                   child: _RoleTabButton(
                     label: '관리자',
                     active: !isStudent,
-                    onTap: onChanged == null ? null : () => onChanged!(Role.admin),
+                    onTap: onChanged == null
+                        ? null
+                        : () => onChanged!(Role.admin),
                   ),
                 ),
               ],
@@ -283,7 +291,12 @@ class _RoleTabs extends StatelessWidget {
               left: 0,
               right: 0,
               bottom: 0,
-              child: SizedBox(height: 1, child: DecoratedBox(decoration: BoxDecoration(color: Color(0xFFE5E7EB)))),
+              child: SizedBox(
+                height: 1,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: Color(0xFFE5E7EB)),
+                ),
+              ),
             ),
             Positioned(
               left: 0,
@@ -292,7 +305,9 @@ class _RoleTabs extends StatelessWidget {
               child: AnimatedAlign(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOutCubic,
-                alignment: isStudent ? Alignment.bottomLeft : Alignment.bottomRight,
+                alignment: isStudent
+                    ? Alignment.bottomLeft
+                    : Alignment.bottomRight,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.easeInOut,
@@ -356,17 +371,24 @@ class _HeroCopy extends StatelessWidget {
         duration: const Duration(milliseconds: 250),
         switchInCurve: Curves.easeIn,
         switchOutCurve: Curves.easeOut,
-        transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+        transitionBuilder: (child, animation) =>
+            FadeTransition(opacity: animation, child: child),
         child: Align(
           key: ValueKey<Role>(role),
           alignment: isAdmin ? Alignment.topRight : Alignment.topLeft,
           child: Column(
-            crossAxisAlignment: isAdmin ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isAdmin
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               Text(
                 isAdmin ? '당신의 준비가\n늘 편리하도록,' : '당신의 걸음이\n헛되지 않도록,',
                 textAlign: isAdmin ? TextAlign.right : TextAlign.left,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, height: 1.25),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  height: 1.25,
+                ),
               ),
               const SizedBox(height: 10),
               Image.asset(
@@ -408,7 +430,10 @@ class _LabeledTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF4B5563))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, color: Color(0xFF4B5563)),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
@@ -443,7 +468,10 @@ class _PasswordField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('비밀번호', style: TextStyle(fontSize: 14, color: Color(0xFF4B5563))),
+        const Text(
+          '비밀번호',
+          style: TextStyle(fontSize: 14, color: Color(0xFF4B5563)),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
@@ -454,7 +482,10 @@ class _PasswordField extends StatelessWidget {
         ),
         if (errorText != null) ...[
           const SizedBox(height: 6),
-          Text(errorText!, style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
+          Text(
+            errorText!,
+            style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444)),
+          ),
         ],
       ],
     );
@@ -479,23 +510,39 @@ class _BottomLinks extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         TextButton(
-          onPressed: enabled ? () => Navigator.of(context).pushNamed('/find-account', arguments: 'id') : null,
+          onPressed: enabled
+              ? () => Navigator.of(
+                  context,
+                ).pushNamed('/find-account', arguments: 'id')
+              : null,
           style: style,
           child: const Text('아이디 찾기'),
         ),
-        const Text('|', style: TextStyle(fontSize: 12, color: Color(0xFFD1D5DB))),
+        const Text(
+          '|',
+          style: TextStyle(fontSize: 12, color: Color(0xFFD1D5DB)),
+        ),
         TextButton(
-          onPressed: enabled ? () => Navigator.of(context).pushNamed('/find-account', arguments: 'pw') : null,
+          onPressed: enabled
+              ? () => Navigator.of(
+                  context,
+                ).pushNamed('/find-account', arguments: 'pw')
+              : null,
           style: style,
           child: const Text('비밀번호 찾기'),
         ),
-        const Text('|', style: TextStyle(fontSize: 12, color: Color(0xFFD1D5DB))),
+        const Text(
+          '|',
+          style: TextStyle(fontSize: 12, color: Color(0xFFD1D5DB)),
+        ),
         TextButton(
           onPressed: enabled
               ? () {
                   Navigator.of(context).pushNamed('/signup').then((_) {
                     if (context.mounted) {
-                      context.read<SignupViewModel>().clearFromCredentialsFlag();
+                      context
+                          .read<SignupViewModel>()
+                          .clearFromCredentialsFlag();
                     }
                   });
                 }
