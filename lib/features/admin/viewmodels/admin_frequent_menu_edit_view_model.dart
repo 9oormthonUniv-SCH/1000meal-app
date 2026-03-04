@@ -89,10 +89,18 @@ class AdminFrequentMenuEditViewModel extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
     try {
-      if (presetId != null) {
+      if (menus.isEmpty && presetId != null) {
+        // 기존 프리셋에서 메뉴를 전부 삭제한 경우 -> 빈 배열 post (X) 프리셋 자체 삭제 (O)
         await _repo.deleteMenuPreset(groupId: groupId, presetId: presetId!);
+      } else if (menus.isNotEmpty) {
+        // 메뉴 1개 이상 있는 경우
+        if (presetId != null) {
+          // 수정 모드 -> 기존 프리셋 delete 후 새로 만들기
+          await _repo.deleteMenuPreset(groupId: groupId, presetId: presetId!);
+        }
+        //새로 만들기 모드에서는 post
+        await _repo.createMenuPreset(groupId: groupId, menus: menus);
       }
-      await _repo.createMenuPreset(groupId: groupId, menus: menus);
       // 저장 후 현재 메뉴를 새로운 초기 상태로 갱신하고 dirty 상태 업데이트
       _initialMenus = List<String>.from(menus);
       dirty = false;
