@@ -43,8 +43,9 @@ android {
 
     defaultConfig {
         applicationId = "com.todaysunbap.app"
+        // Play Console: API 35 이상 타겟팅 요구 (보안·성능)
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

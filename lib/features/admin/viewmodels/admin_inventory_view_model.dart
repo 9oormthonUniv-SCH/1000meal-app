@@ -6,7 +6,6 @@ import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
 import '../../../common/utils/kst_date.dart';
 import '../models/menu_models.dart';
-import '../models/store_models.dart';
 import '../repositories/admin_repository.dart';
 
 class AdminInventoryViewModel extends ChangeNotifier {
@@ -50,33 +49,42 @@ class AdminInventoryViewModel extends ChangeNotifier {
     return g?.stock ?? 0;
   }
 
-  /// 실기기/느린 네트워크 대비 25초.
+  /// 단일 API 타임아웃 (188488b 동작하던 시절은 getDailyMenu 하나만 호출).
   static const Duration _loadTimeout = Duration(seconds: 25);
-  /// 모바일에서 Future.timeout이 안 먹을 수 있어 Timer로 반드시 로딩 해제.
-  static const Duration _loadTimerSafety = Duration(seconds: 28);
   /// 버튼 적용(저장) 시 API가 멈추면 무한 로딩 방지.
   static const Duration _saveTimeout = Duration(seconds: 15);
 
+  /// 188488b 시절과 동일: getDailyMenu() 단일 호출, open은 응답의 res?.open 사용.
+  /// getStoreDetail 제거로 "한쪽만 완료되고 다른 쪽이 안 끝나는" 무한로딩 원인 제거.
   Future<void> loadToday() async {
-    if (loading) return;
+    if (loading) {
+      loading = false;
+      errorMessage = null;
+      notifyListeners();
+    }
+
+    final storeId = await _repo.getStoreIdOrNull();
+    if (storeId == null) {
+      errorMessage = '가게 정보가 없습니다.';
+      notifyListeners();
+      return;
+    }
+
     loading = true;
     errorMessage = null;
     notifyListeners();
 
-    Timer? safetyTimer;
-    safetyTimer = Timer(_loadTimerSafety, () {
-      if (loading) {
-        loading = false;
-        errorMessage = '로딩 시간이 초과되었습니다. 네트워크를 확인해 주세요.';
-        notifyListeners();
-      }
-    });
-
     try {
-      await _loadTodayInternal().timeout(
+      final res = await _repo.getDailyMenu(date: date).timeout(
         _loadTimeout,
         onTimeout: () => throw TimeoutException('로딩 시간이 초과되었습니다. 네트워크를 확인해 주세요.'),
       );
+      daily = res;
+      open = res?.open ?? false;
+      _groupStocks
+        ..clear()
+        ..addEntries((res?.groups ?? const <DailyMenuGroupItem>[]).map((g) => MapEntry(g.id, g.stock)));
+      _lastSavedTotalStock = totalStock;
     } on TimeoutException catch (e) {
       errorMessage = e.message ?? '로딩 시간이 초과되었습니다. 네트워크를 확인해 주세요.';
     } catch (e) {
@@ -86,27 +94,9 @@ class AdminInventoryViewModel extends ChangeNotifier {
         errorMessage = '오늘 재고 불러오기 실패';
       }
     } finally {
-      safetyTimer.cancel();
       loading = false;
       notifyListeners();
     }
-  }
-
-  Future<void> _loadTodayInternal() async {
-    // 두 API를 Future.wait로 동시에 대기. 한쪽만 멈춰도 전체가 타임아웃되어 loading이 해제됨.
-    final results = await Future.wait<Object?>([
-      _repo.getDailyMenu(date: date),
-      _repo.getStoreDetail(),
-    ]);
-    final res = results[0] as DailyMenuResponse?;
-    final store = results[1] as StoreDetail;
-
-    daily = res;
-    open = store.open;
-    _groupStocks
-      ..clear()
-      ..addEntries((res?.groups ?? const <DailyMenuGroupItem>[]).map((g) => MapEntry(g.id, g.stock)));
-    _lastSavedTotalStock = totalStock;
   }
 
   void closeModal() {

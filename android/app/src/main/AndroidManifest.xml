@@ -2,7 +2,8 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-feature android:name="android.hardware.camera" android:required="true"/>
+    <!-- required=false: 카메라 없는 기기(TV/일부 태블릿)에도 노출, 앱 내에서 카메라 기능만 제한 -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
         android:label="오늘순밥"
         android:name="${applicationName}"

@@ -34,8 +34,8 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
     super.didChangeDependencies();
     if (_loaded) return;
     _loaded = true;
-    // 진입 시 즉시 로드해 loading=true로 막고, open 상태를 최신으로 맞춤 (한 프레임 뒤면 사용자가 탭해 stale open으로 재고가 바뀌는 문제 방지)
-    context.read<AdminInventoryViewModel>().loadToday();
+    // 188488b 시절과 동일: 한 프레임 뒤 로드 (TestFlight 등에서 즉시 호출 시 타이밍 이슈 가능성 완화)
+    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<AdminInventoryViewModel>().loadToday());
   }
 
   @override
