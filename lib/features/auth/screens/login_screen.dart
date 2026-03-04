@@ -22,12 +22,8 @@ class LoginScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const AppBarCommon(
-        title: '',
-      ),
-      body: SafeArea(
-        child: _LoginBody(primary: primary),
-      ),
+      appBar: const AppBarCommon(title: ''),
+      body: SafeArea(child: _LoginBody(primary: primary)),
     );
   }
 }
@@ -67,8 +63,10 @@ class _LoginBodyState extends State<_LoginBody> {
         final role = await vm.submit();
         if (!mounted) return;
         if (role != null) {
-          Navigator.of(context).pushReplacementNamed(
+          // pushNamedAndRemoveUntil로 로그인 화면 스택에서 제거 후 이동
+          Navigator.of(context).pushNamedAndRemoveUntil(
             role == Role.admin ? '/admin' : '/',
+            (route) => false,
           );
         }
       }
@@ -90,10 +88,7 @@ class _LoginBodyState extends State<_LoginBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _RoleTabs(
-            role: vm.role,
-            onChanged: vm.loading ? null : vm.setRole,
-          ),
+          _RoleTabs(role: vm.role, onChanged: vm.loading ? null : vm.setRole),
           const SizedBox(height: 18),
           _HeroCopy(role: vm.role),
           const SizedBox(height: 18),
@@ -135,8 +130,10 @@ class _LoginBodyState extends State<_LoginBody> {
                       ? () async {
                           final role = await vm.submit();
                           if (!context.mounted || role == null) return;
-                          Navigator.of(context).pushReplacementNamed(
+                          // 기존 스택을 모두 제거하고, role에 따라 홈(/) 또는 관리자(/admin) 화면으로 이동
+                          Navigator.of(context).pushNamedAndRemoveUntil(
                             role == Role.admin ? '/admin' : '/',
+                            (route) => false,
                           );
                         }
                       : null,
@@ -220,7 +217,9 @@ class _OptionChip extends StatelessWidget {
               height: 22,
               child: Checkbox(
                 value: value,
-                onChanged: onChanged == null ? null : (v) => onChanged!(v ?? false),
+                onChanged: onChanged == null
+                    ? null
+                    : (v) => onChanged!(v ?? false),
                 activeColor: primary,
                 fillColor: WidgetStateProperty.resolveWith((states) {
                   if (states.contains(WidgetState.selected)) return primary;
