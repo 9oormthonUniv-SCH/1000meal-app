@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
 import '../models/menu_models.dart';
 import '../viewmodels/admin_frequent_menu_view_model.dart';
 import 'admin_frequent_menu_edit_screen.dart';
@@ -67,22 +69,11 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
             onPressed: _selectedIds.isEmpty
                 ? null
                 : () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('삭제하시겠습니까?'),
-                        content: const Text('이 동작은 취소할 수 없습니다'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('취소'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('삭제', style: TextStyle(color: Color(0xFFEF4444))),
-                          ),
-                        ],
-                      ),
+                    final confirmed = await AppConfirmDialog.showDelete(
+                      context,
+                      content: '이 동작은 취소할 수 없습니다\n삭제하시겠습니까?',
+                      cancelLabel: '아니요',
+                      confirmLabel: '삭제',
                     );
                     if (confirmed == true) {
                       await _handleDelete();
@@ -112,16 +103,10 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
     final vm = context.watch<AdminFrequentMenuViewModel>();
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBarCommon(
         toolbarHeight: 48,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(_selectMode ? '' : '자주 쓰는 메뉴', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+        title: _selectMode ? '' : '자주 쓰는 메뉴',
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),

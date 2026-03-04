@@ -47,7 +47,7 @@ class DioClient {
       return res.data as T;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      final msg = _userFriendlyMessage(code, e.message);
+      final msg = _userFriendlyMessage(e, code, e.message);
       throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
@@ -68,12 +68,22 @@ class DioClient {
       return res.data as T;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      final msg = _userFriendlyMessage(code, e.message);
+      final msg = _userFriendlyMessage(e, code, e.message);
       throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
 
-  static String _userFriendlyMessage(int? statusCode, String? dioMessage) {
+  static String _userFriendlyMessage(DioException e, int? statusCode, String? dioMessage) {
+    switch (e.type) {
+      case DioExceptionType.connectionError:
+      case DioExceptionType.connectionTimeout:
+        return '인터넷 연결을 확인해주세요.';
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+        return '연결 시간이 초과되었습니다. 인터넷 연결을 확인해주세요.';
+      default:
+        break;
+    }
     if (statusCode == 404) {
       return '요청한 정보를 찾을 수 없습니다.';
     }
@@ -99,7 +109,7 @@ class DioClient {
       return res.data as T;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      final msg = _userFriendlyMessage(code, e.message);
+      final msg = _userFriendlyMessage(e, code, e.message);
       throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
@@ -120,7 +130,7 @@ class DioClient {
       return res.data as T;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      final msg = _userFriendlyMessage(code, e.message);
+      final msg = _userFriendlyMessage(e, code, e.message);
       throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
@@ -141,7 +151,7 @@ class DioClient {
       return res.data as T;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      final msg = _userFriendlyMessage(code, e.message);
+      final msg = _userFriendlyMessage(e, code, e.message);
       throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }

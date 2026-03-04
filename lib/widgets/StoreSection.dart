@@ -38,16 +38,38 @@ class _StoreSectionState extends State<StoreSection> {
             )
           else if (vm.errorMessage != null && stores.isEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Text(
-                vm.errorMessage!,
-                style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    vm.errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: vm.loading ? null : vm.load,
+                    child: const Text('다시 시도'),
+                  ),
+                ],
               ),
             )
           else if (stores.isEmpty)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Text('매장이 없습니다.'),
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  '등록된 매장 정보가 없습니다.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ),
             )
           else
             ...stores.map((store) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/utils/external_link.dart';
 import '../viewmodels/change_email_view_model.dart';
 
@@ -31,13 +32,9 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
     final vm = context.watch<ChangeEmailViewModel>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('회원정보 변경'),
+      appBar: const AppBarCommon(
+        title: '회원정보 변경',
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_button.dart';
+
 /// "'매장이름'에서 명부를 등록하시겠습니까?" 확인 화면
 class QrConfirmScreen extends StatelessWidget {
   final String storeName;
@@ -24,86 +27,80 @@ class QrConfirmScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: isLoading ? null : onBack,
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+      appBar: AppBarCommon(
+        title: '',
+        onBackPressed: onBack,
+        backEnabled: !isLoading,
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SvgPicture.asset(
-                'assets/icon/QR_Active.svg',
-                width: 80,
-                height: 80,
-              ),
-              const SizedBox(height: 24),
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: const TextStyle(color: Colors.black87, fontSize: 18),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const TextSpan(
-                      text: "'",
-                      style: TextStyle(
-                          color: Color(0xFFF97316), fontWeight: FontWeight.w700),
+                    SvgPicture.asset(
+                      'assets/icon/QR_Active.svg',
+                      width: 80,
+                      height: 80,
                     ),
-                    TextSpan(
-                      text: storeName,
-                      style: const TextStyle(
-                        color: Color(0xFFF97316),
-                        fontWeight: FontWeight.w700,
+                    const SizedBox(height: 24),
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.black87, fontSize: 18),
+                        children: [
+                          const TextSpan(
+                            text: "'",
+                            style: TextStyle(
+                                color: Color(0xFFF97316), fontWeight: FontWeight.w700),
+                          ),
+                          TextSpan(
+                            text: storeName,
+                            style: const TextStyle(
+                              color: Color(0xFFF97316),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const TextSpan(
+                            text: "'",
+                            style: TextStyle(
+                                color: Color(0xFFF97316), fontWeight: FontWeight.w700),
+                          ),
+                          const TextSpan(text: '에서 명부를 등록하시겠습니까?'),
+                        ],
                       ),
                     ),
-                    const TextSpan(
-                      text: "'",
-                      style: TextStyle(
-                          color: Color(0xFFF97316), fontWeight: FontWeight.w700),
+                    const SizedBox(height: 12),
+                    Text(
+                      '명부 등록은 1일 1회만 가능합니다',
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                     ),
-                    const TextSpan(text: '에서 명부를 등록하시겠습니까?'),
+                    if (kDebugMode && debugTokenSuffix != null && debugTokenSuffix!.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      Text(
+                        '보낼 토큰(끝): …$debugTokenSuffix',
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                '명부 등록은 1일 1회만 가능합니다',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-              ),
-              const SizedBox(height: 48),
-              if (kDebugMode && debugTokenSuffix != null && debugTokenSuffix!.isNotEmpty) ...[
-                Text(
-                  '보낼 토큰(끝): …$debugTokenSuffix',
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                ),
-                const SizedBox(height: 12),
-              ],
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : onConfirm,
-                  style: ElevatedButton.styleFrom(
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: AppButton(
+                    label: '확인',
+                    variant: AppButtonVariant.primary,
                     backgroundColor: const Color(0xFFF97316),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    height: 52,
+                    loading: isLoading,
+                    onPressed: isLoading ? null : onConfirm,
                   ),
-                  child: isLoading
-                      ? const SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('확인'),
                 ),
               ),
             ],

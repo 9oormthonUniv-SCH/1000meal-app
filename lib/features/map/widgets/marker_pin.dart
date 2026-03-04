@@ -57,6 +57,7 @@ class MarkerPinPainter extends CustomPainter {
     canvas.drawPath(pinPath, fillPaint);
     canvas.drawPath(pinPath, strokePaint);
 
+    // 중앙(원 부분)에 흰색으로 재고 숫자 표시
     final textPainter = TextPainter(
       text: TextSpan(
         text: count.toString(),
@@ -70,9 +71,11 @@ class MarkerPinPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout(maxWidth: circleDiameter);
 
+    final centerX = size.width / 2;
+    final centerY = size.width / 2;
     final textOffset = Offset(
-      (size.width - textPainter.width) / 2,
-      (size.height * 0.85 - textPainter.height) / 2,
+      centerX - textPainter.width / 2,
+      centerY - textPainter.height / 2,
     );
     textPainter.paint(canvas, textOffset);
   }

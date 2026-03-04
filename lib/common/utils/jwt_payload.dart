@@ -46,3 +46,6 @@ JwtPayload? decodeJwtPayload(String token) {
 
 int? getStoreIdFromToken(String? token) => token == null ? null : decodeJwtPayload(token)?.storeId;
 
+/// JWT sub(주체)를 계정 식별자로 사용 (알림 등 계정별 로컬 저장용).
+String? getAccountIdFromToken(String? token) => token == null ? null : decodeJwtPayload(token)?.sub;
+

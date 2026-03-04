@@ -29,4 +29,21 @@ class LoginResponse {
   }
 }
 
+/// POST /auth/refresh 응답 data
+class RefreshResponse {
+  final String accessToken;
+  final int? expiresInSeconds;
+
+  RefreshResponse({required this.accessToken, this.expiresInSeconds});
+
+  factory RefreshResponse.fromJson(Map<String, dynamic> json) {
+    return RefreshResponse(
+      accessToken: (json['accessToken'] ?? '').toString(),
+      expiresInSeconds: json['expiresInSeconds'] is int
+          ? json['expiresInSeconds'] as int
+          : int.tryParse((json['expiresInSeconds'] ?? '').toString()),
+    );
+  }
+}
+
 

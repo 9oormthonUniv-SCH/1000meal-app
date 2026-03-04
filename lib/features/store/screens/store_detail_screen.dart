@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/utils/kst_date.dart';
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/store_open_status_badge.dart';
 import '../models/store_models.dart';
 import '../repositories/store_repository.dart';
 import '../viewmodels/store_detail_view_model.dart';
@@ -38,24 +40,10 @@ class _StoreDetailView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
+      appBar: AppBarCommon(
         toolbarHeight: 50,
-        title: const Text(
-          '매장 상세페이지',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
+        title: '매장 상세페이지',
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
       ),
       body: SafeArea(
         bottom: false,
@@ -264,24 +252,9 @@ class _StoreDetailView extends StatelessWidget {
   }
 
   Widget _buildOpenStatus(StoreDetail detail) {
-    final isOpen = detail.open == true;
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: isOpen ? const Color(0xFFDBEAFE) : const Color(0xFFFEE2E2),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Text(
-            isOpen ? '영업중' : '영업 종료',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: isOpen ? const Color(0xFF2563EB) : const Color(0xFFDC2626),
-            ),
-          ),
-        ),
+        StoreOpenStatusBadge(isOpen: detail.open == true),
       ],
     );
   }

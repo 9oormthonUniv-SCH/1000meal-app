@@ -8,6 +8,7 @@ import 'dart:io';
 
 import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
+import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_snackbar.dart';
 import '../models/notice_models.dart';
 import '../repositories/notice_repository.dart';
@@ -247,19 +248,10 @@ class _NoticeCreateScreenState extends State<NoticeCreateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
+      appBar: AppBarCommon(
+        title: '글쓰기',
         centerTitle: true,
-        title: const Text(
-          '글쓰기',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827)),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF111827)),
-          onPressed: _saving ? null : () => Navigator.of(context).maybePop(),
-        ),
+        backEnabled: !_saving,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20),

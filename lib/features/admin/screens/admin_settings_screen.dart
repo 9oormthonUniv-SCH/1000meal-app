@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_button.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
 import '../../../common/widgets/app_snackbar.dart';
 import '../../auth/screens/find_account_screen.dart';
 import '../../auth/screens/login_screen.dart';
@@ -19,23 +22,10 @@ class AdminSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
+      appBar: AppBarCommon(
+        title: '설정',
         centerTitle: true,
-        title: const Text(
-          '설정',
-          style: TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-          onPressed: disabled ? null : () => Navigator.of(context).maybePop(),
-        ),
+        backEnabled: !disabled,
       ),
       body: Column(
         children: [
@@ -54,6 +44,13 @@ class AdminSettingsScreen extends StatelessWidget {
             onTap: disabled
                 ? null
                 : () async {
+                    final ok = await AppConfirmDialog.showYesNo(
+                      context,
+                      content: '로그아웃 하시겠습니까?',
+                      noLabel: '아니요',
+                      yesLabel: '네',
+                    );
+                    if (ok != true) return;
                     await vm.logout();
                     if (!context.mounted) return;
                     Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
@@ -66,9 +63,16 @@ class AdminSettingsScreen extends StatelessWidget {
             onTap: disabled
                 ? null
                 : () async {
-                    final ok = await showDialog<bool>(
-                      context: context,
-                      builder: (_) => const _DeleteAccountDialog(),
+                    final ok = await AppConfirmDialog.showCustom(
+                      context,
+                      content: '탈퇴하면 모든 기록이 사라집니다\n정말 탈퇴하시겠습니까?',
+                      secondaryLabel: '취소',
+                      primaryLabel: '탈퇴하기',
+                      primaryOnLeft: true,
+                      primaryBg: const Color(0xFFF1F1F1),
+                      primaryFg: Colors.red,
+                      secondaryBg: const Color(0xFF767676),
+                      secondaryFg: Colors.white,
                     );
                     if (ok != true) return;
                     final success = await vm.deleteAccount();
@@ -117,50 +121,4 @@ class _SettingsItem extends StatelessWidget {
   }
 }
 
-class _DeleteAccountDialog extends StatelessWidget {
-  const _DeleteAccountDialog();
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      content: const Text(
-        '탈퇴하면 모든 기록이 사라집니다\n정말 탈퇴하시겠습니까?',
-        textAlign: TextAlign.center,
-        style: TextStyle(height: 1.4),
-      ),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      actions: [
-        Row(
-          children: [
-            Expanded(
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFFF3F4F6),
-                  foregroundColor: const Color(0xFF6B7280),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('취소'),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFFEF4444),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('탈퇴'),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
 

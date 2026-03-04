@@ -25,6 +25,16 @@ class AuthApi {
     return LoginResponse.fromJson(_unwrapData(root));
   }
 
+  /// 만료된 Access Token 이후 Refresh Token으로 새 Access Token 발급.
+  /// POST /auth/refresh, body: { refreshToken }
+  Future<RefreshResponse> refresh(String refreshToken) async {
+    final root = await _client.post<Map<String, dynamic>>(
+      '/auth/refresh',
+      data: {'refreshToken': refreshToken},
+    );
+    return RefreshResponse.fromJson(_unwrapData(root));
+  }
+
   /// FCM 토큰을 백엔드에 등록 (웹과 동일: POST /fcm/tokens, body { token, platform }, 헤더 Authorization).
   Future<void> registerFcmToken({
     required String token,

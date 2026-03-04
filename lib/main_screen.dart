@@ -1,9 +1,13 @@
+import 'dart:async';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:meal_app/features/map/screen/map_screen.dart';
 import 'package:meal_app/widgets/BottomNavbar.dart';
 import 'package:meal_app/widgets/HomePage.dart';
 import 'package:meal_app/features/mypage/screens/mypage_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/common/storage/login_preference_storage.dart';
 import 'package:meal_app/features/auth/models/role.dart';
 import 'package:meal_app/features/auth/repositories/auth_repository.dart';
 import 'package:meal_app/features/admin/screens/admin_home_screen.dart';
@@ -23,12 +27,26 @@ class _MainScreenState extends State<MainScreen> {
   bool _roleLoaded = false;
   /// QR 탭에서 당일 등록 완료(auth) 화면일 때만 true → 이때만 바텀바 표시
   bool _isQrAuthScreen = false;
+  StreamSubscription<String?>? _fcmTokenRefreshSub;
+
+  @override
+  void dispose() {
+    _fcmTokenRefreshSub?.cancel();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_didInit) return;
     _didInit = true;
+    // TestFlight/iOS에서 APNs 토큰이 늦게 오면 onTokenRefresh로 옴. 이때 백엔드에 FCM 토큰 재등록.
+    _fcmTokenRefreshSub = FirebaseMessaging.instance.onTokenRefresh.listen((_) async {
+      if (!mounted) return;
+      try {
+        await context.read<AuthRepository>().registerFcmTokenIfLoggedIn();
+      } catch (_) {}
+    });
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is int && args >= 0 && args <= 3) {
       _selectedIndex = args;
@@ -38,7 +56,41 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _loadRole() async {
     final repo = context.read<AuthRepository>();
-    final token = await repo.getAccessToken();
+    String? token = await repo.getAccessToken();
+
+    // 토큰 없으면 Refresh Token으로 재발급 시도
+    if (token == null || token.isEmpty) {
+      try {
+        token = await repo.refreshAccessToken();
+      } catch (_) {
+        token = null;
+      }
+    }
+
+    // 여전히 없으면 자동 로그인 ON일 때 저장된 아이디/비밀번호로 로그인 시도
+    if ((token == null || token.isEmpty) && mounted) {
+      final prefs = context.read<LoginPreferenceStorage>();
+      final data = await prefs.load();
+      if (data.autoLogin &&
+          data.savedUserId != null &&
+          data.savedUserId!.trim().isNotEmpty &&
+          data.savedPassword != null &&
+          data.savedPassword!.isNotEmpty &&
+          data.savedRoleKey != null &&
+          data.savedRoleKey!.isNotEmpty) {
+        try {
+          await repo.login(
+            role: RoleApi.fromApi(data.savedRoleKey!),
+            userId: data.savedUserId!.trim(),
+            password: data.savedPassword!,
+          );
+          token = await repo.getAccessToken();
+        } catch (_) {
+          token = null;
+        }
+      }
+    }
+
     if (!mounted) return;
     if (token == null || token.isEmpty) {
       setState(() {

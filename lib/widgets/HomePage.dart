@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:meal_app/widgets/StoreSection.dart';
 import 'package:meal_app/widgets/app_text_logo.dart';
+import '../common/widgets/app_bar_common.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
@@ -10,6 +11,7 @@ import '../features/mypage/screens/notification_settings_screen.dart';
 import '../features/auth/repositories/auth_repository.dart';
 import '../features/notice/viewmodels/notice_list_view_model.dart';
 import '../features/notice/widgets/notice_list_section.dart';
+import '../features/store/viewmodels/store_list_view_model.dart';
 import 'TabBar.dart';
 
 class HomePage extends StatefulWidget {
@@ -56,23 +58,19 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final storeVm = context.watch<StoreListViewModel>();
+    final noticeVm = context.watch<NoticeListViewModel>();
+    final isRefreshing = _selectedTab == HomeTabType.todayMeal
+        ? storeVm.loading
+        : noticeVm.loading;
+
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
+      appBar: AppBarCommon(
+        showBack: false,
         toolbarHeight: 60,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0, // 스크롤 시 색상 변경 방지
+        titleWidget: const AppTextLogoWidget(),
         centerTitle: false,
-        automaticallyImplyLeading: false,
-        titleSpacing: AppTextLogo.leftPadding,
-        title: Image.asset(
-          AppTextLogo.assetPath,
-          width: AppTextLogo.width,
-          height: AppTextLogo.height,
-          fit: BoxFit.contain,
-        ),
-
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined, color: Color(0xFF111827)),
@@ -105,18 +103,35 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () {
-                        if (_selectedTab == HomeTabType.notice) {
-                          context.read<NoticeListViewModel>().refresh();
-                          return;
-                        }
-                        if (kDebugMode) debugPrint("새로고침");
-                      },
-                      icon: const Icon(Icons.refresh, color: Colors.grey),
-                      highlightColor: Colors.orange.withValues(alpha: 0.2),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                    SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: isRefreshing
+                                ? null
+                                : () {
+                                    if (_selectedTab == HomeTabType.notice) {
+                                      context.read<NoticeListViewModel>().refresh();
+                                      return;
+                                    }
+                                    context.read<StoreListViewModel>().load();
+                                  },
+                            icon: isRefreshing
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF54AAFF)),
+                                  )
+                                : const Icon(Icons.refresh, color: Colors.grey),
+                            highlightColor: Colors.orange.withValues(alpha: 0.2),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

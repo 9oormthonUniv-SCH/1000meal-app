@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/utils/week_kst.dart';
+import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_snackbar.dart';
 import '../models/admin_menu_week.dart';
 import 'admin_frequent_menu_screen.dart';
@@ -56,16 +57,10 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
     final vm = context.watch<AdminMenuViewModel>();
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBarCommon(
         toolbarHeight: 48,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text('메뉴 관리', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+        title: '메뉴 관리',
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),

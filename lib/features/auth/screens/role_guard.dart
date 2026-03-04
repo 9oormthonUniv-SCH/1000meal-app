@@ -67,6 +67,7 @@ class _RoleGuardState extends State<RoleGuard> {
   Widget build(BuildContext context) {
     if (_checking) {
       return const Scaffold(
+        backgroundColor: Color(0xFFFFFFFF),
         body: SafeArea(child: Center(child: CircularProgressIndicator())),
       );
     }

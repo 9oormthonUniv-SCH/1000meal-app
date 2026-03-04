@@ -16,6 +16,7 @@ import 'common/notification/fcm_notification_storage.dart';
 import 'common/notification/push_notification_handler.dart';
 import 'common/dio/dio_client.dart';
 import 'common/storage/token_storage.dart';
+import 'common/storage/login_preference_storage.dart';
 import 'features/auth/data/auth_api.dart';
 import 'features/auth/repositories/auth_repository.dart';
 import 'features/auth/screens/find_account_screen.dart';
@@ -99,6 +100,10 @@ Future<void> main() async {
         sound: true,
       );
     }
+    // Android 13+: POST_NOTIFICATIONS 런타임 권한 요청 (배포 빌드에서 알림 표시에 필요)
+    if (Platform.isAndroid) {
+      await FirebaseMessaging.instance.requestPermission();
+    }
 
     await initPushNotificationDisplay();
     setupForegroundMessageHandler();
@@ -121,9 +126,23 @@ Future<void> main() async {
       }
     }
 
+    // iOS: Apple Push Notifications 콘솔 Send 탭 테스트용 APNs 디바이스 토큰
+    if (Platform.isIOS) {
+      final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+      if (kDebugMode && apnsToken != null) {
+        debugPrint('APNs Token (Apple Send 탭용): $apnsToken');
+      }
+    }
+
     // 토큰 갱신 시에도 출력 (iOS에서 APNs 토큰이 늦게 오면 여기서 처음 토큰 출력됨)
-    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
       printFcmToken(newToken);
+      if (Platform.isIOS && kDebugMode) {
+        final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        if (apnsToken != null) {
+          debugPrint('APNs Token (Apple Send 탭용): $apnsToken');
+        }
+      }
     });
 
     try {
@@ -135,6 +154,10 @@ Future<void> main() async {
           try {
             final retryToken = await FirebaseMessaging.instance.getToken();
             printFcmToken(retryToken);
+            final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+            if (kDebugMode && apnsToken != null) {
+              debugPrint('APNs Token (Apple Send 탭용): $apnsToken');
+            }
           } catch (_) {}
         });
       }
@@ -146,6 +169,11 @@ Future<void> main() async {
             final retryToken = await FirebaseMessaging.instance.getToken();
             if (kDebugMode && retryToken != null) {
               debugPrint('FCM Token (재시도 성공): $retryToken');
+            }
+            // FCM 토큰이 나왔을 때 APNs 토큰도 보통 준비됨 → Apple Send 탭용으로 출력
+            final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+            if (kDebugMode && apnsToken != null) {
+              debugPrint('APNs Token (Apple Send 탭용): $apnsToken');
             }
           } catch (_) {}
         });
@@ -182,10 +210,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokenStorage = TokenStorage();
+    final loginPreferenceStorage = LoginPreferenceStorage();
     final dioClient = DioClient.create();
     final authApi = AuthApi(dioClient);
     final adminApi = AdminApi(dioClient);
-    final authRepo = AuthRepository(api: authApi, tokenStorage: tokenStorage);
+    final authRepo = AuthRepository(
+      api: authApi,
+      tokenStorage: tokenStorage,
+      loginPreferenceStorage: loginPreferenceStorage,
+    );
     final adminRepo = AdminRepository(authRepo: authRepo, api: adminApi);
     final storeApi = StoreApi(dioClient);
     final storeRepo = StoreRepository(storeApi, authRepo);
@@ -196,6 +229,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider.value(value: authRepo),
+        Provider.value(value: loginPreferenceStorage),
         Provider.value(value: qrApi),
         Provider.value(value: adminApi),
         Provider.value(value: adminRepo),
@@ -203,7 +237,7 @@ class MyApp extends StatelessWidget {
         Provider.value(value: storeRepo),
         Provider.value(value: noticeApi),
         Provider.value(value: noticeRepo),
-        ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo)),
+        ChangeNotifierProvider(create: (_) => LoginViewModel(authRepo, loginPreferenceStorage)),
         ChangeNotifierProvider(create: (_) => SignupViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => MyPageViewModel(authRepo)),
@@ -226,7 +260,10 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: '1000meal App',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(useMaterial3: true),
+        theme: ThemeData(
+          useMaterial3: true,
+          scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+        ),
         // App entry should be the home (MainScreen). Login is an explicit flow.
         initialRoute: '/',
         routes: {

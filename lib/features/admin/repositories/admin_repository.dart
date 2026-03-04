@@ -30,6 +30,19 @@ class AdminRepository {
     return me.storeId!;
   }
 
+  /// 재고 화면 진입 시 storeId 없으면 즉시 에러 표시(무한 로딩 방지). 로그인/가게 없으면 null.
+  Future<int?> getStoreIdOrNull() async {
+    try {
+      final token = await _requireToken();
+      final fromToken = getStoreIdFromToken(token);
+      if (fromToken != null) return fromToken;
+      final me = await _authRepo.getMe();
+      return me.storeId;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<MeResponse> getMe() => _authRepo.getMe();
 
   Future<StoreDetail> getStoreDetail() async {

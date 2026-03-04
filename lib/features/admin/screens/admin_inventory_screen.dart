@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_button.dart';
+import '../../../common/widgets/app_deduct_row.dart';
+import '../../../common/widgets/app_quantity_stepper.dart';
 import '../models/menu_models.dart';
 import '../viewmodels/admin_inventory_view_model.dart';
 
@@ -30,6 +34,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
     super.didChangeDependencies();
     if (_loaded) return;
     _loaded = true;
+    // 188488b 시절과 동일: 한 프레임 뒤 로드 (TestFlight 등에서 즉시 호출 시 타이밍 이슈 가능성 완화)
     WidgetsBinding.instance.addPostFrameCallback((_) => context.read<AdminInventoryViewModel>().loadToday());
   }
 
@@ -41,32 +46,14 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
     final groups = vm.groupsSorted;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBarCommon(
         toolbarHeight: 56,
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: '재고 관리',
         centerTitle: true,
-        title: const Text(
-          '재고 관리',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
-            fontFamily: 'Pretendard',
-            height: 1.6,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
         actions: [
           IconButton(
             onPressed: (vm.loading || vm.saving) ? null : () => vm.loadToday(),
-            icon: Icon(
-              Icons.refresh,
-              color: (vm.loading || vm.saving) ? const Color(0xFFBDBDBD) : const Color(0xFFBDBDBD),
-            ),
+            icon: const Icon(Icons.refresh, color: Color(0xFFBDBDBD)),
           ),
           const SizedBox(width: 6),
         ],
@@ -105,11 +92,39 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                           saving: vm.saving,
                           stock: vm.groupStock(g.id),
                           controller: _controllers.putIfAbsent(g.id, () => TextEditingController()),
-                          onMinus: () => vm.deductGroupStock(g.id, DeductionUnit.single),
-                          onPlus: () => vm.adjustGroupStock(g.id, 1),
+                          onMinus: () {
+                            if (!vm.open) {
+                              vm.showOpenModal = true;
+                              vm.notifyListeners();
+                              return;
+                            }
+                            vm.deductGroupStock(g.id, DeductionUnit.single);
+                          },
+                          onPlus: () {
+                            if (!vm.open) {
+                              vm.showOpenModal = true;
+                              vm.notifyListeners();
+                              return;
+                            }
+                            vm.adjustGroupStock(g.id, 1);
+                          },
                           onChanged: (v) => vm.setGroupStockFromInput(g.id, v),
-                          onCommit: () => vm.commitGroupStock(g.id),
-                          onDeduct: (DeductionUnit unit) => vm.deductGroupStock(g.id, unit),
+                          onCommit: () {
+                            if (!vm.open) {
+                              vm.showOpenModal = true;
+                              vm.notifyListeners();
+                              return;
+                            }
+                            vm.commitGroupStock(g.id);
+                          },
+                          onDeduct: (DeductionUnit unit) {
+                            if (!vm.open) {
+                              vm.showOpenModal = true;
+                              vm.notifyListeners();
+                              return;
+                            }
+                            vm.deductGroupStock(g.id, unit);
+                          },
                         ),
                         const SizedBox(height: 28),
                         const Divider(height: 1, thickness: 0.5, color: Color(0xFFBDBDBD)),
@@ -130,54 +145,80 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
             ),
           ),
 
-          // 영업 전 모달
+          // 재고 차감/적용 중 로딩 (알림 등 지연 시 중복 탭 방지)
+          if (vm.saving)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.2),
+                child: const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: Color(0xFF54AAFF)),
+                      SizedBox(height: 12),
+                      Text(
+                        '저장 중...',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          // 영업 전 모달: "영업중"만 54AAFF, 아니오 F1F1F1/767676, 네 54AAFF/FFFFFF
           if (vm.showOpenModal)
             Positioned.fill(
               child: Container(
                 color: Colors.black.withValues(alpha: 0.3),
                 child: Center(
                   child: Container(
-                    width: 280,
-                    padding: const EdgeInsets.all(18),
+                    constraints: const BoxConstraints(minWidth: 280, maxWidth: 340, minHeight: 180),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('아직 영업 전입니다', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
-                        const SizedBox(height: 6),
                         const Text(
-                          '영업중으로 상태를 변경하시겠습니까?',
-                          style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                          '아직 영업 전입니다',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1A1A1A)),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 8),
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: const TextSpan(
+                            style: TextStyle(fontSize: 15, height: 1.45),
+                            children: [
+                              TextSpan(text: '영업중', style: TextStyle(color: Color(0xFF54AAFF))),
+                              TextSpan(text: '으로 상태를 변경하시겠습니까?', style: TextStyle(color: Color(0xFF1A1A1A))),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 28),
                         Row(
                           children: [
                             Expanded(
-                              child: TextButton(
+                              child: AppButton(
+                                label: '아니요',
+                                variant: AppButtonVariant.secondary,
+                                backgroundColor: const Color(0xFFF1F1F1),
+                                foregroundColor: const Color(0xFF767676),
+                                height: 48,
                                 onPressed: vm.saving ? null : vm.closeModal,
-                                style: TextButton.styleFrom(
-                                  backgroundColor: const Color(0xFFF3F4F6),
-                                  foregroundColor: const Color(0xFF6B7280),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                                child: const Text('아니요'),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 12),
                             Expanded(
-                              child: TextButton(
+                              child: AppButton(
+                                label: '네',
+                                variant: AppButtonVariant.primaryBlue,
+                                backgroundColor: const Color(0xFF54AAFF),
+                                foregroundColor: Colors.white,
+                                height: 48,
+                                loading: vm.saving,
                                 onPressed: vm.saving ? null : vm.confirmOpenAndUnlock,
-                                style: TextButton.styleFrom(
-                                  backgroundColor: const Color(0xFF60A5FA),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                                child: vm.saving
-                                    ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                    : const Text('네'),
                               ),
                             ),
                           ],
@@ -189,54 +230,54 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
               ),
             ),
 
-          // 재고 0개 → 영업 종료 제안 모달
+          // 재고 0개 → 영업 종료 제안 모달: 첫 줄 767676, 둘째 줄 1A1A1A, 아니오 F1F1F1/767676, 네 767676/FFFFFF
           if (vm.showCloseModal)
             Positioned.fill(
               child: Container(
                 color: Colors.black.withValues(alpha: 0.3),
                 child: Center(
                   child: Container(
-                    width: 280,
-                    padding: const EdgeInsets.all(18),
+                    constraints: const BoxConstraints(minWidth: 280, maxWidth: 340, minHeight: 180),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('재고가 0개입니다', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
-                        const SizedBox(height: 6),
                         const Text(
-                          '영업 종료로 상태를 변경하시겠습니까?',
-                          style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                          "현재 재고가 '0개'입니다",
+                          style: TextStyle(fontSize: 15, color: Color(0xFF767676), height: 1.45),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 4),
+                        const Text(
+                          '영업을 종료하시겠습니까?',
+                          style: TextStyle(fontSize: 15, color: Color(0xFF1A1A1A), height: 1.45),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 28),
                         Row(
                           children: [
                             Expanded(
-                              child: TextButton(
+                              child: AppButton(
+                                label: '아니요',
+                                variant: AppButtonVariant.secondary,
+                                backgroundColor: const Color(0xFFF1F1F1),
+                                foregroundColor: const Color(0xFF767676),
+                                height: 48,
                                 onPressed: vm.saving ? null : vm.closeModal,
-                                style: TextButton.styleFrom(
-                                  backgroundColor: const Color(0xFFF3F4F6),
-                                  foregroundColor: const Color(0xFF6B7280),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                                child: const Text('아니요'),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 12),
                             Expanded(
-                              child: TextButton(
+                              child: AppButton(
+                                label: '네',
+                                variant: AppButtonVariant.primaryBlue,
+                                backgroundColor: const Color(0xFF767676),
+                                foregroundColor: Colors.white,
+                                height: 48,
+                                loading: vm.saving,
                                 onPressed: vm.saving ? null : vm.confirmCloseAndLock,
-                                style: TextButton.styleFrom(
-                                  backgroundColor: const Color(0xFF60A5FA),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                                child: vm.saving
-                                    ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                    : const Text('네'),
                               ),
                             ),
                           ],
@@ -248,32 +289,6 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _CircleButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-  final bool disabled;
-  const _CircleButton({required this.label, required this.onTap, required this.disabled});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: disabled ? null : onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        width: 20,
-        height: 20,
-        decoration: BoxDecoration(
-          color: const Color(0xFFBDBDBD).withValues(alpha: 0.7), // stone-300 opacity-70
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Center(
-          child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.0)),
-        ),
       ),
     );
   }
@@ -314,6 +329,9 @@ class _GroupStockCard extends StatelessWidget {
     );
 
     final disabled = loading || saving;
+    // 영업 종료 시에는 시각만 비활성(회색). 탭/입력 시 모달이 뜨도록 stepper·차감 버튼은 동작 유지
+    final stepperEnabled = !disabled;
+    final deductEnabled = !disabled; // 영업 종료여도 탭 시 onDeduct에서 모달 표시
     final titleColor = open ? const Color(0xFF1A1A1A) : const Color(0xFFBDBDBD);
 
     return SizedBox(
@@ -322,188 +340,41 @@ class _GroupStockCard extends StatelessWidget {
         children: [
           Text(
             '[${group.name}]  현재 수량',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Color(0xFFBDBDBD),
+              color: titleColor,
               fontFamily: 'Pretendard',
               height: 1.6,
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              _CircleButton(label: '–', onTap: onMinus, disabled: disabled),
-              const SizedBox(width: 14),
-              SizedBox(
-                width: 88,
-                height: 36,
-                child: TextField(
-                  controller: controller,
-                  enabled: !disabled,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: titleColor,
-                    fontFamily: 'Pretendard',
-                    height: 1.0,
-                  ),
-                  decoration: InputDecoration(
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFFBDBDBD), width: 0.72),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFFBDBDBD), width: 0.72),
-                    ),
-                  ),
-                  onChanged: onChanged,
-                  onSubmitted: (_) => onCommit(),
-                  onEditingComplete: onCommit,
-                ),
-              ),
-              const SizedBox(width: 14),
-              _CircleButton(label: '+', onTap: onPlus, disabled: disabled),
-            ],
+          AppQuantityStepper(
+            value: stock,
+            controller: controller,
+            onMinus: onMinus,
+            onPlus: onPlus,
+            onChanged: onChanged,
+            onCommit: onCommit,
+            enabled: stepperEnabled,
+            valueColor: titleColor,
           ),
           const SizedBox(height: 28),
-          _DeductRow(
-            disabled: disabled,
-            stock: stock,
-            onDeduct: onDeduct,
+          AppDeductRow(
+            labels: const ['10개', '5개', '1개'],
+            labelColor: titleColor,
+            enabledList: [
+              deductEnabled && (open ? stock >= 10 : true),
+              deductEnabled && (open ? stock >= 5 : true),
+              deductEnabled && (open ? stock >= 1 : true),
+            ],
+            onDeduct: (i) {
+              if (i == 0) onDeduct(DeductionUnit.multiTen);
+              else if (i == 1) onDeduct(DeductionUnit.multiFive);
+              else onDeduct(DeductionUnit.single);
+            },
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _DeductRow extends StatelessWidget {
-  const _DeductRow({
-    required this.disabled,
-    required this.stock,
-    required this.onDeduct,
-  });
-
-  final bool disabled;
-  final int stock;
-  final ValueChanged<DeductionUnit> onDeduct;
-
-  @override
-  Widget build(BuildContext context) {
-    final can10 = !disabled && stock >= 10;
-    final can5 = !disabled && stock >= 5;
-    final can1 = !disabled && stock >= 1;
-
-    return Container(
-      height: 96,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x26000000), // rgba(0,0,0,0.15)
-            blurRadius: 20,
-            offset: Offset(0, 0),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          _DeductCell(
-            label: '10개',
-            enabled: can10,
-            roundedLeft: true,
-            onTap: () => onDeduct(DeductionUnit.multiTen),
-          ),
-          _DeductCell(
-            label: '5개',
-            enabled: can5,
-            onTap: () => onDeduct(DeductionUnit.multiFive),
-          ),
-          _DeductCell(
-            label: '1개',
-            enabled: can1,
-            roundedRight: true,
-            onTap: () => onDeduct(DeductionUnit.single),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DeductCell extends StatelessWidget {
-  const _DeductCell({
-    required this.label,
-    required this.enabled,
-    required this.onTap,
-    this.roundedLeft = false,
-    this.roundedRight = false,
-  });
-
-  final String label;
-  final bool enabled;
-  final VoidCallback onTap;
-  final bool roundedLeft;
-  final bool roundedRight;
-
-  @override
-  Widget build(BuildContext context) {
-    final radius = BorderRadius.only(
-      topLeft: roundedLeft ? const Radius.circular(16) : Radius.zero,
-      bottomLeft: roundedLeft ? const Radius.circular(16) : Radius.zero,
-      topRight: roundedRight ? const Radius.circular(16) : Radius.zero,
-      bottomRight: roundedRight ? const Radius.circular(16) : Radius.zero,
-    );
-
-    return Expanded(
-      child: InkWell(
-        onTap: enabled ? onTap : null,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            border: const Border(
-              right: BorderSide(color: Color(0xFFBDBDBD), width: 0.5),
-            ),
-          ),
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFBDBDBD).withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: const Center(
-                    child: Text('–', style: TextStyle(color: Colors.white, fontSize: 14, height: 1.0)),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                    color: enabled ? const Color(0xFFBDBDBD) : const Color(0xFFBDBDBD),
-                    fontFamily: 'Pretendard',
-                    height: 1.0,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

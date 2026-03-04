@@ -1,21 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_button.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
 import '../../../common/widgets/app_snackbar.dart';
+import '../../../common/widgets/profile_card.dart';
 import 'notification_settings_screen.dart';
 import '../../auth/models/role.dart';
 import '../../auth/repositories/auth_repository.dart';
 import '../viewmodels/mypage_view_model.dart';
-
-/// 로그인/비로그인 마이페이지 상단 카드 공통 레이아웃 (위치·크기 통일)
-const EdgeInsets _profileCardMargin = EdgeInsets.only(left: 16, right: 16, top: 8);
-const EdgeInsets _profileCardPadding = EdgeInsets.all(16);
-const BoxDecoration _profileCardDecoration = BoxDecoration(
-  color: Colors.white,
-  borderRadius: BorderRadius.all(Radius.circular(14)),
-  boxShadow: [BoxShadow(color: Color(0x11000000), blurRadius: 10, offset: Offset(0, 4))],
-);
 
 class MyPageScreen extends StatefulWidget {
   static const routeName = '/mypage';
@@ -119,25 +115,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
   Scaffold _buildScaffold(BuildContext context, {required bool showBack, required Widget body}) {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: const Text(
-          '마이페이지',
-          style: TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+      appBar: AppBarCommon(
+        showBack: showBack,
+        title: '마이페이지',
         centerTitle: false,
-        leading: showBack
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-                onPressed: () => Navigator.of(context).maybePop(),
-              )
-            : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined, color: Color(0xFF111827)),
@@ -164,41 +145,10 @@ class _GuestMyPageBody extends StatelessWidget {
           Container(
             color: Colors.white,
             padding: const EdgeInsets.only(bottom: 20),
-            child: InkWell(
+            child: GuestProfileCard(
+              title: '오늘순밥 로그인 및 회원가입',
+              subtitle: '가게의 오픈·마감 소식을 실시간으로 알려드려요',
               onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false),
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                margin: _profileCardMargin,
-                padding: _profileCardPadding,
-                decoration: _profileCardDecoration,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 56),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              '오늘순밥 로그인 및 회원가입',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF374151)),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              '가게의 오픈·마감 소식을 실시간으로 알려드려요',
-                              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 24),
-                    ],
-                  ),
-                ),
-              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -225,8 +175,16 @@ class _Body extends StatelessWidget {
     final isStudent = me.role == Role.student;
     // 이미지 스타일: 학생 = 주황·빨강 배경 + 흰색 글씨, 관리자 = 파랑 계열
     final badgeBg = isStudent ? const Color(0xFFFF623F) : const Color(0xFF2563EB);
-    final badgeFg = Colors.white;
     final badgeText = isStudent ? '학생' : '관리자';
+    // 학생: 이름 대신 학번 위, 그 밑 이메일. 관리자: username/displayName, email
+    final String cardTitle = isStudent
+        ? (me.studentNumber != null && me.studentNumber!.isNotEmpty
+            ? '${me.studentNumber}'
+            : me.username.isNotEmpty
+                ? '${me.username}'
+                : '학번')
+        : (me.displayName.isNotEmpty ? me.displayName : '회원');
+    final String cardSubtitle = me.email;
 
     return Container(
       color: const Color(0xFFF3F4F6),
@@ -235,51 +193,11 @@ class _Body extends StatelessWidget {
           Container(
             color: Colors.white,
             padding: const EdgeInsets.only(bottom: 20),
-            child: Container(
-              margin: _profileCardMargin,
-              padding: _profileCardPadding,
-              decoration: _profileCardDecoration,
-              child: Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE5E7EB),
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    child: const Icon(Icons.person, color: Color(0xFF9CA3AF), size: 30),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          me.username,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          me.email,
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: badgeBg,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      badgeText,
-                      style: TextStyle(fontSize: 12, color: badgeFg, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ],
-              ),
+            child: UserProfileCard(
+              username: cardTitle,
+              subtitle: cardSubtitle,
+              badgeText: badgeText,
+              badgeBgColor: badgeBg,
             ),
           ),
           const SizedBox(height: 20),
@@ -298,10 +216,44 @@ class _Body extends StatelessWidget {
                   onTap: () => Navigator.of(context).pushNamed('/find-account', arguments: 'pw'),
                   trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
                 ),
-                const Divider(height: 1, color: Color(0xFFE5E7EB)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            color: Colors.white,
+            child: _PushAgreeRow(
+              value: vm.pushNotificationAgreed,
+              onChanged: (v) => vm.setPushNotificationAgreed(v),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                if (kDebugMode)
+                  _MenuItem(
+                    label: '자동 로그인 테스트 (토큰 삭제 후 재진입)',
+                    labelColor: Colors.grey,
+                    onTap: () async {
+                      await context.read<AuthRepository>().clearTokensOnly();
+                      if (!context.mounted) return;
+                      Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false);
+                    },
+                    trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
+                  ),
+                if (kDebugMode) const Divider(height: 1, color: Color(0xFFE5E7EB)),
                 _MenuItem(
                   label: '로그아웃',
                   onTap: () async {
+                    final ok = await AppConfirmDialog.showYesNo(
+                      context,
+                      content: '로그아웃 하시겠습니까?',
+                      noLabel: '아니요',
+                      yesLabel: '네',
+                    );
+                    if (ok != true) return;
                     await vm.logout();
                     if (!context.mounted) return;
                     // 로그아웃 후 마이페이지 탭에 머물면 me=null 상태로 무한 로딩될 수 있으므로 홈(0)으로 이동
@@ -314,9 +266,16 @@ class _Body extends StatelessWidget {
                   label: '회원탈퇴',
                   labelColor: const Color(0xFFEF4444),
                   onTap: () async {
-                    final ok = await showDialog<bool>(
-                      context: context,
-                      builder: (_) => const _DeleteAccountDialog(),
+                    final ok = await AppConfirmDialog.showCustom(
+                      context,
+                      content: '탈퇴하면 모든 기록이 사라집니다\n정말 탈퇴하시겠습니까?',
+                      secondaryLabel: '취소',
+                      primaryLabel: '탈퇴하기',
+                      primaryOnLeft: true,
+                      primaryBg: const Color(0xFFF1F1F1),
+                      primaryFg: Colors.red,
+                      secondaryBg: const Color(0xFF767676),
+                      secondaryFg: Colors.white,
                     );
                     if (ok != true) return;
                     final success = await vm.deleteAccount();
@@ -368,51 +327,102 @@ class _MenuItem extends StatelessWidget {
   }
 }
 
-class _DeleteAccountDialog extends StatelessWidget {
-  const _DeleteAccountDialog();
+/// 푸시 알림 동의 토글 행 (비밀번호 변경 / 로그아웃 사이)
+class _PushAgreeRow extends StatelessWidget {
+  const _PushAgreeRow({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      content: const Text(
-        '탈퇴하면 모든 기록이 사라집니다\n정말 탈퇴하시겠습니까?',
-        textAlign: TextAlign.center,
-        style: TextStyle(height: 1.4),
-      ),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      actions: [
-        Row(
+    return InkWell(
+      onTap: () => onChanged(!value),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        child: Row(
           children: [
-            Expanded(
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFFFEF2F2),
-                  foregroundColor: const Color(0xFFEF4444),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                ),
-                child: const Text('탈퇴하기', style: TextStyle(fontWeight: FontWeight.w700)),
+            const Expanded(
+              child: Text(
+                '푸시 알림 동의',
+                style: TextStyle(fontSize: 14, color: Color(0xFF111827)),
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFF737373),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            _AppPushToggle(value: value, onChanged: onChanged),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// active: 배경 FF6E3F, default: 배경 D9D9D9, 내부 버튼 항상 FFFFFF·동일 크기
+class _AppPushToggle extends StatelessWidget {
+  const _AppPushToggle({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  static const Color _activeTrack = Color(0xFFFF6E3F);
+  static const Color _defaultTrack = Color(0xFFD9D9D9);
+  static const Color _thumb = Color(0xFFFFFFFF);
+
+  static const double _trackWidth = 52;
+  static const double _trackHeight = 30;
+  static const double _thumbSize = 24;
+  static const double _thumbMargin = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: _trackWidth,
+        height: _trackHeight,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              width: _trackWidth,
+              height: _trackHeight,
+              decoration: BoxDecoration(
+                color: value ? _activeTrack : _defaultTrack,
+                borderRadius: BorderRadius.circular(_trackHeight / 2),
+              ),
+            ),
+            AnimatedAlign(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: _thumbMargin),
+                child: Container(
+                  width: _thumbSize,
+                  height: _thumbSize,
+                  decoration: const BoxDecoration(
+                    color: _thumb,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x26000000),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
                 ),
-                child: const Text('취소', style: TextStyle(fontWeight: FontWeight.w700)),
               ),
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 }
+
 
 

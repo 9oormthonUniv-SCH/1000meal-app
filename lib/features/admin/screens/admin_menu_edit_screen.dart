@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/utils/week_kst.dart';
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
 import '../../../common/widgets/app_snackbar.dart';
 import '../models/menu_models.dart';
 import '../viewmodels/admin_menu_edit_view_model.dart';
@@ -41,17 +43,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
 
   Future<bool> _confirmDiscardIfDirty(AdminMenuEditViewModel vm) async {
     if (!vm.dirty) return true;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('변경사항이 있어요'),
-        content: const Text('저장하지 않고 나갈까요?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('취소')),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('나가기')),
-        ],
-      ),
-    );
+    final ok = await AppConfirmDialog.showDiscard(context);
     return ok ?? false;
   }
 
@@ -81,11 +73,9 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
     return WillPopScope(
       onWillPop: () => _confirmDiscardIfDirty(vm),
       child: Scaffold(
-        appBar: AppBar(
+        appBar: AppBarCommon(
           toolbarHeight: 48,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          title: Column(
+          titleWidget: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text('메뉴 수정', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
@@ -100,15 +90,12 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
             ],
           ),
           centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-            onPressed: () async {
-              final ok = await _confirmDiscardIfDirty(vm);
-              if (!ok) return;
-              if (!context.mounted) return;
-              Navigator.of(context).maybePop();
-            },
-          ),
+          onBackPressed: () async {
+            final ok = await _confirmDiscardIfDirty(vm);
+            if (!ok) return;
+            if (!context.mounted) return;
+            Navigator.of(context).maybePop();
+          },
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 12),

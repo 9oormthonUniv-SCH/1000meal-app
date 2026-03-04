@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_button.dart';
 import '../../auth/viewmodels/signup_view_model.dart';
 
 class SignupIdScreen extends StatefulWidget {
@@ -32,7 +34,7 @@ class _SignupIdScreenState extends State<SignupIdScreen> {
     final vm = context.watch<SignupViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('')),
+      appBar: const AppBarCommon(title: ''),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(top: 0),
@@ -75,32 +77,17 @@ class _SignupIdScreenState extends State<SignupIdScreen> {
                     ],
                   ),
                   const SizedBox(height: 40),
-                  SizedBox(
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF97316),
-                        disabledBackgroundColor: const Color(0xFFF97316),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ).copyWith(
-                        backgroundColor: WidgetStateProperty.resolveWith((states) {
-                          if (states.contains(WidgetState.disabled)) {
-                            return const Color(0xFFF97316).withValues(alpha: 0.4);
+                  AppButton(
+                    label: '확인',
+                    variant: AppButtonVariant.primary,
+                    onPressed: vm.canNextFromId
+                        ? () async {
+                            vm.markFromCredentials();
+                            await vm.saveDraft();
+                            if (!context.mounted) return;
+                            Navigator.of(context).pushNamed('/signup/credentials');
                           }
-                          return const Color(0xFFF97316);
-                        }),
-                      ),
-                      onPressed: vm.canNextFromId
-                          ? () async {
-                              vm.markFromCredentials();
-                              await vm.saveDraft();
-                              if (!context.mounted) return;
-                              Navigator.of(context).pushNamed('/signup/credentials');
-                            }
-                          : null,
-                      child: const Text('확인', style: TextStyle(fontWeight: FontWeight.w600)),
-                    ),
+                        : null,
                   ),
                   const SizedBox(height: 20),
                 ],
