@@ -11,7 +11,7 @@ class FavoriteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<StoreListViewModel>(context, listen: false);
-    final isFavorite = store.isFavorite ?? false;
+    final isFavorite = store.isFavorite;
     return IconButton(
       onPressed: () => vm.toggleFavorite(store),
       icon: SvgPicture.asset(

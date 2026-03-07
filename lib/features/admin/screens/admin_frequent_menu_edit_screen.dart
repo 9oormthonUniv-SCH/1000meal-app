@@ -13,13 +13,19 @@ class AdminFrequentMenuEditScreen extends StatefulWidget {
   final int groupId; // 일일 메뉴 그룹 ID (필수)
   final int? presetId; // null이면 새로 만들기, 있으면 수정
 
-  const AdminFrequentMenuEditScreen({super.key, required this.groupId, this.presetId});
+  const AdminFrequentMenuEditScreen({
+    super.key,
+    required this.groupId,
+    this.presetId,
+  });
 
   @override
-  State<AdminFrequentMenuEditScreen> createState() => _AdminFrequentMenuEditScreenState();
+  State<AdminFrequentMenuEditScreen> createState() =>
+      _AdminFrequentMenuEditScreenState();
 }
 
-class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScreen> {
+class _AdminFrequentMenuEditScreenState
+    extends State<AdminFrequentMenuEditScreen> {
   bool _loaded = false;
   Timer? _toastTimer;
   final TextEditingController _controller = TextEditingController();
@@ -36,7 +42,9 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
     super.didChangeDependencies();
     if (_loaded) return;
     _loaded = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<AdminFrequentMenuEditViewModel>().init());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<AdminFrequentMenuEditViewModel>().init(),
+    );
   }
 
   Future<bool> _confirmDiscardIfDirty(AdminFrequentMenuEditViewModel vm) async {
@@ -98,22 +106,56 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: ElevatedButton(
-                onPressed: vm.saving
+                onPressed:
+                    (vm.saving || !vm.dirty) // 저장 중이거나 변경사항이 없으면 비활성화
                     ? null
                     : () async {
-                        await context.read<AdminFrequentMenuEditViewModel>().save();
+                        await context
+                            .read<AdminFrequentMenuEditViewModel>()
+                            .save();
+                        if (!context.mounted) return;
+                        // 저장 성공 시 토스트 후 이전 화면으로 이동
+                        final savedVm = context
+                            .read<AdminFrequentMenuEditViewModel>();
+                        if (savedVm.errorMessage == null) {
+                          await Future.delayed(
+                            const Duration(milliseconds: 400),
+                          ); // 0.4초 대기 (저장되었습니다 토스트가 보이도록)
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop(true); //저장 완료되면 이전 화면으로 pop
+                        }
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF97316),
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   minimumSize: Size.zero,
                 ),
                 child: vm.saving
-                    ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('저장', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        '저장',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          // 변경사항 있으면 흰색, 없으면 반투명으로 비활성화 상태 구분
+                          color: vm.dirty ? Colors.white : Colors.white60,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -125,7 +167,9 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
               child: Column(
                 children: [
                   if (vm.loading)
-                    const Expanded(child: Center(child: CircularProgressIndicator()))
+                    const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
                   else
                     Expanded(
                       child: ListView(
@@ -133,13 +177,19 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
                         children: [
                           _InputBar(
                             controller: _controller,
-                            onChanged: (v) => context.read<AdminFrequentMenuEditViewModel>().setInput(v),
-                            onAdd: () => context.read<AdminFrequentMenuEditViewModel>().addMenu(),
+                            onChanged: (v) => context
+                                .read<AdminFrequentMenuEditViewModel>()
+                                .setInput(v),
+                            onAdd: () => context
+                                .read<AdminFrequentMenuEditViewModel>()
+                                .addMenu(),
                           ),
                           const SizedBox(height: 16),
                           _MenuList(
                             menus: vm.menus,
-                            onRemove: (i) => context.read<AdminFrequentMenuEditViewModel>().removeMenu(i),
+                            onRemove: (i) => context
+                                .read<AdminFrequentMenuEditViewModel>()
+                                .removeMenu(i),
                           ),
                         ],
                       ),
@@ -153,9 +203,18 @@ class _AdminFrequentMenuEditScreenState extends State<AdminFrequentMenuEditScree
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(color: const Color(0xFF111827), borderRadius: BorderRadius.circular(999)),
-                    child: const Text('저장되었습니다', style: TextStyle(color: Colors.white, fontSize: 12)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF111827),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Text(
+                      '저장되었습니다',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    ),
                   ),
                 ),
               ),
@@ -171,7 +230,11 @@ class _InputBar extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final VoidCallback onAdd;
 
-  const _InputBar({required this.controller, required this.onChanged, required this.onAdd});
+  const _InputBar({
+    required this.controller,
+    required this.onChanged,
+    required this.onAdd,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -187,19 +250,34 @@ class _InputBar extends StatelessWidget {
                   hintText: '메뉴 입력',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1), // stone-300
+                    borderSide: const BorderSide(
+                      color: Color(0xFFD6D3D1),
+                      width: 1,
+                    ), // stone-300
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1),
+                    borderSide: const BorderSide(
+                      color: Color(0xFFD6D3D1),
+                      width: 1,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1),
+                    borderSide: const BorderSide(
+                      color: Color(0xFFD6D3D1),
+                      width: 1,
+                    ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   isDense: true,
-                  suffixIconConstraints: const BoxConstraints.tightFor(width: 40, height: 40),
+                  suffixIconConstraints: const BoxConstraints.tightFor(
+                    width: 40,
+                    height: 40,
+                  ),
                   suffixIcon: controller.text.isEmpty
                       ? null
                       : Center(
@@ -214,7 +292,11 @@ class _InputBar extends StatelessWidget {
                                 shape: BoxShape.circle,
                               ),
                               child: const Center(
-                                child: Icon(Icons.close, size: 10, color: Colors.white),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 10,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
@@ -235,11 +317,16 @@ class _InputBar extends StatelessWidget {
               backgroundColor: const Color(0xFFE5E7EB),
               foregroundColor: const Color(0xFF111827),
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               minimumSize: const Size(60, 40),
             ),
-            child: const Text('입력', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            child: const Text(
+              '입력',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
@@ -257,7 +344,14 @@ class _MenuList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (menus.isEmpty) {
       return const Center(
-        child: Text('현재 작성된 메뉴가 없습니다', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14, fontWeight: FontWeight.w600)),
+        child: Text(
+          '현재 작성된 메뉴가 없습니다',
+          style: TextStyle(
+            color: Color(0xFF9CA3AF),
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       );
     }
 
@@ -274,14 +368,20 @@ class _MenuList extends StatelessWidget {
                   child: Text(
                     '${i + 1}',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF6B7280),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Container(width: 1, height: 20, color: const Color(0xFFD1D5DB)),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF7ED), // orange-50
                     borderRadius: BorderRadius.circular(999),
@@ -291,24 +391,31 @@ class _MenuList extends StatelessWidget {
                     children: [
                       Text(
                         menus[i],
-                        style: const TextStyle(fontSize: 14, color: Color(0xFF1F2937)),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF1F2937),
+                        ),
                       ),
                       const SizedBox(width: 8),
-                        InkWell(
-                          onTap: () => onRemove(i),
-                          borderRadius: BorderRadius.circular(999),
-                          child: Container(
-                            width: 15,
-                            height: 15,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFA1A1A1), // neutral-400
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Center(
-                              child: Icon(Icons.close, size: 10, color: Colors.white),
+                      InkWell(
+                        onTap: () => onRemove(i),
+                        borderRadius: BorderRadius.circular(999),
+                        child: Container(
+                          width: 15,
+                          height: 15,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFA1A1A1), // neutral-400
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.close,
+                              size: 10,
+                              color: Colors.white,
                             ),
                           ),
                         ),
+                      ),
                     ],
                   ),
                 ),

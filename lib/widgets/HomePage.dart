@@ -9,9 +9,9 @@ import 'dart:async';
 import '../features/auth/models/role.dart';
 import '../features/mypage/screens/notification_settings_screen.dart';
 import '../features/auth/repositories/auth_repository.dart';
+import '../features/store/viewmodels/store_list_view_model.dart';
 import '../features/notice/viewmodels/notice_list_view_model.dart';
 import '../features/notice/widgets/notice_list_section.dart';
-import '../features/store/viewmodels/store_list_view_model.dart';
 import 'TabBar.dart';
 
 class HomePage extends StatefulWidget {
@@ -73,9 +73,13 @@ class _HomePageState extends State<HomePage> {
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Color(0xFF111827)),
-            onPressed: () => Navigator.of(context)
-                .pushNamed(NotificationSettingsScreen.routeName),
+            icon: const Icon(
+              Icons.notifications_outlined,
+              color: Color(0xFF111827),
+            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).pushNamed(NotificationSettingsScreen.routeName),
           ),
         ],
       ),
@@ -114,19 +118,30 @@ class _HomePageState extends State<HomePage> {
                                 ? null
                                 : () {
                                     if (_selectedTab == HomeTabType.notice) {
-                                      context.read<NoticeListViewModel>().refresh();
+                                      context
+                                          .read<NoticeListViewModel>()
+                                          .refresh();
+                                      if (kDebugMode) debugPrint("공지사항 새로고침");
                                       return;
                                     }
-                                    context.read<StoreListViewModel>().load();
+                                    context
+                                        .read<StoreListViewModel>()
+                                        .refresh();
+                                    if (kDebugMode) debugPrint("오늘의 천밥 새로고침");
                                   },
                             icon: isRefreshing
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF54AAFF)),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFF54AAFF),
+                                    ),
                                   )
                                 : const Icon(Icons.refresh, color: Colors.grey),
-                            highlightColor: Colors.orange.withValues(alpha: 0.2),
+                            highlightColor: Colors.orange.withValues(
+                              alpha: 0.2,
+                            ),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),
