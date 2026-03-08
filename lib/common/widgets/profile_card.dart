@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import '../../../util/colors.dart';
 
 /// 마이페이지/관리자 상단 프로필 카드 공통 레이아웃 (위치·크기·그림자 통일)
-const EdgeInsets profileCardMargin = EdgeInsets.only(left: 16, right: 16, top: 8);
+const EdgeInsets profileCardMargin = EdgeInsets.only(
+  left: 16,
+  right: 16,
+  top: 8,
+);
 const EdgeInsets profileCardPadding = EdgeInsets.all(16);
 const BoxDecoration profileCardDecoration = BoxDecoration(
   color: Colors.white,
   borderRadius: BorderRadius.all(Radius.circular(14)),
-  boxShadow: [BoxShadow(color: Color(0x26000000), blurRadius: 16, offset: Offset(0, 4))],
+  boxShadow: [
+    BoxShadow(color: Color(0x26000000), blurRadius: 16, offset: Offset(0, 4)),
+  ],
 );
 
 /// 비로그인: 로그인 및 회원가입 CTA 카드
@@ -43,18 +50,29 @@ class GuestProfileCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF374151)),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF374151),
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                      ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 24),
+              const Icon(
+                Icons.chevron_right,
+                color: Color(0xFF9CA3AF),
+                size: 24,
+              ),
             ],
           ),
         ),
@@ -100,16 +118,32 @@ class UserProfileCard extends StatelessWidget {
                   color: const Color(0xFFE5E7EB),
                   borderRadius: BorderRadius.circular(28),
                 ),
-                child: const Icon(Icons.person, color: Color(0xFF9CA3AF), size: 30),
+                child: const Icon(
+                  Icons.person,
+                  color: Color(0xFF9CA3AF),
+                  size: 30,
+                ),
               ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(username, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                Text(
+                  username,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
               ],
             ),
           ),
@@ -121,7 +155,11 @@ class UserProfileCard extends StatelessWidget {
             ),
             child: Text(
               badgeText,
-              style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w700),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -132,11 +170,7 @@ class UserProfileCard extends StatelessWidget {
 
 /// 관리자 페이지: 매장명 + 관리자 뱃지
 class AdminProfileCard extends StatelessWidget {
-  const AdminProfileCard({
-    super.key,
-    required this.storeName,
-    this.leading,
-  });
+  const AdminProfileCard({super.key, required this.storeName, this.leading});
 
   final String storeName;
   final Widget? leading;
@@ -154,7 +188,7 @@ class AdminProfileCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD1D5DB),
+                  color: AppColors.gray3,
                   borderRadius: BorderRadius.circular(24),
                 ),
               ),
@@ -173,7 +207,11 @@ class AdminProfileCard extends StatelessWidget {
             ),
             child: const Text(
               '관리자',
-              style: TextStyle(fontSize: 12, color: Color(0xFF2563EB), fontWeight: FontWeight.w700),
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF2563EB),
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

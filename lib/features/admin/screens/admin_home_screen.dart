@@ -8,6 +8,7 @@ import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/profile_card.dart';
 import 'admin_settings_screen.dart';
 import '../viewmodels/admin_home_view_model.dart';
+import '../../../util/colors.dart';
 
 /// MainScreen 탭 0에서 사용: 마이페이지와 동일한 헤더 + 관리자 대시보드 본문 + (바텀바는 MainScreen에서 제공)
 class AdminTabContent extends StatefulWidget {
@@ -25,7 +26,9 @@ class _AdminTabContentState extends State<AdminTabContent> {
     super.didChangeDependencies();
     if (_loaded) return;
     _loaded = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<AdminHomeViewModel>().load());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<AdminHomeViewModel>().load(),
+    );
   }
 
   @override
@@ -38,8 +41,9 @@ class _AdminTabContentState extends State<AdminTabContent> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Color(0xFF9CA3AF), size: 22),
-            onPressed: () => Navigator.of(context).pushNamed(AdminSettingsScreen.routeName),
+            icon: const Icon(Icons.settings, color: AppColors.gray5, size: 22),
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AdminSettingsScreen.routeName),
           ),
           const SizedBox(width: 8),
         ],
@@ -59,7 +63,9 @@ class _AdminDashboardBody extends StatelessWidget {
 
     final storeName = vm.store?.name.isNotEmpty == true
         ? vm.store!.name
-        : (vm.me?.storeName?.isNotEmpty == true ? vm.me!.storeName! : '가게명 불러오는 중...');
+        : (vm.me?.storeName?.isNotEmpty == true
+              ? vm.me!.storeName!
+              : '가게명 불러오는 중...');
 
     return Container(
       color: const Color(0xFFF3F4F6),
@@ -89,12 +95,18 @@ class _AdminDashboardBody extends StatelessWidget {
                   child: AdminSquareCard(
                     title: '재고 관리',
                     onTap: () {
-                      Navigator.of(context).pushNamed('/admin/inventory').then((_) {
+                      Navigator.of(context).pushNamed('/admin/inventory').then((
+                        _,
+                      ) {
                         if (!context.mounted) return;
                         context.read<AdminHomeViewModel>().load();
                       });
                     },
-                    trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 28),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: AppColors.gray6,
+                      size: 28,
+                    ),
                   ),
                 ),
               ],
@@ -108,7 +120,7 @@ class _AdminDashboardBody extends StatelessWidget {
               onTap: () => Navigator.of(context).pushNamed('/admin/menu'),
             ),
           ),
-          
+
           if (vm.loading) ...[
             const SizedBox(height: 12),
             const Center(child: CircularProgressIndicator()),
@@ -117,7 +129,10 @@ class _AdminDashboardBody extends StatelessWidget {
             const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(vm.errorMessage!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+              child: Text(
+                vm.errorMessage!,
+                style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12),
+              ),
             ),
           ],
           const SizedBox(height: 16),
@@ -144,15 +159,14 @@ class _AdminHomeRedirectState extends State<AdminHomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
-
