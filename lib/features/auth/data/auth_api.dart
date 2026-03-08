@@ -48,6 +48,29 @@ class AuthApi {
     );
   }
 
+  /// 로그인한 사용자의 알림 활성/비활성 상태 조회. GET /fcm/preferences
+  Future<bool> getFcmPreferences(String token) async {
+    final root = await _client.get<Map<String, dynamic>>(
+      '/fcm/preferences',
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    final data = root['data'];
+    if (data is Map<String, dynamic>) {
+      final enabled = data['enabled'];
+      if (enabled is bool) return enabled;
+    }
+    return true;
+  }
+
+  /// 로그인한 사용자의 알림 활성/비활성 상태 변경. PATCH /fcm/preferences
+  Future<void> patchFcmPreferences(String token, {required bool enabled}) async {
+    await _client.patch<Object>(
+      '/fcm/preferences',
+      headers: {'Authorization': 'Bearer $token'},
+      data: {'enabled': enabled},
+    );
+  }
+
   Future<MeResponse> getMe(String token) async {
     final root = await _client.get<Map<String, dynamic>>(
       '/auth/me',

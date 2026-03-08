@@ -59,6 +59,20 @@ class AuthRepository {
     await _registerFcmTokenIfAvailable(token);
   }
 
+  /// 서버에 저장된 푸시 알림 활성/비활성 상태 조회. GET /fcm/preferences
+  Future<bool> getFcmPreferences() async {
+    final token = await _tokenStorage.getAccessToken();
+    if (token == null || token.isEmpty) return false;
+    return _api.getFcmPreferences(token);
+  }
+
+  /// 서버에 푸시 알림 활성/비활성 상태 저장. PATCH /fcm/preferences
+  Future<void> patchFcmPreferences(bool enabled) async {
+    final token = await _tokenStorage.getAccessToken();
+    if (token == null || token.isEmpty) return;
+    await _api.patchFcmPreferences(token, enabled: enabled);
+  }
+
   /// 푸시 알림 권한이 허용됐는지 (실제 시스템/FCM 상태)
   Future<bool> getPushPermissionStatus() async {
     try {

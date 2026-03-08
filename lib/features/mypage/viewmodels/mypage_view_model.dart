@@ -29,9 +29,20 @@ class MyPageViewModel extends ChangeNotifier {
 
     try {
       me = await _repo.getMe();
-      pushNotificationAgreed = await _repo.getPushPermissionStatus();
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_keyPushAgreed, pushNotificationAgreed);
+      // 서버 FCM preferences 조회. 실패 시 로컬 저장값 → 시스템 권한 순으로 폴백.
+      try {
+        pushNotificationAgreed = await _repo.getFcmPreferences();
+        await prefs.setBool(_keyPushAgreed, pushNotificationAgreed);
+      } catch (_) {
+        final saved = prefs.getBool(_keyPushAgreed);
+        if (saved != null) {
+          pushNotificationAgreed = saved;
+        } else {
+          pushNotificationAgreed = await _repo.getPushPermissionStatus();
+          await prefs.setBool(_keyPushAgreed, pushNotificationAgreed);
+        }
+      }
     } catch (e) {
       if (e is ApiException) {
         // 토큰 만료/미보유 등은 로그인으로 유도
@@ -58,14 +69,20 @@ class MyPageViewModel extends ChangeNotifier {
     await _repo.logout();
   }
 
-  /// 푸시 알림 동의 토글: 실제 권한 요청/등록과 연동
+  /// 푸시 알림 동의 토글: 서버 PATCH 연동. ON일 때는 시스템 권한 허용 후에만 서버에 반영.
   Future<void> setPushNotificationAgreed(bool value) async {
     if (value) {
       final granted = await _repo.requestPushPermission();
       pushNotificationAgreed = granted;
-      if (granted) await _repo.registerFcmTokenIfLoggedIn();
+      try {
+        await _repo.patchFcmPreferences(granted);
+        if (granted) await _repo.registerFcmTokenIfLoggedIn();
+      } catch (_) {}
     } else {
       pushNotificationAgreed = false;
+      try {
+        await _repo.patchFcmPreferences(false);
+      } catch (_) {}
     }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyPushAgreed, pushNotificationAgreed);
