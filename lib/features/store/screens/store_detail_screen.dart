@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
 
 import '../../../common/utils/kst_date.dart';
 import '../../../common/widgets/app_bar_common.dart';
@@ -201,7 +202,7 @@ class _StoreDetailView extends StatelessWidget {
           Container(
             height: 14,
             width: double.infinity,
-            color: const Color(0xFFF1F1F1),
+            color: AppColors.gray2,
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -523,7 +524,7 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFFFF6E3F),
+                color: AppColors.orange,
               ),
             ),
           ),
@@ -550,7 +551,7 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFFF6E3F),
+                  color: AppColors.orange,
                 ),
               ),
             ),

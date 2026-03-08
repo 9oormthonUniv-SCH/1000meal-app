@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/typography.dart';
 
 import 'app_button.dart';
 
@@ -67,7 +68,7 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: textColor,
-              fontFamily: 'Pretendard',
+              fontFamily: AppTypography.fontFamily,
               height: 1.0,
             ),
             decoration: InputDecoration(

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
 import 'dart:async';
 
 import '../../../common/widgets/app_bar_common.dart';
@@ -272,9 +273,9 @@ class _Body extends StatelessWidget {
                       secondaryLabel: '취소',
                       primaryLabel: '탈퇴하기',
                       primaryOnLeft: true,
-                      primaryBg: const Color(0xFFF1F1F1),
+                      primaryBg: AppColors.gray2,
                       primaryFg: Colors.red,
-                      secondaryBg: const Color(0xFF767676),
+                      secondaryBg: AppColors.gray7,
                       secondaryFg: Colors.white,
                     );
                     if (ok != true) return;
@@ -364,9 +365,9 @@ class _AppPushToggle extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  static const Color _activeTrack = Color(0xFFFF6E3F);
+  static const Color _activeTrack = AppColors.orange;
   static const Color _defaultTrack = Color(0xFFD9D9D9);
-  static const Color _thumb = Color(0xFFFFFFFF);
+  static const Color _thumb = AppColors.white;
 
   static const double _trackWidth = 52;
   static const double _trackHeight = 30;

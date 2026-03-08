@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
 
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_button.dart';
@@ -69,9 +70,9 @@ class AdminSettingsScreen extends StatelessWidget {
                       secondaryLabel: '취소',
                       primaryLabel: '탈퇴하기',
                       primaryOnLeft: true,
-                      primaryBg: const Color(0xFFF1F1F1),
+                      primaryBg: AppColors.gray2,
                       primaryFg: Colors.red,
-                      secondaryBg: const Color(0xFF767676),
+                      secondaryBg: AppColors.gray7,
                       secondaryFg: Colors.white,
                     );
                     if (ok != true) return;

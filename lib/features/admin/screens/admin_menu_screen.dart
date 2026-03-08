@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
 
 import '../../../common/utils/week_kst.dart';
 import '../../../common/widgets/app_bar_common.dart';
@@ -87,7 +88,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
         ],
       ),
       body: Container(
-        color: const Color(0xFFF7F7F7), // stone-50
+        color: AppColors.gray1,
         child: Column(
           children: [
             if (vm.groups.length > 1)

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 /// 재고 관리: 10개 / 5개 / 1개 좌측 마이너스 버튼 행
 class AppDeductRow extends StatelessWidget {
@@ -19,7 +21,7 @@ class AppDeductRow extends StatelessWidget {
   /// '10개' 등 라벨 텍스트 색상 (미지정 시 비활성 회색)
   final Color? labelColor;
 
-  static const Color _defaultLabelColor = Color(0xFFBDBDBD);
+  static const Color _defaultLabelColor = AppColors.gray5;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class AppDeductRow extends StatelessWidget {
     return Container(
       height: 96,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(color: Color(0x26000000), blurRadius: 20, offset: Offset(0, 0)),
@@ -84,7 +86,7 @@ class _DeductCell extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: radius,
           border: const Border(
-            right: BorderSide(color: Color(0xFFBDBDBD), width: 0.5),
+            right: BorderSide(color: AppColors.gray5, width: 0.5),
           ),
         ),
         child: Center(
@@ -95,7 +97,7 @@ class _DeductCell extends StatelessWidget {
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFBDBDBD).withValues(alpha: 0.7),
+                  color: AppColors.gray5.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: const Center(
@@ -109,7 +111,7 @@ class _DeductCell extends StatelessWidget {
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: labelColor,
-                  fontFamily: 'Pretendard',
+                  fontFamily: AppTypography.fontFamily,
                   height: 1.0,
                   letterSpacing: 0.5,
                 ),

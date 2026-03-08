@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
@@ -20,7 +21,7 @@ class MapMarkerSvgBuilder {
 
   /// 100~51 초록, 50~31 주황, 30~0 빨강
   static Color colorForRemain(int remain) {
-    if (remain <= 30) return const Color(0xFFFF3B30);
+    if (remain <= 30) return AppColors.error;
     if (remain <= 50) return const Color(0xFFF97316);
     return const Color(0xFF34C759);
   }

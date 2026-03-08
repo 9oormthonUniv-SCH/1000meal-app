@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
 
 import '../../../common/utils/week_kst.dart';
 import '../../../common/widgets/app_bar_common.dart';
@@ -440,7 +441,7 @@ class _InputBar extends StatelessWidget {
                               width: 15,
                               height: 15,
                               decoration: const BoxDecoration(
-                                color: Color(0xFFA1A1A1), // neutral-400
+                                color: AppColors.gray6,
                                 shape: BoxShape.circle,
                               ),
                               child: const Center(
@@ -513,7 +514,7 @@ class _MenuList extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF5F0), // orange-50
+                    color: AppColors.orangeSelected,
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Row(
@@ -531,7 +532,7 @@ class _MenuList extends StatelessWidget {
                           width: 15,
                           height: 15,
                           decoration: const BoxDecoration(
-                            color: Color(0xFFA1A1A1), // zinc-300
+                            color: AppColors.gray6,
                             shape: BoxShape.circle,
                           ),
                           child: const Center(

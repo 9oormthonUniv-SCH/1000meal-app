@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/typography.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../widgets/app_text_logo.dart';
@@ -153,7 +154,7 @@ class _ScanOverlay extends StatelessWidget {
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             height: 2.0,
-                            fontFamily: 'Pretendard',
+                            fontFamily: AppTypography.fontFamily,
                           ),
                         ),
                       ),

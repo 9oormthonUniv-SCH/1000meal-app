@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_button.dart';
@@ -53,7 +55,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
         actions: [
           IconButton(
             onPressed: (vm.loading || vm.saving) ? null : () => vm.loadToday(),
-            icon: const Icon(Icons.refresh, color: Color(0xFFBDBDBD)),
+            icon: const Icon(Icons.refresh, color: AppColors.gray5),
           ),
           const SizedBox(width: 6),
         ],
@@ -61,7 +63,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
       body: Stack(
         children: [
           Container(
-            color: const Color(0xFFF7F7F7), // stone-50
+            color: AppColors.gray1,
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
@@ -127,7 +129,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                           },
                         ),
                         const SizedBox(height: 28),
-                        const Divider(height: 1, thickness: 0.5, color: Color(0xFFBDBDBD)),
+                        const Divider(height: 1, thickness: 0.5, color: AppColors.gray5),
                         const SizedBox(height: 22),
                       ],
                       if (vm.errorMessage != null) ...[
@@ -154,11 +156,11 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircularProgressIndicator(color: Color(0xFF54AAFF)),
+                      CircularProgressIndicator(color: AppColors.blue),
                       SizedBox(height: 12),
                       Text(
                         '저장 중...',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A)),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.black),
                       ),
                     ],
                   ),
@@ -175,14 +177,14 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                   child: Container(
                     constraints: const BoxConstraints(minWidth: 280, maxWidth: 340, minHeight: 180),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16)),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
                           '아직 영업 전입니다',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1A1A1A)),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.black),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
@@ -191,8 +193,8 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                           text: const TextSpan(
                             style: TextStyle(fontSize: 15, height: 1.45),
                             children: [
-                              TextSpan(text: '영업중', style: TextStyle(color: Color(0xFF54AAFF))),
-                              TextSpan(text: '으로 상태를 변경하시겠습니까?', style: TextStyle(color: Color(0xFF1A1A1A))),
+                              TextSpan(text: '영업중', style: TextStyle(color: AppColors.blue)),
+                              TextSpan(text: '으로 상태를 변경하시겠습니까?', style: TextStyle(color: AppColors.black)),
                             ],
                           ),
                         ),
@@ -203,8 +205,8 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                               child: AppButton(
                                 label: '아니요',
                                 variant: AppButtonVariant.secondary,
-                                backgroundColor: const Color(0xFFF1F1F1),
-                                foregroundColor: const Color(0xFF767676),
+                                backgroundColor: AppColors.gray2,
+                                foregroundColor: AppColors.gray7,
                                 height: 48,
                                 onPressed: vm.saving ? null : vm.closeModal,
                               ),
@@ -214,8 +216,8 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                               child: AppButton(
                                 label: '네',
                                 variant: AppButtonVariant.primaryBlue,
-                                backgroundColor: const Color(0xFF54AAFF),
-                                foregroundColor: Colors.white,
+                                backgroundColor: AppColors.blue,
+                                foregroundColor: AppColors.white,
                                 height: 48,
                                 loading: vm.saving,
                                 onPressed: vm.saving ? null : vm.confirmOpenAndUnlock,
@@ -239,20 +241,20 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                   child: Container(
                     constraints: const BoxConstraints(minWidth: 280, maxWidth: 340, minHeight: 180),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16)),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
                           "현재 재고가 '0개'입니다",
-                          style: TextStyle(fontSize: 15, color: Color(0xFF767676), height: 1.45),
+                          style: TextStyle(fontSize: 15, color: AppColors.gray7, height: 1.45),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 4),
                         const Text(
                           '영업을 종료하시겠습니까?',
-                          style: TextStyle(fontSize: 15, color: Color(0xFF1A1A1A), height: 1.45),
+                          style: TextStyle(fontSize: 15, color: AppColors.black, height: 1.45),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 28),
@@ -262,8 +264,8 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                               child: AppButton(
                                 label: '아니요',
                                 variant: AppButtonVariant.secondary,
-                                backgroundColor: const Color(0xFFF1F1F1),
-                                foregroundColor: const Color(0xFF767676),
+                                backgroundColor: AppColors.gray2,
+                                foregroundColor: AppColors.gray7,
                                 height: 48,
                                 onPressed: vm.saving ? null : vm.closeModal,
                               ),
@@ -273,7 +275,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                               child: AppButton(
                                 label: '네',
                                 variant: AppButtonVariant.primaryBlue,
-                                backgroundColor: const Color(0xFF767676),
+                                backgroundColor: AppColors.gray7,
                                 foregroundColor: Colors.white,
                                 height: 48,
                                 loading: vm.saving,
@@ -332,7 +334,7 @@ class _GroupStockCard extends StatelessWidget {
     // 영업 종료 시에는 시각만 비활성(회색). 탭/입력 시 모달이 뜨도록 stepper·차감 버튼은 동작 유지
     final stepperEnabled = !disabled;
     final deductEnabled = !disabled; // 영업 종료여도 탭 시 onDeduct에서 모달 표시
-    final titleColor = open ? const Color(0xFF1A1A1A) : const Color(0xFFBDBDBD);
+    final titleColor = open ? AppColors.black : AppColors.gray5;
 
     return SizedBox(
       child: Column(
@@ -344,7 +346,7 @@ class _GroupStockCard extends StatelessWidget {
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: titleColor,
-              fontFamily: 'Pretendard',
+              fontFamily: AppTypography.fontFamily,
               height: 1.6,
             ),
           ),

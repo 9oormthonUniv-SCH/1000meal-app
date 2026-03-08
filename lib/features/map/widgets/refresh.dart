@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
 
 class MapRefreshButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -8,7 +9,7 @@ class MapRefreshButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Color(0xFFFFFFFF),
+      color: AppColors.white,
       borderRadius: BorderRadius.circular(999),
       elevation: 2,
       child: InkWell(
@@ -26,7 +27,7 @@ class MapRefreshButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFA1A1A1),
+                  color: AppColors.gray6,
                 ),
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
 import 'dart:async';
 
 import '../models/role.dart';
@@ -67,7 +68,7 @@ class _RoleGuardState extends State<RoleGuard> {
   Widget build(BuildContext context) {
     if (_checking) {
       return const Scaffold(
-        backgroundColor: Color(0xFFFFFFFF),
+        backgroundColor: AppColors.white,
         body: SafeArea(child: Center(child: CircularProgressIndicator())),
       );
     }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:meal_app/util/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import './_favorite_button.dart';
@@ -145,7 +146,7 @@ class StoreBottomSheet extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF767676),
+                        color: AppColors.gray7,
                       ),
                     ),
                   ],
@@ -159,7 +160,7 @@ class StoreBottomSheet extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF767676),
+                          color: AppColors.gray7,
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -191,7 +192,7 @@ class StoreBottomSheet extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF767676),
+                        color: AppColors.gray7,
                       ),
                     ),
                 ],

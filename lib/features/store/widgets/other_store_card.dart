@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
 
 import '../models/store_models.dart';
 
@@ -23,7 +24,7 @@ class OtherStoreCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFFFFFFF), width: 1),
+            border: Border.all(color: AppColors.white, width: 1),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x12000000),
@@ -74,7 +75,7 @@ class OtherStoreCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF767676),
+                          color: AppColors.gray7,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -83,7 +84,7 @@ class OtherStoreCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFFFF6E3F),
+                          color: AppColors.orange,
                         ),
                       ),
                     ],

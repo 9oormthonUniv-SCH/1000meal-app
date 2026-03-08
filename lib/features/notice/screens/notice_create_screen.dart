@@ -6,6 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
 
+import 'package:meal_app/util/colors.dart';
 import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
 import '../../../common/widgets/app_bar_common.dart';
@@ -260,7 +261,7 @@ class _NoticeCreateScreenState extends State<NoticeCreateScreen> {
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.resolveWith((states) {
                   if (states.contains(WidgetState.disabled)) return const Color(0xFFD9D9D9);
-                  return const Color(0xFFFF6E3F);
+                  return AppColors.orange;
                 }),
                 shape: WidgetStateProperty.all(
                   RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),

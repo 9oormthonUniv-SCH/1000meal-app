@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
 
 import 'app_button.dart';
 
@@ -29,13 +30,13 @@ class AppConfirmDialog extends StatelessWidget {
   final AppButtonVariant primaryVariant;
   final bool loading;
 
-  static const Color _grayLine1 = Color(0xFF767676);
-  static const Color _grayLine2 = Color(0xFF1A1A1A);
-  static const Color _btnSecondaryBg = Color(0xFFF1F1F1);
-  static const Color _btnSecondaryFg = Color(0xFF767676);
-  static const Color _btnPrimaryGrayBg = Color(0xFF767676);
-  static const Color _btnPrimaryGrayFg = Color(0xFFFFFFFF);
-  static const Color _blueHighlight = Color(0xFF54AAFF);
+  static const Color _grayLine1 = AppColors.gray7;
+  static const Color _grayLine2 = AppColors.black;
+  static const Color _btnSecondaryBg = AppColors.gray2;
+  static const Color _btnSecondaryFg = AppColors.gray7;
+  static const Color _btnPrimaryGrayBg = AppColors.gray7;
+  static const Color _btnPrimaryGrayFg = AppColors.white;
+  static const Color _blueHighlight = AppColors.blue;
 
   /// 로그아웃: 아니오 F1F1F1/767676, 네 767676/FFFFFF
   static Future<bool?> showYesNo(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
 
 class WeeklyMenuCard extends StatelessWidget {
   final String dateLabel;
@@ -42,7 +43,7 @@ class WeeklyMenuCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFFF6E3F),
+                  color: AppColors.orange,
                 ),
               ),
               Text(

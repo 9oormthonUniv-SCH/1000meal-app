@@ -12,6 +12,8 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import 'common/config/app_config.dart';
+import 'util/colors.dart';
+import 'util/typography.dart';
 import 'common/notification/fcm_notification_storage.dart';
 import 'common/notification/push_notification_handler.dart';
 import 'common/dio/dio_client.dart';
@@ -262,7 +264,31 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
-          scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+          fontFamily: AppTypography.fontFamily,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.orange,
+            primary: AppColors.orange,
+            surface: AppColors.white,
+            error: AppColors.error,
+            onPrimary: AppColors.white,
+            onSurface: AppColors.black,
+            onError: AppColors.white,
+          ),
+          scaffoldBackgroundColor: AppColors.white,
+          textTheme: TextTheme(
+            displayLarge: AppTypography.headline1,
+            displayMedium: AppTypography.headline2,
+            displaySmall: AppTypography.headline3,
+            headlineMedium: AppTypography.headline4,
+            headlineSmall: AppTypography.headline5,
+            titleLarge: AppTypography.subtitle1,
+            titleMedium: AppTypography.subtitle2,
+            bodyLarge: AppTypography.body2,
+            bodyMedium: AppTypography.body4,
+            bodySmall: AppTypography.caption2,
+            labelLarge: AppTypography.body3,
+            labelSmall: AppTypography.caption1,
+          ),
         ),
         // App entry should be the home (MainScreen). Login is an explicit flow.
         initialRoute: '/',
