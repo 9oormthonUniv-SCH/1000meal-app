@@ -155,6 +155,8 @@ class Notice {
   final String createdAt; // ISO string
   final String updatedAt; // ISO string
   final List<NoticeImage> images;
+  /// 목록 API에서 이미지 개수 없이 이미지 존재 여부만 내려줄 때 사용
+  final bool hasImage;
 
   Notice({
     required this.id,
@@ -165,6 +167,7 @@ class Notice {
     required this.createdAt,
     required this.updatedAt,
     this.images = const <NoticeImage>[],
+    this.hasImage = false,
   });
 
   DateTime? get createdAtDateTime => _tryParseDateTime(createdAt);
@@ -185,6 +188,7 @@ class Notice {
       createdAt: (json['createdAt'] ?? '').toString(),
       updatedAt: (json['updatedAt'] ?? '').toString(),
       images: images,
+      hasImage: _toBool(json['hasImage']),
     );
   }
 }

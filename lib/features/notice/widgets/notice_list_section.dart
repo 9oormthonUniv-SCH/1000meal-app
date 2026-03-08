@@ -113,7 +113,7 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Expanded(
+                                  Flexible(
                                     child: Text(
                                       n.title,
                                       maxLines: 2,
@@ -125,8 +125,8 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                                       ),
                                     ),
                                   ),
-                                  if (n.images.isNotEmpty) ...[
-                                    const SizedBox(width: 6),
+                                  if (n.images.isNotEmpty || n.hasImage) ...[
+                                    const SizedBox(width: 12),
                                     SvgPicture.asset(
                                       'assets/icon/clip.svg',
                                       width: 18,

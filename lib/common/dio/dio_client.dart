@@ -1,12 +1,19 @@
 import 'package:dio/dio.dart';
 
 import '../config/app_config.dart';
+import 'api_error_mapper.dart';
 import 'api_exception.dart';
 
 class DioClient {
   final Dio _dio;
+  final List<Future<String?> Function()?> _on401RefreshRef;
 
-  DioClient._(this._dio);
+  DioClient._(this._dio, this._on401RefreshRef);
+
+  /// 401 발생 시 Refresh Token으로 재발급 후 재시도할 콜백 등록. main에서 AuthRepository 생성 후 호출.
+  void setOn401Refresh(Future<String?> Function() callback) {
+    _on401RefreshRef[0] = callback;
+  }
 
   factory DioClient.create() {
     final options = BaseOptions(
@@ -19,6 +26,8 @@ class DioClient {
     );
 
     final dio = Dio(options);
+    final on401Ref = <Future<String?> Function()?>[null];
+
     dio.interceptors.add(
       LogInterceptor(
         request: true,
@@ -30,7 +39,9 @@ class DioClient {
       ),
     );
 
-    return DioClient._(dio);
+    dio.interceptors.add(_Auth401Interceptor(dio, on401Ref));
+
+    return DioClient._(dio, on401Ref);
   }
 
   Future<T> get<T>(
@@ -47,7 +58,7 @@ class DioClient {
       return res.data as T;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      final msg = _userFriendlyMessage(e, code, e.message);
+      final msg = _exceptionMessage(e, code);
       throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
@@ -68,9 +79,16 @@ class DioClient {
       return res.data as T;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      final msg = _userFriendlyMessage(e, code, e.message);
+      final msg = _exceptionMessage(e, code);
       throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
+  }
+
+  /// 서버 응답 body의 message가 있으면 사용, 없으면 상태코드별 기본 문구 사용.
+  static String _exceptionMessage(DioException e, int? statusCode) {
+    final serverMsg = mapErrorToMessage(e, responseData: e.response?.data);
+    if (serverMsg != '요청 처리 중 오류가 발생했습니다.') return serverMsg;
+    return _userFriendlyMessage(e, statusCode, e.message);
   }
 
   static String _userFriendlyMessage(DioException e, int? statusCode, String? dioMessage) {
@@ -109,7 +127,7 @@ class DioClient {
       return res.data as T;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      final msg = _userFriendlyMessage(e, code, e.message);
+      final msg = _exceptionMessage(e, code);
       throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
@@ -130,7 +148,7 @@ class DioClient {
       return res.data as T;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      final msg = _userFriendlyMessage(e, code, e.message);
+      final msg = _exceptionMessage(e, code);
       throw ApiException(msg, statusCode: code, details: e.response?.data);
     }
   }
@@ -151,8 +169,62 @@ class DioClient {
       return res.data as T;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      final msg = _userFriendlyMessage(e, code, e.message);
+      final msg = _exceptionMessage(e, code);
       throw ApiException(msg, statusCode: code, details: e.response?.data);
+    }
+  }
+}
+
+class _Auth401Interceptor extends QueuedInterceptor {
+  _Auth401Interceptor(this._dio, this._on401Ref);
+
+  final Dio _dio;
+  final List<Future<String?> Function()?> _on401Ref;
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    _handle401(err, handler);
+  }
+
+  Future<void> _handle401(DioException err, ErrorInterceptorHandler handler) async {
+    if (err.response?.statusCode != 401) {
+      handler.next(err);
+      return;
+    }
+    final opts = err.requestOptions;
+    if (opts.extra['_retried401'] == true) {
+      handler.next(err);
+      return;
+    }
+    if (opts.path.contains('/auth/refresh')) {
+      handler.next(err);
+      return;
+    }
+    final refreshCb = _on401Ref.isNotEmpty ? _on401Ref[0] : null;
+    if (refreshCb == null) {
+      handler.next(err);
+      return;
+    }
+    try {
+      final newToken = await refreshCb();
+      if (newToken == null || newToken.isEmpty) {
+        handler.next(err);
+        return;
+      }
+      final newHeaders = Map<String, dynamic>.from(opts.headers)
+        ..['Authorization'] = 'Bearer $newToken';
+      final newOpts = opts.copyWith(
+        headers: newHeaders,
+        extra: {...opts.extra, '_retried401': true},
+      );
+      try {
+        final response = await _dio.fetch(newOpts);
+        handler.resolve(response);
+      } catch (_) {
+        handler.next(err);
+      }
+    } catch (_) {
+      handler.next(err);
     }
   }
 }

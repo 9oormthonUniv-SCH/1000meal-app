@@ -222,6 +222,13 @@ class MyApp extends StatelessWidget {
       tokenStorage: tokenStorage,
       loginPreferenceStorage: loginPreferenceStorage,
     );
+    dioClient.setOn401Refresh(() async {
+      try {
+        return await authRepo.refreshAccessToken();
+      } catch (_) {
+        return null;
+      }
+    });
     final adminRepo = AdminRepository(authRepo: authRepo, api: adminApi);
     final storeApi = StoreApi(dioClient);
     final storeRepo = StoreRepository(storeApi, authRepo);

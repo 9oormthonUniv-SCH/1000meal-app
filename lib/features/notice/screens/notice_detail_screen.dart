@@ -5,6 +5,7 @@ import 'package:meal_app/util/typography.dart';
 
 import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
+import '../../../common/utils/external_link.dart';
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_confirm_dialog.dart';
 import '../../../common/widgets/app_snackbar.dart';
@@ -185,102 +186,117 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
       final content = n?.content ?? '';
       final images = n?.images ?? const <NoticeImage>[];
 
-      // Use a single scrollable ListView to avoid semantics/layout edge cases
-      // during route transitions.
-      body = ListView(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
-        children: [
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: AppTypography.subtitle1.copyWith(
-              color: AppColors.gray7,
-              fontSize: 16,
-              height: 32 / 16,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            dateText,
-            style: AppTypography.caption2.copyWith(
-              color: AppColors.gray7,
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              height: 20 / 14,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Divider(height: 1, thickness: 0.5, color: AppColors.gray7),
-          if (images.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            ...List.generate(images.length, (i) {
-              final img = images[i];
-              return Padding(
-                padding: EdgeInsets.only(bottom: i == images.length - 1 ? 0 : 12),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Image.network(
-                      img.url,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: AppColors.background,
-                        alignment: Alignment.center,
-                        child: Text(
-                          '이미지를 불러올 수 없습니다.',
-                          style: AppTypography.caption2.copyWith(color: AppColors.gray7),
-                        ),
-                      ),
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          color: AppColors.background,
-                          alignment: Alignment.center,
-                          child: const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        );
-                      },
-                    ),
+      body = CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: AppTypography.subtitle1.copyWith(
+                    color: AppColors.gray7,
+                    fontSize: 16,
+                    height: 32 / 16,
                   ),
                 ),
-              );
-            }),
-            const SizedBox(height: 16),
-          ] else ...[
-            const SizedBox(height: 16),
-          ],
-          Text(
-            content,
-            style: AppTypography.body4.copyWith(
-              color: AppColors.gray7,
-              fontSize: 14,
-              height: 20 / 14,
+                const SizedBox(height: 8),
+                Text(
+                  dateText,
+                  style: AppTypography.caption2.copyWith(
+                    color: AppColors.gray7,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    height: 20 / 14,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Divider(height: 1, thickness: 0.5, color: AppColors.gray7),
+                if (images.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  ...List.generate(images.length, (i) {
+                    final img = images[i];
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: i == images.length - 1 ? 0 : 12),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return Image.network(
+                              img.url,
+                              fit: BoxFit.contain,
+                              width: constraints.maxWidth,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: AppColors.background,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '이미지를 불러올 수 없습니다.',
+                                  style: AppTypography.caption2.copyWith(color: AppColors.gray7),
+                                ),
+                              ),
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  color: AppColors.background,
+                                  alignment: Alignment.center,
+                                  child: const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 16),
+                ] else ...[
+                  const SizedBox(height: 16),
+                ],
+                Text(
+                  content,
+                  style: AppTypography.body4.copyWith(
+                    color: AppColors.gray7,
+                    fontSize: 14,
+                    height: 20 / 14,
+                  ),
+                ),
+                _adminButtons(isAdmin: isAdmin),
+                const SizedBox(height: 40),
+              ]),
             ),
           ),
-          _adminButtons(isAdmin: isAdmin),
-          const SizedBox(height: 40),
-          Text(
-            '이메일 문의: cheonbab@sch.ac.kr',
-            style: AppTypography.caption2.copyWith(color: AppColors.gray7),
-          ),
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () {
-              AppSnackBar.show(context, 'About 화면은 다음 작업에서 연결됩니다.');
-            },
-            child: Text(
-              'About 오늘순밥',
-              style: AppTypography.caption2.copyWith(
-                color: AppColors.gray7,
-                decoration: TextDecoration.underline,
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '이메일 문의: cheonbab@sch.ac.kr',
+                    style: AppTypography.caption2.copyWith(color: AppColors.gray7),
+                  ),
+                  const SizedBox(height: 2),
+                  InkWell(
+                    onTap: () => openExternalUrl('https://1000meal.store'),
+                    child: Text(
+                      'About 오늘순밥',
+                      style: AppTypography.caption2.copyWith(
+                        color: AppColors.gray7,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 24),
         ],
       );
     }

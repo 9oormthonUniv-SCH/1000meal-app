@@ -85,7 +85,7 @@ class _SingleGroupLayout extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 menusText,
                 style: AppTypography.body3.copyWith(color: AppColors.gray7),
