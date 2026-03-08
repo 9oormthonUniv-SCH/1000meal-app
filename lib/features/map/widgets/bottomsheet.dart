@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import './_favorite_button.dart';
@@ -8,7 +8,7 @@ import '../../store/models/store_models.dart';
 import '../../store/screens/store_detail_screen.dart';
 import '../../store/viewmodels/store_list_view_model.dart';
 
-/// 단일 그룹일 때와 다중 그룹일 때 레이아웃이 달라져 높이 가변 (대략 기준)
+/// 단일 그룹일 때와 다중 그룹일 때 레이아웃이 달라져 높이 가변 (피그마: 단일 h-80, 다중 h-96)
 const double kStoreBottomSheetHeightBase = 317;
 const double kStoreBottomSheetRowHeight = 40;
 
@@ -25,7 +25,7 @@ double storeBottomSheetHeight(StoreListItem store) {
 Future<void> showStoreBottomSheet(BuildContext context, StoreListItem store) {
   return showModalBottomSheet<void>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: AppColors.white,
     barrierColor: Colors.transparent,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -47,9 +47,7 @@ class StoreBottomSheet extends StatelessWidget {
       orElse: () => store,
     );
     final isOpen = currentStore.open ?? false;
-    final statusColor = isOpen
-        ? const Color(0xFFF97316)
-        : const Color(0xFF9CA3AF);
+    final statusColor = isOpen ? AppColors.orange : AppColors.gray6;
     final statusText = isOpen ? '영업 중' : '영업 종료';
     final groups = currentStore.menuGroups;
     final isMultiGroup = groups.length >= 2;
@@ -80,15 +78,15 @@ class StoreBottomSheet extends StatelessWidget {
                 children: [
                   Center(
                     child: Container(
-                      width: 48,
-                      height: 4,
+                      width: 40,
+                      height: 3,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE5E7EB),
+                        color: AppColors.gray3,
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 6),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -105,31 +103,14 @@ class StoreBottomSheet extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              IntrinsicWidth(
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    Text(
-                                      currentStore.name,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        decoration: TextDecoration.none,
-                                      ),
-                                    ),
-                                    Positioned(
-                                      left: 0,
-                                      right: 0,
-                                      bottom: 0,
-                                      child: Transform.translate(
-                                        offset: const Offset(0, -2),
-                                        child: Container(
-                                          height: 1.1,
-                                          color: const Color(0xFF111827),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                              Expanded(
+                                child: Text(
+                                  currentStore.name,
+                                  style: AppTypography.headline4.copyWith(
+                                    fontSize: 18,
+                                    height: 28 / 18,
+                                    color: AppColors.black,
+                                  ),
                                 ),
                               ),
                               FavoriteButton(store: currentStore),
@@ -140,26 +121,21 @@ class StoreBottomSheet extends StatelessWidget {
                     ],
                   ),
                   if ((currentStore.address ?? '').isNotEmpty) ...[
-                    const SizedBox(height: 12),
                     Text(
                       currentStore.address!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
+                      style: AppTypography.caption2.copyWith(
                         color: AppColors.gray7,
+                        height: 20 / 16,
                       ),
                     ),
                   ],
                   if (hasPhone) ...[
-                    const SizedBox(height: 4),
                     GestureDetector(
                       onTap: () =>
                           launchUrl(Uri.parse('tel:${currentStore.phone}')),
                       child: Text(
                         '📞 ${currentStore.phone}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
+                        style: AppTypography.caption2.copyWith(
                           color: AppColors.gray7,
                           decoration: TextDecoration.underline,
                         ),
@@ -167,64 +143,59 @@ class StoreBottomSheet extends StatelessWidget {
                     ),
                   ] else ...[
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       '전화번호 미등록',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF9CA3AF),
-                      ),
+                      style: AppTypography.caption2.copyWith(color: AppColors.gray6),
                     ),
                   ],
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 25),
                   Text(
                     statusText,
-                    style: TextStyle(
+                    style: AppTypography.caption1.copyWith(
                       color: statusColor,
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      height: 20 / 12,
                     ),
                   ),
                   const SizedBox(height: 2),
                   if ((currentStore.hours ?? '').isNotEmpty)
                     Text(
                       currentStore.hours!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.gray7,
-                      ),
+                      style: AppTypography.caption2.copyWith(color: AppColors.gray7),
                     ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 4),
             Expanded(
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                decoration: const BoxDecoration(color: Color(0xFFF97316)),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                decoration: const BoxDecoration(color: AppColors.orange),
                 child: SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom + 24,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
+                      Text(
                         '오늘의 천밥',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                        style: AppTypography.subtitle1.copyWith(
+                          color: AppColors.white,
+                          fontSize: 16,
+                          height: 32 / 16,
                         ),
                       ),
                       if (tm == null) ...[
                         const SizedBox(height: 4),
                         Text(
                           menuFallback,
-                          style: const TextStyle(
+                          style: AppTypography.body4.copyWith(
+                            color: AppColors.white,
                             fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.white,
+                            height: 20 / 14,
                           ),
                         ),
                       ] else if (singleGroup) ...[
@@ -237,10 +208,10 @@ class StoreBottomSheet extends StatelessWidget {
                                 currentStore.singleGroupMenusText.isEmpty
                                     ? menuFallback
                                     : currentStore.singleGroupMenusText,
-                                style: const TextStyle(
+                                style: AppTypography.body4.copyWith(
+                                  color: AppColors.white,
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white,
+                                  height: 20 / 14,
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -253,18 +224,16 @@ class StoreBottomSheet extends StatelessWidget {
                               children: [
                                 Text(
                                   '${currentStore.firstGroupStock}개',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
+                                  style: AppTypography.body3.copyWith(
+                                    color: AppColors.white,
+                                    fontSize: 14,
+                                    height: 20 / 14,
                                   ),
                                 ),
-                                const Text(
+                                Text(
                                   '남았어요!',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.white,
+                                  style: AppTypography.caption2.copyWith(
+                                    color: AppColors.white,
                                   ),
                                 ),
                               ],
@@ -276,6 +245,7 @@ class StoreBottomSheet extends StatelessWidget {
                         ...sortedGroups.map(
                           (group) => _MapStoreCardGroupRow(group: group),
                         ),
+                        const SizedBox(height: 24),
                       ],
                     ],
                   ),
@@ -302,7 +272,7 @@ class _MapStoreCardGroupRow extends StatelessWidget {
     final stock = group.stock;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -311,13 +281,13 @@ class _MapStoreCardGroupRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Padding(
-                  padding: EdgeInsets.only(top: 6, right: 8),
+                  padding: EdgeInsets.only(top: 6, right: 16),
                   child: SizedBox(
                     width: 6,
                     height: 6,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.white,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -326,10 +296,10 @@ class _MapStoreCardGroupRow extends StatelessWidget {
                 Expanded(
                   child: Text(
                     menuText.isEmpty ? '—' : menuText,
-                    style: const TextStyle(
+                    style: AppTypography.body4.copyWith(
+                      color: AppColors.white,
                       fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
+                      height: 20 / 14,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -345,19 +315,15 @@ class _MapStoreCardGroupRow extends StatelessWidget {
             children: [
               Text(
                 '${stock}개',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                style: AppTypography.body3.copyWith(
+                  color: AppColors.white,
+                  fontSize: 14,
+                  height: 20 / 14,
                 ),
               ),
-              const Text(
+              Text(
                 '남았어요!',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white,
-                ),
+                style: AppTypography.caption2.copyWith(color: AppColors.white),
               ),
             ],
           ),

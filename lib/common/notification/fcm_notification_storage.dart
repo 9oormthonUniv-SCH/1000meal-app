@@ -95,6 +95,18 @@ Future<void> addFcmNotificationReadId(String id, [String? accountKey]) async {
   } catch (_) {}
 }
 
+/// 안 읽은 알림이 하나라도 있으면 true (accountKey 없으면 현재 로그인 계정 기준).
+Future<bool> hasUnreadFcmNotifications([String? accountKey]) async {
+  try {
+    final list = await readStoredFcmNotifications(accountKey);
+    if (list.isEmpty) return false;
+    final readIds = await readFcmNotificationReadIds(accountKey);
+    return list.any((n) => !readIds.contains(n.id));
+  } catch (_) {
+    return false;
+  }
+}
+
 /// 저장된 알림 목록 로드 (accountKey 없으면 현재 로그인 계정 기준). 비로그인 시 빈 목록.
 Future<List<StoredFcmNotification>> readStoredFcmNotifications([String? accountKey]) async {
   try {

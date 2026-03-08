@@ -1,9 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'package:meal_app/util/colors.dart';
 import 'dart:async';
 
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
+
+import '../../../common/notification/fcm_notification_storage.dart';
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_button.dart';
 import '../../../common/widgets/app_confirm_dialog.dart';
@@ -29,6 +33,14 @@ class MyPageScreen extends StatefulWidget {
 class _MyPageScreenState extends State<MyPageScreen> {
   bool _loaded = false;
   bool? _hasToken;
+  bool _hasUnreadNotifications = false;
+
+  Future<void> _loadHasUnread() async {
+    final hasUnread = await hasUnreadFcmNotifications();
+    if (mounted && hasUnread != _hasUnreadNotifications) {
+      setState(() => _hasUnreadNotifications = hasUnread);
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -47,6 +59,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
       }
 
       await context.read<MyPageViewModel>().load();
+      if (!mounted) return;
+      _loadHasUnread();
       if (!mounted) return;
       final vm = context.read<MyPageViewModel>();
       if (vm.shouldRelogin) {
@@ -115,16 +129,30 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   Scaffold _buildScaffold(BuildContext context, {required bool showBack, required Widget body}) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: AppColors.background,
       appBar: AppBarCommon(
         showBack: showBack,
         title: '마이페이지',
         centerTitle: false,
+        titleSpacing: showBack ? null : 20,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Color(0xFF111827)),
-            onPressed: () =>
-                Navigator.of(context).pushNamed(NotificationSettingsScreen.routeName),
+          Transform.translate(
+            offset: const Offset(-16, 0),
+            child: IconButton(
+              icon: SvgPicture.asset(
+                _hasUnreadNotifications
+                    ? 'assets/icon/alarm_active.svg'
+                    : 'assets/icon/alarm.svg',
+                width: 24,
+                height: 24,
+                colorFilter: const ColorFilter.mode(AppColors.gray5, BlendMode.srcIn),
+              ),
+              onPressed: () async {
+                await Navigator.of(context).pushNamed(NotificationSettingsScreen.routeName);
+                if (!mounted) return;
+                _loadHasUnread();
+              },
+            ),
           ),
         ],
       ),
@@ -140,11 +168,11 @@ class _GuestMyPageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF3F4F6),
+      color: AppColors.background,
       child: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: AppColors.white,
             padding: const EdgeInsets.only(bottom: 20),
             child: GuestProfileCard(
               title: '오늘순밥 로그인 및 회원가입',
@@ -177,22 +205,16 @@ class _Body extends StatelessWidget {
     // 이미지 스타일: 학생 = 주황·빨강 배경 + 흰색 글씨, 관리자 = 파랑 계열
     final badgeBg = isStudent ? const Color(0xFFFF623F) : const Color(0xFF2563EB);
     final badgeText = isStudent ? '학생' : '관리자';
-    // 학생: 이름 대신 학번 위, 그 밑 이메일. 관리자: username/displayName, email
-    final String cardTitle = isStudent
-        ? (me.studentNumber != null && me.studentNumber!.isNotEmpty
-            ? '${me.studentNumber}'
-            : me.username.isNotEmpty
-                ? '${me.username}'
-                : '학번')
-        : (me.displayName.isNotEmpty ? me.displayName : '회원');
+    // 상단 카드 제목: 학생·관리자 모두 이름(displayName) 표시, 그 밑 이메일
+    final String cardTitle = me.displayName.isNotEmpty ? me.displayName : '회원';
     final String cardSubtitle = me.email;
 
     return Container(
-      color: const Color(0xFFF3F4F6),
+      color: AppColors.background,
       child: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: AppColors.white,
             padding: const EdgeInsets.only(bottom: 20),
             child: UserProfileCard(
               username: cardTitle,
@@ -203,26 +225,26 @@ class _Body extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Container(
-            color: Colors.white,
+            color: AppColors.white,
             child: Column(
               children: [
                 _MenuItem(
                   label: '회원정보 수정',
                   onTap: () => Navigator.of(context).pushNamed('/change-email'),
-                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
+                  trailing: Icon(Icons.chevron_right, color: AppColors.gray5, size: 22),
                 ),
-                const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                Divider(height: 1, color: AppColors.gray3),
                 _MenuItem(
                   label: '비밀번호 변경',
                   onTap: () => Navigator.of(context).pushNamed('/find-account', arguments: 'pw'),
-                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
+                  trailing: Icon(Icons.chevron_right, color: AppColors.gray5, size: 22),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
           Container(
-            color: Colors.white,
+            color: AppColors.white,
             child: _PushAgreeRow(
               value: vm.pushNotificationAgreed,
               onChanged: (v) => vm.setPushNotificationAgreed(v),
@@ -230,21 +252,21 @@ class _Body extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Container(
-            color: Colors.white,
+            color: AppColors.white,
             child: Column(
               children: [
                 if (kDebugMode)
                   _MenuItem(
                     label: '자동 로그인 테스트 (토큰 삭제 후 재진입)',
-                    labelColor: Colors.grey,
+                    labelColor: AppColors.gray6,
                     onTap: () async {
                       await context.read<AuthRepository>().clearTokensOnly();
                       if (!context.mounted) return;
                       Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false);
                     },
-                    trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
+                    trailing: Icon(Icons.chevron_right, color: AppColors.gray5, size: 22),
                   ),
-                if (kDebugMode) const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                if (kDebugMode) Divider(height: 1, color: AppColors.gray3),
                 _MenuItem(
                   label: '로그아웃',
                   onTap: () async {
@@ -260,12 +282,12 @@ class _Body extends StatelessWidget {
                     // 로그아웃 후 마이페이지 탭에 머물면 me=null 상태로 무한 로딩될 수 있으므로 홈(0)으로 이동
                     Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 0);
                   },
-                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
+                  trailing: Icon(Icons.chevron_right, color: AppColors.gray5, size: 22),
                 ),
-                const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                Divider(height: 1, color: AppColors.gray3),
                 _MenuItem(
                   label: '회원탈퇴',
-                  labelColor: const Color(0xFFEF4444),
+                  labelColor: AppColors.error,
                   onTap: () async {
                     final ok = await AppConfirmDialog.showCustom(
                       context,
@@ -274,9 +296,9 @@ class _Body extends StatelessWidget {
                       primaryLabel: '탈퇴하기',
                       primaryOnLeft: true,
                       primaryBg: AppColors.gray2,
-                      primaryFg: Colors.red,
+                      primaryFg: AppColors.error,
                       secondaryBg: AppColors.gray7,
-                      secondaryFg: Colors.white,
+                      secondaryFg: AppColors.white,
                     );
                     if (ok != true) return;
                     final success = await vm.deleteAccount();
@@ -287,7 +309,7 @@ class _Body extends StatelessWidget {
                       AppSnackBar.show(context, vm.errorMessage ?? '회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
                     }
                   },
-                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
+                  trailing: Icon(Icons.chevron_right, color: AppColors.gray5, size: 22),
                 ),
               ],
             ),
@@ -317,7 +339,10 @@ class _MenuItem extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(fontSize: 14, color: labelColor ?? const Color(0xFF111827)),
+                style: AppTypography.subtitle1.copyWith(
+                  color: labelColor ?? AppColors.black,
+                  height: 32 / 16,
+                ),
               ),
             ),
             if (trailing != null) trailing!,
@@ -344,10 +369,13 @@ class _PushAgreeRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         child: Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 '푸시 알림 동의',
-                style: TextStyle(fontSize: 14, color: Color(0xFF111827)),
+                style: AppTypography.subtitle1.copyWith(
+                  color: AppColors.black,
+                  height: 32 / 16,
+                ),
               ),
             ),
             _AppPushToggle(value: value, onChanged: onChanged),
@@ -366,7 +394,7 @@ class _AppPushToggle extends StatelessWidget {
   final ValueChanged<bool> onChanged;
 
   static const Color _activeTrack = AppColors.orange;
-  static const Color _defaultTrack = Color(0xFFD9D9D9);
+  static const Color _defaultTrack = AppColors.gray3;
   static const Color _thumb = AppColors.white;
 
   static const double _trackWidth = 52;

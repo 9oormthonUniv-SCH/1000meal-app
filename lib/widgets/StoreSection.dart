@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
 
 import '../features/store/screens/store_detail_screen.dart';
 import '../features/store/viewmodels/store_list_view_model.dart';
@@ -46,7 +47,7 @@ class _StoreSectionState extends State<StoreSection> {
                     vm.errorMessage!,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: Color(0xFF6B7280),
+                      color: AppColors.gray7,
                       fontSize: 14,
                     ),
                   ),
@@ -64,9 +65,9 @@ class _StoreSectionState extends State<StoreSection> {
               child: Center(
                 child: Text(
                   '등록된 매장 정보가 없습니다.',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF6B7280),
+                    color: AppColors.gray7,
                   ),
                 ),
               ),

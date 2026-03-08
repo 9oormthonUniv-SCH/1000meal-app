@@ -293,6 +293,14 @@ class StoreDetail {
     required this.weeklyMenuResponse,
   });
 
+  /// API에서 내려주는 잔여 수량 필드 (remain, remaining, stock, count 등) 읽기
+  static int? _readRemain(Map<String, dynamic> json) {
+    int toInt(dynamic v, {int fallback = 0}) =>
+        v is int ? v : int.tryParse((v ?? '').toString()) ?? fallback;
+    final v = json['remain'] ?? json['remaining'] ?? json['stock'] ?? json['count'] ?? json['remainingCount'];
+    return v == null ? null : toInt(v);
+  }
+
   factory StoreDetail.fromJson(Map<String, dynamic> json) {
     int toInt(dynamic v, {int fallback = 0}) =>
         v is int ? v : int.tryParse((v ?? '').toString()) ?? fallback;
@@ -320,7 +328,7 @@ class StoreDetail {
       address: json['address']?.toString(),
       phone: json['phone']?.toString(),
       hours: json['hours']?.toString(),
-      remain: json['remain'] == null ? null : toInt(json['remain']),
+      remain: _readRemain(json),
       weeklyMenuResponse: (json['weeklyMenuResponse'] is Map<String, dynamic>)
           ? WeeklyMenuResponse.fromJson(
               json['weeklyMenuResponse'] as Map<String, dynamic>,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 import '../../../common/notification/fcm_notification_storage.dart';
 import '../../../common/widgets/app_bar_common.dart';
@@ -65,14 +67,14 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: AppBarCommon(
         showBack: true,
         title: '알림',
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFF111827)),
+            icon: const Icon(Icons.refresh, color: AppColors.black),
             onPressed: _loading ? null : () => _load(),
             tooltip: '새로고침',
           ),
@@ -88,10 +90,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                     child: Text(
                       _isLoggedInForNotifications ? '아직 받은 알림이 없습니다.' : '로그인 후 알림을 확인할 수 있습니다.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: AppTypography.body4.copyWith(color: AppColors.gray7),
                     ),
                   )
                 else
@@ -109,10 +108,10 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                           isRead: isRead,
                           onTap: () => _markAsRead(item.id),
                           leading: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
+                            width: 48,
+                            height: 48,
+                            decoration: const BoxDecoration(
+                              color: AppColors.gray3,
                               shape: BoxShape.circle,
                             ),
                           ),

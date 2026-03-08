@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../util/colors.dart';
+import 'package:meal_app/util/typography.dart';
+import 'package:meal_app/util/colors.dart';
 
 enum HomeTabType { todayMeal, notice }
 
@@ -47,10 +48,9 @@ class _TabPillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color borderColor = isSelected
-        ? AppColors.primary
-        : const Color(0xFFD9D9D9);
-    final Color textColor = isSelected ? AppColors.primary : AppColors.textSub;
+    // 피그마: active → outline-orange-400 / text-orange-400, default → outline-stone-300 / text-neutral-400
+    final Color borderColor = isSelected ? AppColors.orange : AppColors.gray4;
+    final Color textColor = isSelected ? AppColors.orange : AppColors.gray6;
 
     return InkWell(
       borderRadius: BorderRadius.circular(30),
@@ -59,18 +59,17 @@ class _TabPillButton extends StatelessWidget {
         height: 31,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(color: borderColor, width: 1),
         ),
         alignment: Alignment.center,
         child: Text(
           label,
-          style: TextStyle(
+          style: AppTypography.caption2.copyWith(
             color: textColor,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            height: 1.0,
+            fontWeight: FontWeight.w400,
+            height: 20 / 12,
           ),
         ),
       ),

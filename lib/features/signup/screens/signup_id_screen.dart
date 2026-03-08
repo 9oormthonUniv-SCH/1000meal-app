@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/widgets/app_bar_common.dart';
+import '../../../util/colors.dart';
+import '../../../util/typography.dart';
 import '../../../common/widgets/app_button.dart';
 import '../../auth/viewmodels/signup_view_model.dart';
 
@@ -34,66 +36,78 @@ class _SignupIdScreenState extends State<SignupIdScreen> {
     final vm = context.watch<SignupViewModel>();
 
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: const AppBarCommon(title: ''),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 0),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 16),
-                  const _SignupHeader(),
-                  const SizedBox(height: 32),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      RichText(
-                        text: const TextSpan(
-                          style: TextStyle(fontSize: 14, color: Color(0xFF374151)),
-                          children: [
-                            TextSpan(text: '아이디'),
-                            TextSpan(text: '*', style: TextStyle(color: Color(0xFFF97316))),
-                          ],
-                        ),
+                      const SizedBox(height: 16),
+                      const _SignupHeader(),
+                      const SizedBox(height: 32),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              style: AppTypography.subtitle1.copyWith(color: AppColors.gray7),
+                              children: [
+                                const TextSpan(text: '아이디'),
+                                TextSpan(text: '*', style: AppTypography.subtitle1.copyWith(color: AppColors.orange)),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            cursorColor: AppColors.orange,
+                            style: AppTypography.body2.copyWith(color: AppColors.black),
+                            decoration: InputDecoration(
+                              hintText: '학번 8자리를 입력해주세요',
+                              hintStyle: AppTypography.body2.copyWith(color: AppColors.gray5),
+                              border: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray7)),
+                              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray3)),
+                              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.orange, width: 2)),
+                            ),
+                            onChanged: vm.onChangeId,
+                          ),
+                          const SizedBox(height: 8),
+                          if (vm.checkingId)
+                            Text('중복 확인 중…', style: AppTypography.caption2.copyWith(color: AppColors.gray7)),
+                          if (vm.idOk == false && vm.idErrorMessage != null)
+                            Text(vm.idErrorMessage!, style: AppTypography.caption1.copyWith(color: AppColors.error)),
+                          if (vm.idOk == true)
+                            Text('사용가능한 아이디입니다', style: AppTypography.caption1.copyWith(color: AppColors.success)),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        decoration: const InputDecoration(
-                          hintText: '학번 8자리를 입력해주세요',
-                          border: UnderlineInputBorder(),
-                        ),
-                        onChanged: vm.onChangeId,
-                      ),
-                      const SizedBox(height: 8),
-                      if (vm.checkingId)
-                        const Text('중복 확인 중…', style: TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
-                      if (vm.idOk == false && vm.idErrorMessage != null)
-                        Text(vm.idErrorMessage!, style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626))),
-                      if (vm.idOk == true)
-                        const Text('사용가능한 아이디입니다', style: TextStyle(fontSize: 12, color: Color(0xFF16A34A))),
+                      const SizedBox(height: 24),
                     ],
                   ),
-                  const SizedBox(height: 40),
-                  AppButton(
-                    label: '확인',
-                    variant: AppButtonVariant.primary,
-                    onPressed: vm.canNextFromId
-                        ? () async {
-                            vm.markFromCredentials();
-                            await vm.saveDraft();
-                            if (!context.mounted) return;
-                            Navigator.of(context).pushNamed('/signup/credentials');
-                          }
-                        : null,
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                ),
               ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: AppButton(
+                label: '확인',
+                variant: AppButtonVariant.primary,
+                large: true,
+                onPressed: vm.canNextFromId
+                    ? () async {
+                        vm.markFromCredentials();
+                        await vm.saveDraft();
+                        if (!context.mounted) return;
+                        Navigator.of(context).pushNamed('/signup/credentials');
+                      }
+                    : null,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -108,17 +122,17 @@ class _SignupHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '천밥에 오신 것을\n환영합니다!',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, height: 1.25),
+        Text(
+          '오늘순밥에 오신 것을\n환영합니다!',
+          style: AppTypography.headline1.copyWith(fontSize: 24, height: 32 / 24),
         ),
         const SizedBox(height: 8),
         RichText(
           text: TextSpan(
-            style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            style: AppTypography.caption2.copyWith(color: AppColors.gray7),
             children: [
-              TextSpan(text: '1분', style: TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.w600)),
-              TextSpan(text: '이면 회원가입 가능해요'),
+              TextSpan(text: '1분', style: AppTypography.caption1.copyWith(color: AppColors.orange)),
+              const TextSpan(text: '이면 회원가입 가능해요'),
             ],
           ),
         ),

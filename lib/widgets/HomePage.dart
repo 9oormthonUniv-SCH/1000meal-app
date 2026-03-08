@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:meal_app/util/colors.dart';
 import 'package:meal_app/widgets/StoreSection.dart';
 import 'package:meal_app/widgets/app_text_logo.dart';
 import '../common/widgets/app_bar_common.dart';
@@ -7,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 
 import '../features/auth/models/role.dart';
+import '../common/notification/fcm_notification_storage.dart';
 import '../features/mypage/screens/notification_settings_screen.dart';
 import '../features/auth/repositories/auth_repository.dart';
 import '../features/store/viewmodels/store_list_view_model.dart';
@@ -23,6 +26,20 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   HomeTabType _selectedTab = HomeTabType.todayMeal;
+  bool _hasUnreadNotifications = false;
+
+  Future<void> _loadHasUnread() async {
+    final hasUnread = await hasUnreadFcmNotifications();
+    if (mounted && hasUnread != _hasUnreadNotifications) {
+      setState(() => _hasUnreadNotifications = hasUnread);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHasUnread();
+  }
 
   Future<void> _handleProfileTap(BuildContext context) async {
     final repo = context.read<AuthRepository>();
@@ -65,21 +82,40 @@ class _HomePageState extends State<HomePage> {
         : noticeVm.loading;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: AppBarCommon(
         showBack: false,
         toolbarHeight: 60,
-        titleWidget: const AppTextLogoWidget(),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: Color(0xFF111827),
+        // Material 3 AppBar는 툴바 좌측에 기본 16dp 여백이 있어, 본문(20)과 맞추려 16px 왼쪽 보정
+        titleWidget: Transform.translate(
+          offset: const Offset(-16, 0),
+          child: const Padding(
+            padding: EdgeInsets.only(left: 20),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: AppTextLogoWidget(),
             ),
-            onPressed: () => Navigator.of(
-              context,
-            ).pushNamed(NotificationSettingsScreen.routeName),
+          ),
+        ),
+        centerTitle: false,
+        titleSpacing: 0,
+        actions: [
+          Transform.translate(
+            offset: const Offset(-5, 0),
+            child: IconButton(
+              icon: SvgPicture.asset(
+                _hasUnreadNotifications
+                    ? 'assets/icon/alarm_active.svg'
+                    : 'assets/icon/alarm.svg',
+                width: 24,
+                height: 24,
+              ),
+              onPressed: () async {
+                await Navigator.of(context).pushNamed(NotificationSettingsScreen.routeName);
+                if (!mounted) return;
+                _loadHasUnread();
+              },
+            ),
           ),
         ],
       ),
@@ -88,8 +124,9 @@ class _HomePageState extends State<HomePage> {
         builder: (context, constraints) {
           return Column(
             children: [
+              // 우측 패딩 80: AppBar 알림 버튼과 새로고침 버튼이 같은 좌우 위치에 오도록
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                padding: const EdgeInsets.fromLTRB(20, 0, 5, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -135,11 +172,16 @@ class _HomePageState extends State<HomePage> {
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: Color(0xFF54AAFF),
+                                      color: AppColors.blue,
                                     ),
                                   )
-                                : const Icon(Icons.refresh, color: Colors.grey),
-                            highlightColor: Colors.orange.withValues(
+                                : SvgPicture.asset(
+                                    'assets/icon/refresh.svg',
+                                    width: 20,
+                                    height: 20,
+                                    colorFilter: const ColorFilter.mode(AppColors.gray6, BlendMode.srcIn),
+                                  ),
+                            highlightColor: AppColors.orange.withValues(
                               alpha: 0.2,
                             ),
                             padding: EdgeInsets.zero,
@@ -158,7 +200,11 @@ class _HomePageState extends State<HomePage> {
                     : SingleChildScrollView(
                         physics: const BouncingScrollPhysics(),
                         child: Column(
-                          children: [StoreSection(), SizedBox(height: 20)],
+                          children: [
+                            const SizedBox(height: 16),
+                            StoreSection(),
+                            const SizedBox(height: 20),
+                          ],
                         ),
                       ),
               ),

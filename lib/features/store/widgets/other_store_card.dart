@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 import '../models/store_models.dart';
 
@@ -22,14 +23,14 @@ class OtherStoreCard extends StatelessWidget {
           width: 164,
           height: 189,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.white, width: 1),
-            boxShadow: const [
+            border: Border.all(color: AppColors.gray2, width: 1),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x12000000),
-                blurRadius: 16,
-                offset: Offset(0, 6),
+                color: AppColors.black.withValues(alpha: 0.10),
+                blurRadius: 8,
+                offset: Offset.zero,
               ),
             ],
           ),
@@ -44,11 +45,14 @@ class OtherStoreCard extends StatelessWidget {
                 child: Container(
                   width: double.infinity,
                   height: 122,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0x00FFFFFF), Color(0x33FFA588)],
+                      colors: [
+                        Colors.transparent,
+                        AppColors.lightOrange.withValues(alpha: 0.2),
+                      ],
                     ),
                   ),
                   child: Center(
@@ -72,19 +76,18 @@ class OtherStoreCard extends StatelessWidget {
                         store.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        style: AppTypography.body3.copyWith(
                           color: AppColors.gray7,
+                          fontSize: 14,
+                          height: 20 / 14,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         (store.open == true) ? '영업 중' : '영업 종료',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.orange,
+                        style: AppTypography.caption1.copyWith(
+                          color: store.open == true ? AppColors.orange : AppColors.gray7,
+                          height: 20 / 12,
                         ),
                       ),
                     ],
@@ -120,11 +123,14 @@ class OtherStoreCard extends StatelessWidget {
 
   Widget _buildNoImage() {
     return Container(
-      color: const Color(0xFFF3F4F6),
+      color: AppColors.background,
       alignment: Alignment.center,
-      child: const Text(
+      child: Text(
         'No Img',
-        style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
+        style: AppTypography.caption2.copyWith(
+          fontSize: 11,
+          color: AppColors.gray7,
+        ),
       ),
     );
   }

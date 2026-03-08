@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 class BottomNavbar extends StatelessWidget {
   final int currentIndex;
@@ -15,28 +17,33 @@ class BottomNavbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.black.withValues(alpha: 0.10),
             spreadRadius: 0,
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+            blurRadius: 20.96,
+            offset: const Offset(0, -4.19),
           ),
         ],
       ),
       child: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         elevation: 0,
         currentIndex: currentIndex,
         onTap: onTap,
-
-        selectedItemColor: const Color(0xFF060B11), // 디자인 나오면 추후 수정
-        unselectedItemColor: Colors.grey[400],
+        selectedItemColor: AppColors.black,
+        unselectedItemColor: AppColors.gray4,
         selectedFontSize: 12,
         unselectedFontSize: 12,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+        selectedLabelStyle: AppTypography.caption2.copyWith(
+          fontWeight: FontWeight.w400,
+          color: AppColors.black,
+        ),
+        unselectedLabelStyle: AppTypography.caption2.copyWith(
+          color: AppColors.gray4,
+        ),
 
         items: [
           _navItem(label: '홈', assetBase: 'home', index: 0),

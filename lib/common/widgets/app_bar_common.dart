@@ -15,6 +15,7 @@ class AppBarCommon extends StatelessWidget implements PreferredSizeWidget {
     this.title = '',
     this.titleWidget,
     this.centerTitle = true,
+    this.titleSpacing,
     this.onBackPressed,
     this.actions = const [],
     this.toolbarHeight = 56,
@@ -23,6 +24,8 @@ class AppBarCommon extends StatelessWidget implements PreferredSizeWidget {
   });
 
   final bool showBack;
+  /// 제목 좌측 여백 (null이면 AppBar 기본값). 로고와 본문 좌측 정렬 시 동일 값 사용
+  final double? titleSpacing;
   /// 뒤로가기 버튼 활성화. false면 탭해도 동작 안 함
   final bool backEnabled;
   final String title;
@@ -73,9 +76,9 @@ class AppBarCommon extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       toolbarHeight: toolbarHeight,
       backgroundColor: bg,
-      elevation: 0,
-      scrolledUnderElevation: 0,
       centerTitle: centerTitle,
+      titleSpacing: titleSpacing ?? (showBack ? 0 : 16),
+      leadingWidth: showBack ? null : 0,
       automaticallyImplyLeading: false,
       title: titleChild,
       leading: showBack

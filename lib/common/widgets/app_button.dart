@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../util/typography.dart';
+
 /// 앱 공통 버튼. 피그마 디자인 시스템 적용 전까지 스타일만 통일.
 /// - [AppButtonVariant.primary]: 주황 배경 (로그인, 확인, 본인인증 후 가입하기 등)
 /// - [AppButtonVariant.primaryBlue]: 파랑 배경 (팝업 "네" 등)
@@ -23,6 +25,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.variant = AppButtonVariant.primary,
     this.loading = false,
+    this.large = false,
     this.height,
     this.minWidth,
     this.backgroundColor,
@@ -33,6 +36,8 @@ class AppButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final AppButtonVariant variant;
   final bool loading;
+  /// true: 세로 64, 텍스트 text-xl / semibold / Pretendard / leading-8
+  final bool large;
   final double? height;
   final double? minWidth;
   final Color? backgroundColor;
@@ -46,9 +51,18 @@ class AppButton extends StatelessWidget {
   static const Color _destructiveBgLight = Color(0xFFFEF2F2);
   static const Color _destructiveFg = Color(0xFFEF4444);
 
+  /// large일 때 버튼 라벨 스타일: white, 20px, semibold, Pretendard, height 32
+  static TextStyle _largeLabelStyle(Color fg) => AppTypography.body2.copyWith(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        height: 32 / 20,
+        color: fg,
+      );
+
   @override
   Widget build(BuildContext context) {
-    final effectiveHeight = height ?? (variant == AppButtonVariant.text ? 40.0 : 48.0);
+    final baseHeight = variant == AppButtonVariant.text ? 40.0 : (large ? 60.0 : 48.0);
+    final effectiveHeight = height ?? baseHeight;
     final isDisabled = onPressed == null && !loading;
 
     if (variant == AppButtonVariant.text) {
@@ -125,7 +139,10 @@ class AppButton extends StatelessWidget {
                 width: 18,
                 child: CircularProgressIndicator(strokeWidth: 2, color: fg),
               )
-            : Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: fg)),
+            : Text(
+                label,
+                style: large ? _largeLabelStyle(fg) : TextStyle(fontWeight: FontWeight.w600, color: fg),
+              ),
       ),
     );
   }

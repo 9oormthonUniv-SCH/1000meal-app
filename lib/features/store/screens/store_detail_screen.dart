@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 import '../../../common/utils/kst_date.dart';
 import '../../../common/widgets/app_bar_common.dart';
@@ -40,7 +41,7 @@ class _StoreDetailView extends StatelessWidget {
     final vm = context.watch<StoreDetailViewModel>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: AppBarCommon(
         toolbarHeight: 50,
         title: '매장 상세페이지',
@@ -65,7 +66,7 @@ class _StoreDetailView extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Text(
             vm.errorMessage!,
-            style: const TextStyle(color: Colors.redAccent),
+            style: const TextStyle(color: AppColors.error),
           ),
         ),
       );
@@ -95,7 +96,7 @@ class _StoreDetailView extends StatelessWidget {
     );
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -104,15 +105,17 @@ class _StoreDetailView extends StatelessWidget {
             children: [
               Center(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
                   child: Container(
                     width: double.infinity,
                     height: 231,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Color(0x00FFFFFF), Color(0x33FFA588)],
+                        colors: [
+                          Colors.transparent,
+                          AppColors.lightOrange.withValues(alpha: 0.2),
+                        ],
                       ),
                     ),
                     child: _buildStoreImage(
@@ -132,9 +135,10 @@ class _StoreDetailView extends StatelessWidget {
                         Expanded(
                           child: Text(
                             detail.name,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
+                            style: AppTypography.headline4.copyWith(
+                              fontSize: 18,
+                              height: 28 / 18,
+                              color: AppColors.black,
                             ),
                           ),
                         ),
@@ -165,35 +169,34 @@ class _StoreDetailView extends StatelessWidget {
                               width: 24,
                               height: 24,
                             ),
-                            highlightColor: Colors.orange.withOpacity(0.2),
+                            highlightColor: AppColors.orange.withValues(alpha: 0.2),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
                     if (detail.address != null && detail.address!.isNotEmpty)
                       Text(
                         detail.address!,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF6B7280),
-                        ),
+                        style: AppTypography.caption2.copyWith(color: AppColors.gray7),
                       ),
                     if (detail.phone != null && detail.phone!.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.only(top: 0),
                         child: Text(
                           detail.phone!,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF6B7280),
-                          ),
+                          style: AppTypography.caption2.copyWith(color: AppColors.gray7),
                         ),
                       ),
                     const SizedBox(height: 16),
                     _buildOpenStatus(detail),
+                    if (detail.hours != null && detail.hours!.isNotEmpty) ...[
+                      Text(
+                        '천원의 아침밥 운영 시간: ${detail.hours!}',
+                        style: AppTypography.caption2.copyWith(color: AppColors.gray7),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -209,11 +212,15 @@ class _StoreDetailView extends StatelessWidget {
             children: [
               _WeeklyMenuSection(detail: detail, onReload: vm.load),
               const SizedBox(height: 24),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   '다른 매장 보기',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  style: AppTypography.headline2.copyWith(
+                    color: AppColors.black,
+                    fontSize: 24,
+                    height: 32 / 24,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -282,11 +289,14 @@ class _StoreDetailView extends StatelessWidget {
 
   Widget _buildNoImage() {
     return Container(
-      color: const Color(0xFFF3F4F6),
+      color: AppColors.background,
       alignment: Alignment.center,
-      child: const Text(
+      child: Text(
         'No Img',
-        style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
+        style: AppTypography.caption2.copyWith(
+          fontSize: 11,
+          color: AppColors.gray7,
+        ),
       ),
     );
   }
@@ -387,13 +397,17 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             '일주일 메뉴',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            style: AppTypography.headline2.copyWith(
+              fontSize: 24,
+              height: 32 / 24,
+              color: AppColors.black,
+            ),
           ),
           IconButton(
             onPressed: widget.onReload,
-            icon: const Icon(Icons.refresh, color: Color(0xFF9CA3AF)),
+            icon: const Icon(Icons.refresh, color: AppColors.gray6),
             tooltip: '새로고침',
           ),
         ],
@@ -406,11 +420,11 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
         children: [
           titleRow,
           const SizedBox(height: 8),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
               '메뉴 정보를 불러올 수 없습니다.',
-              style: TextStyle(color: Color(0xFF9CA3AF)),
+              style: AppTypography.body4.copyWith(color: AppColors.gray7),
             ),
           ),
         ],
@@ -424,11 +438,11 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
         children: [
           titleRow,
           const SizedBox(height: 8),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
               '표시할 메뉴가 없습니다.',
-              style: TextStyle(color: Color(0xFF9CA3AF)),
+              style: AppTypography.body4.copyWith(color: AppColors.gray7),
             ),
           ),
         ],
@@ -449,9 +463,50 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
       );
     }
 
+    // 오늘(주말 포함) 재고 조회용 – 전체 dailyMenus에서 오늘 찾음
+    StoreWeeklyMenuDay? todayDailyForRemain() {
+      try {
+        return weekly.dailyMenus.firstWhere((d) => d.date == today);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    /// 오늘 날짜 기준 재고. 오늘 데이터 없을 때(토·일 등)는 아무 요일의 첫 그룹 stock 사용 (remain 미사용)
+    int singleRemain() {
+      final todayDaily = todayDailyForRemain();
+      if (todayDaily != null && todayDaily.groups.isNotEmpty) {
+        return todayDaily.groups.first.stock;
+      }
+      if (days.isNotEmpty && days.first.groups.isNotEmpty) {
+        return days.first.groups.first.stock;
+      }
+      return 0;
+    }
+
+    /// 그룹별 재고. 오늘 없을 때(토·일 등)는 해당 그룹이 있는 아무 요일의 stock 사용
+    int groupRemain(int groupId) {
+      final todayDaily = todayDailyForRemain();
+      if (todayDaily != null) {
+        final g = todayDaily.groups
+            .where((e) => e.groupId == groupId)
+            .cast<StoreDetailDayGroup?>()
+            .firstWhere((_) => true, orElse: () => null);
+        if (g != null) return g.stock;
+      }
+      for (final d in days) {
+        final g = d.groups
+            .where((e) => e.groupId == groupId)
+            .cast<StoreDetailDayGroup?>()
+            .firstWhere((_) => true, orElse: () => null);
+        if (g != null) return g.stock;
+      }
+      return 0;
+    }
+
     Widget buildCardsForGroup(StoreDetailDayGroup? group) {
       return SizedBox(
-        height: 176,
+        height: 186,
         child: ListView.builder(
           controller: controllerForGroup(group),
           scrollDirection: Axis.horizontal,
@@ -476,37 +531,20 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
                         ),
                       )
                       .menus);
+            final isToday = d.date == today;
+            final remain = group == null
+                ? (isToday ? singleRemain() : null)
+                : (isToday ? groupRemain(group.groupId) : null);
             return WeeklyMenuCard(
               dateLabel: dateLabel,
               dayLabel: dayLabel,
               items: items,
+              isSelected: isToday,
+              showRemain: remain,
             );
           },
         ),
       );
-    }
-
-    int singleRemain() {
-      final todayDaily = days
-          .where((d) => d.date == today)
-          .cast<StoreWeeklyMenuDay?>()
-          .firstWhere((_) => true, orElse: () => null);
-      if (todayDaily == null) return widget.detail.remain ?? 0;
-      if (todayDaily.groups.isNotEmpty) return todayDaily.groups.first.stock;
-      return widget.detail.remain ?? 0;
-    }
-
-    int groupRemain(int groupId) {
-      final todayDaily = days
-          .where((d) => d.date == today)
-          .cast<StoreWeeklyMenuDay?>()
-          .firstWhere((_) => true, orElse: () => null);
-      if (todayDaily == null) return 0;
-      final g = todayDaily.groups
-          .where((e) => e.groupId == groupId)
-          .cast<StoreDetailDayGroup?>()
-          .firstWhere((_) => true, orElse: () => null);
-      return g?.stock ?? 0;
     }
 
     return Column(
@@ -519,12 +557,16 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              '남은 수량 : ${singleRemain()}개',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.orange,
+            child: RichText(
+              text: TextSpan(
+                style: AppTypography.caption2.copyWith(color: AppColors.gray7),
+                children: [
+                  TextSpan(
+                    text: '${singleRemain()}개',
+                    style: AppTypography.caption1.copyWith(color: AppColors.orange),
+                  ),
+                  const TextSpan(text: ' 남았어요!'),
+                ],
               ),
             ),
           ),
@@ -534,10 +576,10 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 g.name,
-                style: const TextStyle(
+                style: AppTypography.subtitle1.copyWith(
+                  color: AppColors.black,
                   fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
+                  height: 32 / 16,
                 ),
               ),
             ),
@@ -546,12 +588,16 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                '남은 수량 : ${groupRemain(g.groupId)}개',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.orange,
+              child: RichText(
+                text: TextSpan(
+                  style: AppTypography.caption2.copyWith(color: AppColors.gray7),
+                  children: [
+                    TextSpan(
+                      text: '${groupRemain(g.groupId)}개',
+                      style: AppTypography.caption1.copyWith(color: AppColors.orange),
+                    ),
+                    const TextSpan(text: ' 남았어요!'),
+                  ],
                 ),
               ),
             ),

@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/widgets/app_bar_common.dart';
+import '../../signup/screens/signup_complete_screen.dart';
+import '../../../util/colors.dart';
+import '../../../util/typography.dart';
 import '../../../common/widgets/app_button.dart';
 import '../models/role.dart';
 import '../viewmodels/login_view_model.dart';
@@ -16,12 +20,10 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<LoginViewModel>();
     final isStudent = vm.role == Role.student;
-    final primary = isStudent
-        ? const Color(0xFFF97316)
-        : const Color(0xFF60A5FA);
+    final primary = isStudent ? AppColors.orange : AppColors.blue;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: const AppBarCommon(title: ''),
       body: SafeArea(child: _LoginBody(primary: primary)),
     );
@@ -91,7 +93,7 @@ class _LoginBodyState extends State<_LoginBody> {
           _RoleTabs(role: vm.role, onChanged: vm.loading ? null : vm.setRole),
           const SizedBox(height: 18),
           _HeroCopy(role: vm.role),
-          const SizedBox(height: 18),
+          const SizedBox(height: 40),
           Form(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -99,20 +101,22 @@ class _LoginBodyState extends State<_LoginBody> {
                 _LabeledTextField(
                   controller: _userIdController,
                   label: '아이디',
+                  primary: widget.primary,
                   studentHint: '학번 8자리를 입력해주세요',
                   adminHint: '아이디를 입력해주세요',
                   studentKeyboardType: TextInputType.number,
                   adminKeyboardType: TextInputType.text,
                   onChanged: vm.setUserId,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 30),
                 _PasswordField(
                   controller: _passwordController,
                   enabled: !vm.loading,
+                  primary: widget.primary,
                   onChanged: vm.setPassword,
                   errorText: vm.errorMessage,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 _LoginOptions(
                   primary: widget.primary,
                   saveUserId: vm.saveUserIdOption,
@@ -125,6 +129,7 @@ class _LoginBodyState extends State<_LoginBody> {
                 AppButton(
                   label: '로그인',
                   variant: AppButtonVariant.primary,
+                  large: true,
                   backgroundColor: widget.primary,
                   onPressed: vm.canSubmit
                       ? () async {
@@ -141,6 +146,16 @@ class _LoginBodyState extends State<_LoginBody> {
                 ),
                 const SizedBox(height: 12),
                 _BottomLinks(enabled: !vm.loading),
+                if (kDebugMode) ...[
+                  const SizedBox(height: 24),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pushNamed(SignupCompleteScreen.routeName),
+                    child: Text(
+                      '[디버그] 회원가입 완료 페이지',
+                      style: AppTypography.caption1.copyWith(color: AppColors.gray6),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -230,10 +245,7 @@ class _OptionChip extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 14,
-                color: value ? primary : const Color(0xFF6B7280),
-              ),
+              style: AppTypography.body3.copyWith(color: AppColors.gray7),
             ),
           ],
         ),
@@ -257,9 +269,7 @@ class _RoleTabs extends StatelessWidget {
       builder: (context, constraints) {
         final tabWidth = constraints.maxWidth / 2;
         final isStudent = role == Role.student;
-        final underlineColor = isStudent
-            ? const Color(0xFFF97316)
-            : const Color(0xFF60A5FA);
+        final underlineColor = isStudent ? AppColors.orange : AppColors.blue;
 
         return Stack(
           alignment: Alignment.bottomCenter,
@@ -270,6 +280,7 @@ class _RoleTabs extends StatelessWidget {
                   child: _RoleTabButton(
                     label: '일반',
                     active: isStudent,
+                    activeColor: AppColors.orange,
                     onTap: onChanged == null
                         ? null
                         : () => onChanged!(Role.student),
@@ -279,6 +290,7 @@ class _RoleTabs extends StatelessWidget {
                   child: _RoleTabButton(
                     label: '관리자',
                     active: !isStudent,
+                    activeColor: AppColors.blue,
                     onTap: onChanged == null
                         ? null
                         : () => onChanged!(Role.admin),
@@ -286,14 +298,14 @@ class _RoleTabs extends StatelessWidget {
                 ),
               ],
             ),
-            const Positioned(
+            Positioned(
               left: 0,
               right: 0,
               bottom: 0,
               child: SizedBox(
                 height: 1,
                 child: DecoratedBox(
-                  decoration: BoxDecoration(color: Color(0xFFE5E7EB)),
+                  decoration: BoxDecoration(color: AppColors.gray3),
                 ),
               ),
             ),
@@ -326,11 +338,13 @@ class _RoleTabs extends StatelessWidget {
 class _RoleTabButton extends StatelessWidget {
   final String label;
   final bool active;
+  final Color activeColor;
   final VoidCallback? onTap;
 
   const _RoleTabButton({
     required this.label,
     required this.active,
+    required this.activeColor,
     required this.onTap,
   });
 
@@ -344,9 +358,8 @@ class _RoleTabButton extends StatelessWidget {
           child: AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: active ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
+            style: AppTypography.caption1.copyWith(
+              color: active ? activeColor : AppColors.gray6,
             ),
             child: Text(label),
           ),
@@ -383,16 +396,15 @@ class _HeroCopy extends StatelessWidget {
               Text(
                 isAdmin ? '당신의 준비가\n늘 편리하도록,' : '당신의 걸음이\n헛되지 않도록,',
                 textAlign: isAdmin ? TextAlign.right : TextAlign.left,
-                style: const TextStyle(
+                style: AppTypography.headline1.copyWith(
                   fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  height: 1.25,
+                  height: 32 / 24,
                 ),
               ),
               const SizedBox(height: 10),
               Image.asset(
                 'assets/icon/Textlogo.png',
-                width: 120,
+                width: 100,
                 fit: BoxFit.contain, // 그림 비율 유지하며 잘리기 방지
               ),
             ],
@@ -406,6 +418,7 @@ class _HeroCopy extends StatelessWidget {
 class _LabeledTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
+  final Color primary;
   final String studentHint;
   final String adminHint;
   final TextInputType studentKeyboardType;
@@ -415,6 +428,7 @@ class _LabeledTextField extends StatelessWidget {
   const _LabeledTextField({
     required this.controller,
     required this.label,
+    required this.primary,
     required this.studentHint,
     required this.adminHint,
     required this.studentKeyboardType,
@@ -431,16 +445,26 @@ class _LabeledTextField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, color: Color(0xFF4B5563)),
+          style: AppTypography.headline4.copyWith(color: AppColors.gray7),
         ),
-        const SizedBox(height: 8),
         TextField(
           controller: controller,
           enabled: !vm.loading,
           keyboardType: isStudent ? studentKeyboardType : adminKeyboardType,
+          cursorColor: primary,
+          style: AppTypography.headline5.copyWith(color: AppColors.black),
           decoration: InputDecoration(
             hintText: isStudent ? studentHint : adminHint,
-            border: const UnderlineInputBorder(),
+            hintStyle: AppTypography.headline5.copyWith(color: AppColors.gray5),
+            border: UnderlineInputBorder(
+              borderSide: BorderSide(color: AppColors.gray7),
+            ),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: AppColors.gray3),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: primary, width: 2),
+            ),
           ),
           onChanged: onChanged,
         ),
@@ -452,12 +476,14 @@ class _LabeledTextField extends StatelessWidget {
 class _PasswordField extends StatelessWidget {
   final TextEditingController controller;
   final bool enabled;
+  final Color primary;
   final ValueChanged<String> onChanged;
   final String? errorText;
 
   const _PasswordField({
     required this.controller,
     required this.enabled,
+    required this.primary,
     required this.onChanged,
     required this.errorText,
   });
@@ -467,23 +493,34 @@ class _PasswordField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '비밀번호',
-          style: TextStyle(fontSize: 14, color: Color(0xFF4B5563)),
+          style: AppTypography.headline4.copyWith(color: AppColors.gray7),
         ),
-        const SizedBox(height: 8),
         TextField(
           controller: controller,
           enabled: enabled,
           obscureText: true,
-          decoration: const InputDecoration(border: UnderlineInputBorder()),
+          cursorColor: primary,
+          style: AppTypography.headline5.copyWith(color: AppColors.black),
+          decoration: InputDecoration(
+            border: UnderlineInputBorder(
+              borderSide: BorderSide(color: AppColors.gray7),
+            ),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: AppColors.gray3),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: primary, width: 2),
+            ),
+          ),
           onChanged: onChanged,
         ),
         if (errorText != null) ...[
           const SizedBox(height: 6),
           Text(
             errorText!,
-            style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444)),
+            style: AppTypography.caption1.copyWith(color: AppColors.error),
           ),
         ],
       ],
@@ -498,15 +535,15 @@ class _BottomLinks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = TextButton.styleFrom(
-      foregroundColor: const Color(0xFF6B7280),
-      textStyle: const TextStyle(fontSize: 12),
+      foregroundColor: AppColors.gray7,
+      textStyle: AppTypography.caption2,
       padding: EdgeInsets.zero,
       minimumSize: const Size(0, 0),
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         TextButton(
           onPressed: enabled
@@ -517,10 +554,12 @@ class _BottomLinks extends StatelessWidget {
           style: style,
           child: const Text('아이디 찾기'),
         ),
-        const Text(
+        const SizedBox(width: 40),
+        Text(
           '|',
-          style: TextStyle(fontSize: 12, color: Color(0xFFD1D5DB)),
+          style: AppTypography.caption2.copyWith(color: AppColors.gray4),
         ),
+        const SizedBox(width: 40),
         TextButton(
           onPressed: enabled
               ? () => Navigator.of(
@@ -530,10 +569,12 @@ class _BottomLinks extends StatelessWidget {
           style: style,
           child: const Text('비밀번호 찾기'),
         ),
-        const Text(
+        const SizedBox(width: 40),
+        Text(
           '|',
-          style: TextStyle(fontSize: 12, color: Color(0xFFD1D5DB)),
+          style: AppTypography.caption2.copyWith(color: AppColors.gray4),
         ),
+        const SizedBox(width: 40),
         TextButton(
           onPressed: enabled
               ? () {

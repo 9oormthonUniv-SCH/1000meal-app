@@ -58,6 +58,7 @@ import 'features/mypage/screens/mypage_screen.dart';
 import 'features/mypage/screens/notification_settings_screen.dart';
 import 'features/mypage/viewmodels/change_email_view_model.dart';
 import 'features/mypage/viewmodels/mypage_view_model.dart';
+import 'features/signup/screens/signup_complete_screen.dart';
 import 'features/signup/screens/signup_credentials_screen.dart';
 import 'features/signup/screens/signup_id_screen.dart';
 import 'features/signup/screens/signup_terms_screen.dart';
@@ -434,6 +435,8 @@ class MyApp extends StatelessWidget {
           SignupIdScreen.routeName: (_) => const SignupIdScreen(),
           SignupCredentialsScreen.routeName: (_) =>
               const SignupCredentialsScreen(),
+          SignupCompleteScreen.routeName: (_) =>
+              const SignupCompleteScreen(),
           // 약관(웹은 query param doc=tos|privacy)
           SignupTermsScreen.routeName: (context) {
             final args = ModalRoute.of(context)?.settings.arguments;

@@ -63,7 +63,14 @@ class StoreListViewModel extends ChangeNotifier {
       return;
     }
     _lastRefreshTime = now;
-    await _fetchStoreList(isRefresh: true);
+    loading = true;
+    notifyListeners();
+    try {
+      await _fetchStoreList(isRefresh: true);
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> toggleFavorite(StoreListItem store) async {

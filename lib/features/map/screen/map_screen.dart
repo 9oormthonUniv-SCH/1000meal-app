@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
 
 import '../../../common/widgets/app_bar_common.dart';
 import '../../store/models/store_models.dart';
@@ -20,9 +21,14 @@ class MapScreen extends StatefulWidget {
   State<MapScreen> createState() => _MapScreenState();
 }
 
+/// 새로고침 버튼이 하단 모달 카드 위에 떨어질 때 모달 상단과의 간격 (lp)
+const double _refreshGapAboveSheet = 12.0;
+
 class _MapScreenState extends State<MapScreen> {
   bool _loaded = false;
   bool _isBottomSheetOpen = false;
+  /// 모달이 열려 있을 때의 시트 높이 (하단 safe inset 포함). null이면 모달 닫힘.
+  double? _currentSheetHeight;
   bool _buildingMarkerIcons = false;
   KakaoMapController? _mapController;
   DateTime? _lastBottomSheetAt;
@@ -118,10 +124,18 @@ class _MapScreenState extends State<MapScreen> {
       }
     }
 
-    setState(() => _isBottomSheetOpen = true);
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    final sheetHeight = storeBottomSheetHeight(store) + bottomInset;
+    setState(() {
+      _isBottomSheetOpen = true;
+      _currentSheetHeight = sheetHeight;
+    });
     await showStoreBottomSheet(context, store);
     if (!mounted) return;
-    setState(() => _isBottomSheetOpen = false);
+    setState(() {
+      _isBottomSheetOpen = false;
+      _currentSheetHeight = null;
+    });
   }
 
   // Zoom in/out functions
@@ -172,7 +186,7 @@ class _MapScreenState extends State<MapScreen> {
         : LatLng(36.7720, 126.9324);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: AppBarCommon(
         toolbarHeight: 50,
         title: '지도',
@@ -190,9 +204,9 @@ class _MapScreenState extends State<MapScreen> {
           final padding = MediaQuery.of(context).padding;
           final bottomInset = padding.bottom;
           const baseBottom = 16.0;
-          const refreshOffset = 30.0; // 새로고침 버튼을 조금 위로
-          final refreshBottom = _isBottomSheetOpen
-              ? kStoreBottomSheetHeight + 8
+          const refreshOffset = 30.0; // 새로고침 버튼을 조금 위로 (모달 닫혀 있을 때)
+          final refreshBottom = _currentSheetHeight != null
+              ? _currentSheetHeight! + _refreshGapAboveSheet
               : baseBottom + bottomInset + refreshOffset;
           final zoomBottom = baseBottom + bottomInset;
 
@@ -228,7 +242,7 @@ class _MapScreenState extends State<MapScreen> {
                     padding: const EdgeInsets.all(16),
                     child: Text(
                       vm.errorMessage!,
-                      style: const TextStyle(color: Colors.redAccent),
+                      style: const TextStyle(color: AppColors.error),
                     ),
                   ),
                 ),

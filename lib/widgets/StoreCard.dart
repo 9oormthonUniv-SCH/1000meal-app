@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 import '../features/store/models/store_models.dart';
 
@@ -30,18 +31,18 @@ class StoreCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 16), // mb-4
         padding: const EdgeInsets.all(12), // p-4
         decoration: BoxDecoration(
-          color: isSelected ? Colors.orange[50] : Colors.white,
+          color: isSelected ? AppColors.orangeSelected : AppColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? Colors.orange[400]! : Colors.grey[300]!,
+            color: isSelected ? AppColors.lightOrange : AppColors.gray3,
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 10,
-              spreadRadius: 1,
-              offset: const Offset(0, 2),
+              color: AppColors.black.withValues(alpha: 0.15),
+              blurRadius: 20,
+              spreadRadius: 0,
+              offset: Offset.zero,
             ),
           ],
         ),
@@ -76,10 +77,10 @@ class _SingleGroupLayout extends StatelessWidget {
             children: [
               Text(
                 store.name,
-                style: const TextStyle(
+                style: AppTypography.subtitle1.copyWith(
+                  color: AppColors.black,
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  height: 32 / 16,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -87,7 +88,7 @@ class _SingleGroupLayout extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 menusText,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: AppTypography.body3.copyWith(color: AppColors.gray7),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -102,15 +103,14 @@ class _SingleGroupLayout extends StatelessWidget {
             children: [
               Text(
                 "$stock개",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: stock == 0 ? Colors.red : AppColors.primary,
+                style: AppTypography.body3.copyWith(
+                  color: stock == 0 ? AppColors.error : AppColors.orange,
+                  fontSize: 14,
                 ),
               ),
               Text(
                 "남았어요!",
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                style: AppTypography.caption2.copyWith(color: AppColors.gray7),
               ),
             ],
           ),
@@ -154,7 +154,7 @@ class _MultiGroupLayout extends StatelessWidget {
                         width: 2,
                         child: CustomPaint(
                           painter: _VerticalDashedLinePainter(
-                            color: Color(0xFFD1D5DB),
+                            color: AppColors.gray3,
                             dashHeight: 6,
                             dashGap: 4,
                           ),
@@ -171,7 +171,7 @@ class _MultiGroupLayout extends StatelessWidget {
                                 width: _dotSize,
                                 height: _dotSize,
                                 decoration: const BoxDecoration(
-                                  color: Color(0xFF9CA3AF),
+                                  color: AppColors.gray4,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -196,10 +196,10 @@ class _MultiGroupLayout extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     store.name,
-                    style: const TextStyle(
+                    style: AppTypography.subtitle1.copyWith(
+                      color: AppColors.black,
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      height: 32 / 16,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -213,7 +213,7 @@ class _MultiGroupLayout extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       g.menus.isNotEmpty ? g.menus.map((e) => e.name).join(', ') : '메뉴 정보 없음',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      style: AppTypography.body3.copyWith(color: AppColors.gray7),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -236,15 +236,14 @@ class _MultiGroupLayout extends StatelessWidget {
                     children: [
                       Text(
                         "${g.stock}개",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: g.stock == 0 ? Colors.red : AppColors.primary,
+                        style: AppTypography.body3.copyWith(
+                          color: g.stock == 0 ? AppColors.error : AppColors.orange,
+                          fontSize: 14,
                         ),
                       ),
                       Text(
                         "남았어요!",
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                        style: AppTypography.caption2.copyWith(color: AppColors.gray7),
                       ),
                     ],
                   ),
@@ -259,11 +258,14 @@ class _MultiGroupLayout extends StatelessWidget {
 
 Widget _buildNoImage() {
   return Container(
-    color: Colors.grey[200],
+    color: AppColors.gray2,
     alignment: Alignment.center,
     child: Text(
       "No Img",
-      style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+      style: AppTypography.caption2.copyWith(
+        fontSize: 10,
+        color: AppColors.gray7,
+      ),
     ),
   );
 }
@@ -315,13 +317,13 @@ class _StoreImageBox extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.white,
-              Color(0x33FFA588), // rgba(255,165,136,0.2)
+              AppColors.white,
+              AppColors.lightOrange.withValues(alpha: 0.2),
             ],
           ),
         ),

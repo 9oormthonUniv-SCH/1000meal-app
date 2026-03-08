@@ -31,7 +31,7 @@ class AdminSettingsScreen extends StatelessWidget {
       body: Column(
         children: [
           _SettingsItem(
-            label: '회원정보 수정',
+            label: '이메일 변경',
             onTap: disabled ? null : () => Navigator.of(context).pushNamed(ChangeEmailScreen.routeName),
           ),
           const Divider(height: 1, color: Color(0xFFE5E7EB)),

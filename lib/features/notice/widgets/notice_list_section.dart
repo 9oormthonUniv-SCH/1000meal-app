@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 import '../screens/notice_create_screen.dart';
 import '../screens/notice_detail_screen.dart';
@@ -40,7 +42,7 @@ class _NoticeListSectionState extends State<NoticeListSection> {
               Text(
                 vm.errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+                style: AppTypography.body4.copyWith(color: AppColors.gray7),
               ),
               const SizedBox(height: 12),
               TextButton(
@@ -55,10 +57,7 @@ class _NoticeListSectionState extends State<NoticeListSection> {
       content = Center(
         child: Text(
           '등록된 공지사항이 없습니다.',
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF6B7280),
-          ),
+          style: AppTypography.body4.copyWith(color: AppColors.gray7),
         ),
       );
     } else {
@@ -94,16 +93,14 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFEDD5),
+                              color: AppColors.orangeSelected,
                               borderRadius: BorderRadius.circular(999),
                             ),
-                            child: const Text(
+                            child: Text(
                               '고정',
-                              style: TextStyle(
+                              style: AppTypography.caption1.copyWith(
                                 fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFFEA580C),
-                                height: 1.0,
+                                color: AppColors.orange,
                               ),
                             ),
                           ),
@@ -121,11 +118,10 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                                       n.title,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF111827),
-                                        height: 1.3,
+                                      style: AppTypography.subtitle1.copyWith(
+                                        color: AppColors.gray7,
+                                        fontSize: 16,
+                                        height: 32 / 16,
                                       ),
                                     ),
                                   ),
@@ -136,7 +132,7 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                                       width: 18,
                                       height: 18,
                                       colorFilter: const ColorFilter.mode(
-                                        Color(0xFF9CA3AF),
+                                        AppColors.gray6,
                                         BlendMode.srcIn,
                                       ),
                                     ),
@@ -146,23 +142,24 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                               const SizedBox(height: 6),
                               Text(
                                 dateText,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF9CA3AF),
-                                  height: 1.0,
+                                style: AppTypography.caption2.copyWith(
+                                  color: AppColors.gray7,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  height: 20 / 14,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right, color: Color(0xFFD1D5DB), size: 22),
+                        
                       ],
                     ),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EB)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Divider(height: 1, thickness: 0.5, color: AppColors.gray7),
                 ),
               ],
             );
@@ -181,11 +178,11 @@ class _NoticeListSectionState extends State<NoticeListSection> {
             bottom: kBottomNavigationBarHeight,
             child: Center(
               child: Material(
-                color: Colors.white,
+                color: AppColors.white,
                 elevation: 2,
-                shadowColor: const Color(0x1A000000),
+                shadowColor: AppColors.black.withValues(alpha: 0.1),
                 shape: const StadiumBorder(
-                  side: BorderSide(color: Color(0xFFF97316), width: 1),
+                  side: BorderSide(color: AppColors.orange, width: 1),
                 ),
                 child: InkWell(
                   customBorder: const StadiumBorder(),
@@ -204,19 +201,17 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                               width: 16,
                               height: 16,
                               colorFilter: const ColorFilter.mode(
-                                Color(0xFFF97316),
+                                AppColors.orange,
                                 BlendMode.srcIn,
                               ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 5),
-                        const Text(
+                        Text(
                           '글 쓰기',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF374151),
+                          style: AppTypography.body3.copyWith(
+                            color: AppColors.black,
                           ),
                         ),
                       ],

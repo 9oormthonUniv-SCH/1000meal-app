@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 class MapRefreshButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -9,25 +10,27 @@ class MapRefreshButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(999),
-      elevation: 2,
+      color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(999),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        borderRadius: BorderRadius.circular(30),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: AppColors.gray4, width: 1),
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.refresh, size: 16, color: Color(0xFFA1A1A1)),
-              SizedBox(width: 6),
+            children: [
+              Icon(Icons.refresh, size: 12, color: AppColors.gray6),
+              const SizedBox(width: 8),
               Text(
                 '새로고침',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                style: AppTypography.caption1.copyWith(
                   color: AppColors.gray6,
+                  height: 20 / 12,
                 ),
               ),
             ],

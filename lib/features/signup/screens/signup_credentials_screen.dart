@@ -3,9 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../../../common/utils/external_link.dart';
 import '../../../common/widgets/app_bar_common.dart';
+import '../../../util/colors.dart';
+import '../../../util/typography.dart';
 import '../../../common/widgets/app_button.dart';
 import '../../../common/widgets/app_checkbox.dart';
 import '../../auth/viewmodels/signup_view_model.dart';
+import 'signup_complete_screen.dart';
 import 'signup_terms_screen.dart';
 
 class SignupCredentialsScreen extends StatefulWidget {
@@ -38,122 +41,91 @@ class _SignupCredentialsScreenState extends State<SignupCredentialsScreen> {
     final vm = context.watch<SignupViewModel>();
 
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: const AppBarCommon(title: ''),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const _SignupHeader(),
-                const SizedBox(height: 28),
-                _InputName(value: vm.name, onChanged: vm.setName),
-                const SizedBox(height: 18),
-                _InputPassword(
-                  pw: vm.pw,
-                  pw2: vm.pw2,
-                  validPwd: vm.validPwd,
-                  samePwd: vm.samePwd,
-                  onChangedPw: vm.setPw,
-                  onChangedPw2: vm.setPw2,
-                ),
-                const SizedBox(height: 18),
-                _InputEmail(
-                  email: vm.email,
-                  onChanged: vm.setEmail,
-                  sending: vm.sendingEmail,
-                  verifying: vm.verifyingEmail,
-                  emailSent: vm.emailSent,
-                  code: vm.emailCode,
-                  verified: vm.verified,
-                  error: vm.emailError,
-                  onSend: vm.sendEmail,
-                  onChangeCode: vm.setEmailCode,
-                  onVerify: vm.verifyEmailCode,
-                ),
-                const SizedBox(height: 18),
-                _Agreements(
-                  agreeTos: vm.agreeTos,
-                  agreePrivacy: vm.agreePrivacy,
-                  onToggleAll: vm.setAgreeAll,
-                  onToggleTos: vm.setAgreeTos,
-                  onTogglePrivacy: vm.setAgreePrivacy,
-                ),
-                if (vm.submitError != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    vm.submitError!,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFFDC2626),
-                    ),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _InputName(value: vm.name, onChanged: vm.setName),
+                      const SizedBox(height: 18),
+                      _InputPassword(
+                        pw: vm.pw,
+                        pw2: vm.pw2,
+                        validPwd: vm.validPwd,
+                        samePwd: vm.samePwd,
+                        onChangedPw: vm.setPw,
+                        onChangedPw2: vm.setPw2,
+                      ),
+                      const SizedBox(height: 18),
+                      _InputEmail(
+                        email: vm.email,
+                        onChanged: vm.setEmail,
+                        sending: vm.sendingEmail,
+                        verifying: vm.verifyingEmail,
+                        emailSent: vm.emailSent,
+                        code: vm.emailCode,
+                        verified: vm.verified,
+                        error: vm.emailError,
+                        onSend: vm.sendEmail,
+                        onChangeCode: vm.setEmailCode,
+                        onVerify: vm.verifyEmailCode,
+                      ),
+                      const SizedBox(height: 18),
+                      _Agreements(
+                        agreeTos: vm.agreeTos,
+                        agreePrivacy: vm.agreePrivacy,
+                        onToggleAll: vm.setAgreeAll,
+                        onToggleTos: vm.setAgreeTos,
+                        onTogglePrivacy: vm.setAgreePrivacy,
+                      ),
+                      if (vm.submitError != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          vm.submitError!,
+                          style: AppTypography.caption1.copyWith(color: AppColors.error),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                    ],
                   ),
-                ],
-                const SizedBox(height: 18),
-                AppButton(
-                  label: '본인 인증 후 가입하기',
-                  variant: AppButtonVariant.primary,
-                  onPressed: (!vm.submitting && vm.canSubmit)
-                      ? () async {
-                          await vm.saveDraft();
-                          final ok = await vm.submit();
-                          if (!context.mounted) return;
-                          if (ok) {
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: AppButton(
+                label: '가입하기',
+                variant: AppButtonVariant.primary,
+                large: true,
+                onPressed: (!vm.submitting && vm.canSubmit)
+                    ? () async {
+                        await vm.saveDraft();
+                        final ok = await vm.submit();
+                        if (!context.mounted) return;
+                        if (ok) {
                             Navigator.of(
                               context,
-                            ).pushNamedAndRemoveUntil('/login', (r) => false);
+                            ).pushReplacementNamed(SignupCompleteScreen.routeName);
                           }
-                        }
-                      : null,
-                  loading: vm.submitting,
-                ),
-                const SizedBox(height: 12),
-              ],
+                      }
+                    : null,
+                loading: vm.submitting,
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _SignupHeader extends StatelessWidget {
-  const _SignupHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '천밥에 오신 것을\n환영합니다!',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            height: 1.25,
-          ),
-        ),
-        const SizedBox(height: 8),
-        RichText(
-          text: TextSpan(
-            style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            children: [
-              TextSpan(
-                text: '1분',
-                style: TextStyle(
-                  color: Color(0xFFF97316),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              TextSpan(text: '이면 회원가입 가능해요'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class _InputName extends StatelessWidget {
   final String value;
@@ -167,22 +139,24 @@ class _InputName extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
-          text: const TextSpan(
-            style: TextStyle(fontSize: 14, color: Color(0xFF374151)),
+          text: TextSpan(
+            style: AppTypography.subtitle1.copyWith(color: AppColors.gray7),
             children: [
-              TextSpan(text: '이름 '),
-              TextSpan(
-                text: '*',
-                style: TextStyle(color: Color(0xFFF97316)),
-              ),
+              const TextSpan(text: '이름 '),
+              TextSpan(text: '*', style: AppTypography.subtitle1.copyWith(color: AppColors.orange)),
             ],
           ),
         ),
         const SizedBox(height: 8),
         TextField(
-          decoration: const InputDecoration(
+          cursorColor: AppColors.orange,
+          style: AppTypography.body2.copyWith(color: AppColors.black),
+          decoration: InputDecoration(
             hintText: '이름을 입력해주세요',
-            border: UnderlineInputBorder(),
+            hintStyle: AppTypography.body2.copyWith(color: AppColors.gray5),
+            border: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray7)),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray3)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.orange, width: 2)),
           ),
           onChanged: onChanged,
         ),
@@ -214,36 +188,38 @@ class _InputPassword extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
-          text: const TextSpan(
-            style: TextStyle(fontSize: 14, color: Color(0xFF374151)),
+          text: TextSpan(
+            style: AppTypography.subtitle1.copyWith(color: AppColors.gray7),
             children: [
-              TextSpan(text: '비밀번호 '),
-              TextSpan(
-                text: '*',
-                style: TextStyle(color: Color(0xFFF97316)),
-              ),
+              const TextSpan(text: '비밀번호 '),
+              TextSpan(text: '*', style: AppTypography.subtitle1.copyWith(color: AppColors.orange)),
             ],
           ),
         ),
         const SizedBox(height: 8),
         TextField(
           obscureText: true,
-          decoration: const InputDecoration(
-            hintText: '8~16자 영문·숫자·특수문자 조합',
-            border: UnderlineInputBorder(),
+          cursorColor: AppColors.orange,
+          style: AppTypography.body2.copyWith(color: AppColors.black),
+          decoration: InputDecoration(
+            hintText: '8자~16자의 영문과 숫자를 사용해주세요',
+            hintStyle: AppTypography.body2.copyWith(color: AppColors.gray5),
+            border: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray7)),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray3)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.orange, width: 2)),
           ),
           onChanged: onChangedPw,
         ),
         if (pw.isNotEmpty && !validPwd) ...[
           const SizedBox(height: 6),
           Row(
-            children: const [
-              Icon(Icons.error_outline, size: 16, color: Color(0xFFDC2626)),
-              SizedBox(width: 6),
+            children: [
+              Icon(Icons.error_outline, size: 16, color: AppColors.error),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   '비밀번호는 8~16자의 영문, 숫자, 특수문자를 모두 포함해야 합니다.',
-                  style: TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+                  style: AppTypography.caption1.copyWith(color: AppColors.error),
                 ),
               ),
             ],
@@ -251,32 +227,35 @@ class _InputPassword extends StatelessWidget {
         ],
         const SizedBox(height: 16),
         RichText(
-          text: const TextSpan(
-            style: TextStyle(fontSize: 14, color: Color(0xFF374151)),
+          text: TextSpan(
+            style: AppTypography.subtitle1.copyWith(color: AppColors.gray7),
             children: [
-              TextSpan(text: '비밀번호 확인 '),
-              TextSpan(
-                text: '*',
-                style: TextStyle(color: Color(0xFFF97316)),
-              ),
+              const TextSpan(text: '비밀번호 확인 '),
+              TextSpan(text: '*', style: AppTypography.subtitle1.copyWith(color: AppColors.orange)),
             ],
           ),
         ),
         const SizedBox(height: 8),
         TextField(
           obscureText: true,
-          decoration: const InputDecoration(border: UnderlineInputBorder()),
+          cursorColor: AppColors.orange,
+          style: AppTypography.body2.copyWith(color: AppColors.black),
+          decoration: InputDecoration(
+            border: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray7)),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray3)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.orange, width: 2)),
+          ),
           onChanged: onChangedPw2,
         ),
         if (pw2.isNotEmpty && !samePwd) ...[
           const SizedBox(height: 6),
           Row(
-            children: const [
-              Icon(Icons.error_outline, size: 16, color: Color(0xFFDC2626)),
-              SizedBox(width: 6),
+            children: [
+              Icon(Icons.error_outline, size: 16, color: AppColors.error),
+              const SizedBox(width: 6),
               Text(
                 '비밀번호를 다시 확인해주세요',
-                style: TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+                style: AppTypography.caption1.copyWith(color: AppColors.error),
               ),
             ],
           ),
@@ -320,14 +299,11 @@ class _InputEmail extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
-          text: const TextSpan(
-            style: TextStyle(fontSize: 14, color: Color(0xFF374151)),
+          text: TextSpan(
+            style: AppTypography.subtitle1.copyWith(color: AppColors.gray7),
             children: [
-              TextSpan(text: '이메일 주소 '),
-              TextSpan(
-                text: '*',
-                style: TextStyle(color: Color(0xFFF97316)),
-              ),
+              const TextSpan(text: '이메일 주소 '),
+              TextSpan(text: '*', style: AppTypography.subtitle1.copyWith(color: AppColors.orange)),
             ],
           ),
         ),
@@ -337,9 +313,14 @@ class _InputEmail extends StatelessWidget {
             Expanded(
               child: TextField(
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  hintText: '예) cheonbab@sch.ac.kr',
-                  border: UnderlineInputBorder(),
+                cursorColor: AppColors.orange,
+                style: AppTypography.body2.copyWith(color: AppColors.black),
+                decoration: InputDecoration(
+                  hintText: '예) cheonbab@cheon.ac.kr',
+                  hintStyle: AppTypography.body2.copyWith(color: AppColors.gray5),
+                  border: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray7)),
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray3)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.orange, width: 2)),
                 ),
                 onChanged: onChanged,
               ),
@@ -350,8 +331,8 @@ class _InputEmail extends StatelessWidget {
               child: ElevatedButton(
                 style:
                     ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF97316),
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.orange,
+                      foregroundColor: AppColors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -360,27 +341,27 @@ class _InputEmail extends StatelessWidget {
                         states,
                       ) {
                         if (states.contains(WidgetState.disabled)) {
-                          return const Color(0xFFF97316).withValues(alpha: 0.5);
+                          return AppColors.orange.withValues(alpha: 0.5);
                         }
-                        return const Color(0xFFF97316);
+                        return AppColors.orange;
                       }),
                     ),
                 onPressed: (email.isNotEmpty && isSch && !sending)
                     ? onSend
                     : null,
                 child: sending
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 16,
                         width: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                       )
-                    : const Text(
+                    : Text(
                         '인증 요청',
-                        style: TextStyle(
-                          fontSize: 12,
+                        style: AppTypography.caption1.copyWith(
+                          color: AppColors.white,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -390,17 +371,21 @@ class _InputEmail extends StatelessWidget {
         ),
         if (emailSent) ...[
           const SizedBox(height: 12),
-          const Text(
+          Text(
             '인증 코드',
-            style: TextStyle(fontSize: 14, color: Color(0xFF374151)),
+            style: AppTypography.subtitle1.copyWith(color: AppColors.gray7),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 child: TextField(
-                  decoration: const InputDecoration(
-                    border: UnderlineInputBorder(),
+                  cursorColor: AppColors.orange,
+                  style: AppTypography.body2.copyWith(color: AppColors.black),
+                  decoration: InputDecoration(
+                    border: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray7)),
+                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray3)),
+                    focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.orange, width: 2)),
                   ),
                   onChanged: onChangeCode,
                 ),
@@ -411,8 +396,8 @@ class _InputEmail extends StatelessWidget {
                 child: ElevatedButton(
                   style:
                       ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF22C55E),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.success,
+                        foregroundColor: AppColors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -421,27 +406,25 @@ class _InputEmail extends StatelessWidget {
                           states,
                         ) {
                           if (states.contains(WidgetState.disabled)) {
-                            return const Color(
-                              0xFF22C55E,
-                            ).withValues(alpha: 0.5);
+                            return AppColors.success.withValues(alpha: 0.5);
                           }
-                          return const Color(0xFF22C55E);
+                          return AppColors.success;
                         }),
                       ),
                   onPressed: (code.isNotEmpty && !verifying) ? onVerify : null,
                   child: verifying
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 16,
                           width: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: AppColors.white,
                           ),
                         )
-                      : const Text(
+                      : Text(
                           '확인',
-                          style: TextStyle(
-                            fontSize: 12,
+                          style: AppTypography.caption1.copyWith(
+                            color: AppColors.white,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -452,20 +435,19 @@ class _InputEmail extends StatelessWidget {
           const SizedBox(height: 8),
           InkWell(
             onTap: () => openExternalUrl('https://mail.sch.ac.kr'),
-            child: const Text(
+            child: Text(
               '메일함 열기 (mail.sch.ac.kr)',
-              style: TextStyle(
-                fontSize: 12,
-                color: Color(0xFF2563EB),
+              style: AppTypography.caption1.copyWith(
+                color: AppColors.blue,
                 decoration: TextDecoration.underline,
               ),
             ),
           ),
           if (verified) ...[
             const SizedBox(height: 8),
-            const Text(
+            Text(
               '✅ 인증 완료',
-              style: TextStyle(fontSize: 12, color: Color(0xFF16A34A)),
+              style: AppTypography.caption1.copyWith(color: AppColors.success),
             ),
           ],
         ],
@@ -473,19 +455,16 @@ class _InputEmail extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
                 size: 16,
-                color: Color(0xFFDC2626),
+                color: AppColors.error,
               ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   error!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFFDC2626),
-                  ),
+                  style: AppTypography.caption1.copyWith(color: AppColors.error),
                 ),
               ),
             ],
@@ -526,14 +505,13 @@ class _Agreements extends StatelessWidget {
                 onChanged: (v) => onToggleAll(v ?? false),
               ),
               const SizedBox(width: 6),
-              const Text(
+              Text(
                 '모두 동의합니다',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: AppTypography.body1.copyWith(color: AppColors.gray7),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.only(left: 12),
           child: Column(
@@ -548,7 +526,6 @@ class _Agreements extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
               _AgreementRow(
                 checked: agreePrivacy,
                 label: '[필수] 개인 정보 수집 및 이용 동의',
@@ -588,14 +565,14 @@ class _AgreementRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF374151)),
+            style: AppTypography.caption1.copyWith(color: AppColors.gray7),
           ),
         ),
         TextButton(
           onPressed: onView,
           style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFF6B7280),
-            textStyle: const TextStyle(fontSize: 12),
+            foregroundColor: AppColors.gray6,
+            textStyle: AppTypography.caption1,
             padding: EdgeInsets.zero,
             minimumSize: const Size(0, 0),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
@@ -128,13 +130,13 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
         child: ElevatedButton(
           onPressed: onTap,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFD9D9D9),
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.gray4,
+            foregroundColor: AppColors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             padding: const EdgeInsets.symmetric(horizontal: 18),
           ),
-          child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+          child: Text(text, style: AppTypography.body3.copyWith(color: AppColors.white)),
         ),
       );
     }
@@ -169,7 +171,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Color(0xFF6B7280)),
+                style: AppTypography.body4.copyWith(color: AppColors.gray7),
               ),
               const SizedBox(height: 12),
               TextButton(onPressed: _load, child: const Text('다시 시도')),
@@ -191,20 +193,24 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
           const SizedBox(height: 10),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF6B7280),
-              height: 1.3,
+            style: AppTypography.subtitle1.copyWith(
+              color: AppColors.gray7,
+              fontSize: 16,
+              height: 32 / 16,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             dateText,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF), height: 1.0),
+            style: AppTypography.caption2.copyWith(
+              color: AppColors.gray7,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              height: 20 / 14,
+            ),
           ),
           const SizedBox(height: 14),
-          const Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EB)),
+          Divider(height: 1, thickness: 0.5, color: AppColors.gray7),
           if (images.isNotEmpty) ...[
             const SizedBox(height: 16),
             ...List.generate(images.length, (i) {
@@ -219,17 +225,17 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
                       img.url,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
-                        color: const Color(0xFFF3F4F6),
+                        color: AppColors.background,
                         alignment: Alignment.center,
-                        child: const Text(
+                        child: Text(
                           '이미지를 불러올 수 없습니다.',
-                          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                          style: AppTypography.caption2.copyWith(color: AppColors.gray7),
                         ),
                       ),
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return Container(
-                          color: const Color(0xFFF3F4F6),
+                          color: AppColors.background,
                           alignment: Alignment.center,
                           child: const SizedBox(
                             width: 18,
@@ -249,24 +255,27 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
           ],
           Text(
             content,
-            style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280), height: 1.6),
+            style: AppTypography.body4.copyWith(
+              color: AppColors.gray7,
+              fontSize: 14,
+              height: 20 / 14,
+            ),
           ),
           _adminButtons(isAdmin: isAdmin),
           const SizedBox(height: 40),
-          const Text(
-            '이메일 문의: jeong01101095@gmail.com',
-            style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+          Text(
+            '이메일 문의: cheonbab@sch.ac.kr',
+            style: AppTypography.caption2.copyWith(color: AppColors.gray7),
           ),
           const SizedBox(height: 8),
           InkWell(
             onTap: () {
               AppSnackBar.show(context, 'About 화면은 다음 작업에서 연결됩니다.');
             },
-            child: const Text(
-              'About 오늘손밥',
-              style: TextStyle(
-                fontSize: 12,
-                color: Color(0xFF6B7280),
+            child: Text(
+              'About 오늘순밥',
+              style: AppTypography.caption2.copyWith(
+                color: AppColors.gray7,
                 decoration: TextDecoration.underline,
               ),
             ),
@@ -277,7 +286,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: const AppBarCommon(
         title: '',
       ),

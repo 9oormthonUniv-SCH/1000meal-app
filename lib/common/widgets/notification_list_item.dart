@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 /// 알림 페이지 내 각 알림 항목. 읽음/안읽음에 따라 배경색 변경.
 class NotificationListItem extends StatelessWidget {
@@ -20,9 +22,9 @@ class NotificationListItem extends StatelessWidget {
   final Widget? leading;
   final VoidCallback? onTap;
 
-  /// 읽음: 흰색 배경, 안읽음: 오렌지 50
-  static const Color _readBg = Colors.white;
-  static const Color _unreadBg = Color(0xFFFFF7ED);
+  /// 읽음: 흰색 배경, 안읽음: 피그마 bg-red-50 → orangeSelected
+  static const Color _readBg = AppColors.white;
+  static const Color _unreadBg = AppColors.orangeSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +33,11 @@ class NotificationListItem extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (leading != null) ...[leading!, const SizedBox(width: 12)],
+              if (leading != null) ...[leading!, const SizedBox(width: 19)],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,10 +49,10 @@ class NotificationListItem extends StatelessWidget {
                         Expanded(
                           child: Text(
                             title,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF111827),
+                            style: AppTypography.subtitle1.copyWith(
+                              color: AppColors.black,
+                              fontSize: 16,
+                              height: 32 / 16,
                             ),
                           ),
                         ),
@@ -58,9 +60,9 @@ class NotificationListItem extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             timeRight!,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[600],
+                            style: AppTypography.caption2.copyWith(
+                              color: AppColors.gray7,
+                              height: 20 / 12,
                             ),
                           ),
                         ],
@@ -70,7 +72,12 @@ class NotificationListItem extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         body!,
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                        style: AppTypography.body2.copyWith(
+                          color: AppColors.gray7,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          height: 32 / 16,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
