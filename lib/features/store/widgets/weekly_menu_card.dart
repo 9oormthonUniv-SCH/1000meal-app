@@ -26,9 +26,9 @@ class WeeklyMenuCard extends StatelessWidget {
 
     return Container(
       width: 164,
-      height: 220,
+      height: 320,
       margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 22),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
@@ -45,6 +45,7 @@ class WeeklyMenuCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -66,7 +67,7 @@ class WeeklyMenuCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(height: 0.5, color: dateDayColor),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           Expanded(
             child: safeItems.isEmpty
                 ? Align(

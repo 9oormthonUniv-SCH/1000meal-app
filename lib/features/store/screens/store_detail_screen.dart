@@ -506,7 +506,7 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
 
     Widget buildCardsForGroup(StoreDetailDayGroup? group) {
       return SizedBox(
-        height: 186,
+        height: 206,
         child: ListView.builder(
           controller: controllerForGroup(group),
           scrollDirection: Axis.horizontal,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
 import '../../../util/colors.dart';
@@ -76,8 +77,9 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
                                   ? widget.userId
                                   : null;
                               final dateText = _formatCardDate(widget.today.usedDate, widget.today.usedAt);
+                              Widget card;
                               if (!hasPassedData) {
-                                return FutureBuilder<MeResponse?>(
+                                card = FutureBuilder<MeResponse?>(
                                   future: _meFuture,
                                   builder: (context, snapshot) {
                                     final me = snapshot.data;
@@ -90,14 +92,16 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
                                     );
                                   },
                                 );
+                              } else {
+                                card = _buildCard(
+                                  width: w,
+                                  storeName: widget.today.storeName,
+                                  dateText: dateText,
+                                  name: name ?? '',
+                                  userId: userId ?? '',
+                                );
                               }
-                              return _buildCard(
-                                width: w,
-                                storeName: widget.today.storeName,
-                                dateText: dateText,
-                                name: name ?? '',
-                                userId: userId ?? '',
-                              );
+                              return _TiltCard(child: card);
                             },
                           ),
                         ),
@@ -226,6 +230,167 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 터치/드래그 시 카드가 입체적으로 기울어지고, 손을 떼면 부드럽게 원위치하는 래퍼.
+class _TiltCard extends StatefulWidget {
+  final Widget child;
+
+  const _TiltCard({required this.child});
+
+  @override
+  State<_TiltCard> createState() => _TiltCardState();
+}
+
+class _TiltCardState extends State<_TiltCard> with SingleTickerProviderStateMixin {
+  static const double _maxRotDeg = 8.0;
+  static const double _sensitivity = 0.12;
+  static final double _maxR = _maxRotDeg * (3.141592 / 180);
+
+  double _rotX = 0;
+  double _rotY = 0;
+  double _pendingRotX = 0;
+  double _pendingRotY = 0;
+  bool _frameScheduled = false;
+  late AnimationController _resetController;
+  late Animation<double> _resetAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _resetController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _resetAnim = CurvedAnimation(
+      parent: _resetController,
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  void dispose() {
+    _resetController.dispose();
+    super.dispose();
+  }
+
+  void _onPanUpdate(DragUpdateDetails d) {
+    if (_resetController.isAnimating) return;
+    _pendingRotY += d.delta.dx * _sensitivity;
+    _pendingRotX -= d.delta.dy * _sensitivity;
+    _pendingRotX = _pendingRotX.clamp(-_maxR, _maxR);
+    _pendingRotY = _pendingRotY.clamp(-_maxR, _maxR);
+    if (!_frameScheduled) {
+      _frameScheduled = true;
+      SchedulerBinding.instance.scheduleFrameCallback((_) {
+        _frameScheduled = false;
+        if (!mounted || _resetController.isAnimating) return;
+        setState(() {
+          _rotX = _pendingRotX;
+          _rotY = _pendingRotY;
+        });
+      });
+    }
+  }
+
+  void _onPanEnd(DragEndDetails _) {
+    _pendingRotX = _rotX;
+    _pendingRotY = _rotY;
+    if (_rotX == 0 && _rotY == 0) return;
+    final startX = _rotX;
+    final startY = _rotY;
+    void listener() {
+      setState(() {
+        final t = _resetAnim.value;
+        _rotX = startX * (1 - t);
+        _rotY = startY * (1 - t);
+      });
+      if (_resetAnim.isCompleted) {
+        _resetAnim.removeListener(listener);
+        _resetController.reset();
+        _pendingRotX = 0;
+        _pendingRotY = 0;
+      }
+    }
+    _resetAnim.addListener(listener);
+    _resetController.forward(from: 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final matrix = Matrix4.identity()
+      ..setEntry(3, 2, 0.001)
+      ..rotateX(_rotX)
+      ..rotateY(_rotY);
+    // 기울기에 따라 그림자 방향이 움직임 (위쪽·왼쪽에서 빛이 온다고 가정)
+    const double shadowDxFactor = 60;
+    const double shadowDyFactor = 50;
+    final shadowOffset = Offset(
+      shadowDxFactor * _rotY,
+      10 + shadowDyFactor * _rotX,
+    );
+    // 기울기에 따라 빛 반사 하이라이트 위치 이동 (같은 방향 빛)
+    final highlightCenter = Alignment(
+      0.25 - _rotY * 2.5,
+      0.2 + _rotX * 2.5,
+    );
+    return GestureDetector(
+      onPanUpdate: _onPanUpdate,
+      onPanEnd: _onPanEnd,
+      child: Transform(
+        alignment: Alignment.center,
+        transform: matrix,
+        child: RepaintBoundary(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.black.withValues(alpha: 0.14),
+                  blurRadius: 24,
+                  spreadRadius: 0,
+                  offset: shadowOffset,
+                ),
+                BoxShadow(
+                  color: AppColors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  spreadRadius: -2,
+                  offset: Offset(shadowOffset.dx * 0.4, 2 + shadowOffset.dy * 0.2),
+                ),
+              ],
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+              widget.child,
+              // 카드 위 얇은 빛 반사 (기울이면 하이라이트가 움직임)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: highlightCenter,
+                          radius: 0.7,
+                          colors: [
+                            AppColors.white.withValues(alpha: 0.12),
+                            AppColors.white.withValues(alpha: 0.0),
+                          ],
+                          stops: const [0.0, 0.6],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         ),
       ),
     );
