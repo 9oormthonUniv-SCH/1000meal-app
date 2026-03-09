@@ -27,14 +27,13 @@ const double _refreshGapAboveSheet = 12.0;
 class _MapScreenState extends State<MapScreen> {
   bool _loaded = false;
   bool _isBottomSheetOpen = false;
+
   /// 모달이 열려 있을 때의 시트 높이 (하단 safe inset 포함). null이면 모달 닫힘.
   double? _currentSheetHeight;
   bool _buildingMarkerIcons = false;
   KakaoMapController? _mapController;
   DateTime? _lastBottomSheetAt;
-  static const Duration _bottomSheetCooldown = Duration(
-    milliseconds: 600,
-  );
+  static const Duration _bottomSheetCooldown = Duration(milliseconds: 600);
   final Map<String, MarkerIcon> _markerIconCache = {};
   static const int _markerW = 56;
   static const int _markerH = 66;
@@ -63,38 +62,44 @@ class _MapScreenState extends State<MapScreen> {
 
   void _ensureMarkerIcons(List<StoreListItem> stores) {
     if (_buildingMarkerIcons) return;
-    final withLatLng = stores.where((s) => s.lat != null && s.lng != null).toList();
+    final withLatLng = stores
+        .where((s) => s.lat != null && s.lng != null)
+        .toList();
     final targets = withLatLng.map(_cacheKey).toSet();
-    final missing = withLatLng.where((s) => !_markerIconCache.containsKey(_cacheKey(s))).toList();
+    final missing = withLatLng
+        .where((s) => !_markerIconCache.containsKey(_cacheKey(s)))
+        .toList();
     if (missing.isEmpty) return;
 
     _buildingMarkerIcons = true;
     Future.wait(
-      missing.map((s) async {
-        final key = _cacheKey(s);
-        final icon = await _buildMarkerIcon(s);
-        return MapEntry(key, icon);
-      }),
-    ).then((entries) {
-      if (!mounted) return;
-      setState(() {
-        for (final e in entries) {
-          _markerIconCache[e.key] = e.value;
-        }
-        _markerIconCache.removeWhere((k, _) => !targets.contains(k));
-      });
-      if (mounted && _mapController != null) {
-        _mapController!.clearMarker();
-        Future.delayed(const Duration(milliseconds: 200), () async {
-          if (!mounted || _mapController == null) return;
-          final list = context.read<StoreListViewModel>().items;
-          final toApply = _buildMarkersFromItems(list);
-          if (toApply.isNotEmpty) {
-            await _mapController!.addMarker(markers: toApply);
+          missing.map((s) async {
+            final key = _cacheKey(s);
+            final icon = await _buildMarkerIcon(s);
+            return MapEntry(key, icon);
+          }),
+        )
+        .then((entries) {
+          if (!mounted) return;
+          setState(() {
+            for (final e in entries) {
+              _markerIconCache[e.key] = e.value;
+            }
+            _markerIconCache.removeWhere((k, _) => !targets.contains(k));
+          });
+          if (mounted && _mapController != null) {
+            _mapController!.clearMarker();
+            Future.delayed(const Duration(milliseconds: 200), () async {
+              if (!mounted || _mapController == null) return;
+              final list = context.read<StoreListViewModel>().items;
+              final toApply = _buildMarkersFromItems(list);
+              if (toApply.isNotEmpty) {
+                await _mapController!.addMarker(markers: toApply);
+              }
+            });
           }
-        });
-      }
-    }).whenComplete(() => _buildingMarkerIcons = false);
+        })
+        .whenComplete(() => _buildingMarkerIcons = false);
   }
 
   //마커 클릭 시 해당 매장을 찾고 showStoreBottomSheet 호출 -> 호출 횟수 제한 생각....
@@ -159,20 +164,17 @@ class _MapScreenState extends State<MapScreen> {
 
   /// 좌표 있는 매장만 마커로 표시. 캐시된 커스텀 아이콘이 있으면 적용.
   List<Marker> _buildMarkersFromItems(List<StoreListItem> items) {
-    return items
-        .where((s) => s.lat != null && s.lng != null)
-        .map((s) {
-          final key = _cacheKey(s);
-          final icon = _markerIconCache[key];
-          return Marker(
-            markerId: s.id.toString(),
-            latLng: LatLng(s.lat!, s.lng!),
-            icon: icon,
-            width: icon != null ? _markerW : 24,
-            height: icon != null ? _markerH : 30,
-          );
-        })
-        .toList();
+    return items.where((s) => s.lat != null && s.lng != null).map((s) {
+      final key = _cacheKey(s);
+      final icon = _markerIconCache[key];
+      return Marker(
+        markerId: s.id.toString(),
+        latLng: LatLng(s.lat!, s.lng!),
+        icon: icon,
+        width: icon != null ? _markerW : 24,
+        height: icon != null ? _markerH : 30,
+      );
+    }).toList();
   }
 
   @override
@@ -214,25 +216,31 @@ class _MapScreenState extends State<MapScreen> {
           return Stack(
             children: [
               Positioned.fill(
-                child: KakaoMap(
-                  onMapCreated: (controller) {
-                    _mapController = controller;
-                    WidgetsBinding.instance.addPostFrameCallback((_) async {
-                      if (!mounted || _mapController == null) return;
-                      _mapController!.clearMarker();
-                      await Future.delayed(const Duration(milliseconds: 150));
-                      if (!mounted || _mapController == null) return;
-                      final list = context.read<StoreListViewModel>().items;
-                      final currentMarkers = _buildMarkersFromItems(list);
-                      if (currentMarkers.isNotEmpty) {
-                        await _mapController!.addMarker(markers: currentMarkers);
-                      }
-                    });
-                    if (mounted) _refresh();
-                  },
-                  onMarkerTap: (markerId, _, __) => _handleMarkerTap(markerId),
-                  center: center,
-                  markers: markers,
+                child: IgnorePointer(
+                  ignoring: _isBottomSheetOpen,
+                  child: KakaoMap(
+                    onMapCreated: (controller) {
+                      _mapController = controller;
+                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                        if (!mounted || _mapController == null) return;
+                        _mapController!.clearMarker();
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        if (!mounted || _mapController == null) return;
+                        final list = context.read<StoreListViewModel>().items;
+                        final currentMarkers = _buildMarkersFromItems(list);
+                        if (currentMarkers.isNotEmpty) {
+                          await _mapController!.addMarker(
+                            markers: currentMarkers,
+                          );
+                        }
+                      });
+                      if (mounted) _refresh();
+                    },
+                    onMarkerTap: (markerId, _, __) =>
+                        _handleMarkerTap(markerId),
+                    center: center,
+                    markers: markers,
+                  ),
                 ),
               ),
               if (vm.loading && vm.items.isEmpty)
