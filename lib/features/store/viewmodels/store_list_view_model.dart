@@ -53,12 +53,12 @@ class StoreListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  DateTime? _lastRefreshTime; // 중복 새로고침 방지 (30초 이내 새로고침 시도 무시)
+  DateTime? _lastRefreshTime; // 중복 새로고침 방지 (5초 이내 연타 방지)
 
   Future<void> refresh() async {
     final now = DateTime.now();
     if (_lastRefreshTime != null &&
-        now.difference(_lastRefreshTime!) < const Duration(seconds: 30)) {
+        now.difference(_lastRefreshTime!) < const Duration(seconds: 1)) {
       if (kDebugMode) debugPrint("최근 새로고침 시도");
       return;
     }

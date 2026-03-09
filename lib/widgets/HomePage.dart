@@ -24,21 +24,34 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   HomeTabType _selectedTab = HomeTabType.todayMeal;
   bool _hasUnreadNotifications = false;
+  late final AnimationController _refreshRotationController;
+  late final Animation<double> _refreshRotation;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshRotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _refreshRotation = Tween<double>(begin: 0, end: 1).animate(_refreshRotationController);
+    _loadHasUnread();
+  }
+
+  @override
+  void dispose() {
+    _refreshRotationController.dispose();
+    super.dispose();
+  }
 
   Future<void> _loadHasUnread() async {
     final hasUnread = await hasUnreadFcmNotifications();
     if (mounted && hasUnread != _hasUnreadNotifications) {
       setState(() => _hasUnreadNotifications = hasUnread);
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadHasUnread();
   }
 
   Future<void> _handleProfileTap(BuildContext context) async {
@@ -80,6 +93,17 @@ class _HomePageState extends State<HomePage> {
     final isRefreshing = _selectedTab == HomeTabType.todayMeal
         ? storeVm.loading
         : noticeVm.loading;
+
+    // 새로고침 중일 때만 회전 애니메이션 실행
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (isRefreshing && !_refreshRotationController.isAnimating) {
+        _refreshRotationController.repeat();
+      } else if (!isRefreshing && _refreshRotationController.isAnimating) {
+        _refreshRotationController.stop();
+        _refreshRotationController.reset();
+      }
+    });
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -166,21 +190,19 @@ class _HomePageState extends State<HomePage> {
                                         .refresh();
                                     if (kDebugMode) debugPrint("오늘의 천밥 새로고침");
                                   },
-                            icon: isRefreshing
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: AppColors.blue,
-                                    ),
-                                  )
-                                : SvgPicture.asset(
-                                    'assets/icon/refresh.svg',
-                                    width: 20,
-                                    height: 20,
-                                    colorFilter: const ColorFilter.mode(AppColors.gray6, BlendMode.srcIn),
-                                  ),
+                            icon: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: RotationTransition(
+                                turns: _refreshRotation,
+                                child: SvgPicture.asset(
+                                  'assets/icon/refresh.svg',
+                                  width: 20,
+                                  height: 20,
+                                  colorFilter: const ColorFilter.mode(AppColors.gray6, BlendMode.srcIn),
+                                ),
+                              ),
+                            ),
                             splashColor: Colors.transparent,
                             highlightColor: Colors.transparent,
                             padding: EdgeInsets.zero,
