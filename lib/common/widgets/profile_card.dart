@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/typography.dart';
 import '../../../util/colors.dart';
 
 /// 마이페이지/관리자 상단 프로필 카드 공통 레이아웃 (위치·크기·그림자 통일)
@@ -50,17 +51,14 @@ class GuestProfileCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                      style: AppTypography.subtitle1.copyWith(
                         color: Color(0xFF374151),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: AppTypography.caption2.copyWith(
                         color: Color(0xFF6B7280),
                       ),
                     ),
@@ -194,23 +192,20 @@ class AdminProfileCard extends StatelessWidget {
               ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              storeName,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
+            child: Text(storeName, style: AppTypography.headline4.copyWith()),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFDBEAFE),
+              color: AppColors.lightBlue,
               borderRadius: BorderRadius.circular(999),
             ),
             child: const Text(
               '관리자',
               style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF2563EB),
-                fontWeight: FontWeight.w700,
+                color: AppColors.white,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

@@ -20,7 +20,8 @@ class AdminInventoryScreen extends StatefulWidget {
 }
 
 class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
-  final Map<int, TextEditingController> _controllers = <int, TextEditingController>{};
+  final Map<int, TextEditingController> _controllers =
+      <int, TextEditingController>{};
   bool _loaded = false;
 
   @override
@@ -37,7 +38,9 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
     if (_loaded) return;
     _loaded = true;
     // 188488b 시절과 동일: 한 프레임 뒤 로드 (TestFlight 등에서 즉시 호출 시 타이밍 이슈 가능성 완화)
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<AdminInventoryViewModel>().loadToday());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<AdminInventoryViewModel>().loadToday(),
+    );
   }
 
   @override
@@ -69,17 +72,28 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
               children: [
                 // 날짜 바
                 Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  color: AppColors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   child: RichText(
                     text: TextSpan(
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF6B7280)),
+                      style: AppTypography.headline4.copyWith(
+                        color: AppColors.gray7,
+                      ),
                       children: [
                         TextSpan(text: '${formatted.monthDay} '),
-                        TextSpan(text: formatted.weekday, style: const TextStyle(color: Color(0xFFFB923C))),
+                        TextSpan(
+                          text: formatted.weekday,
+                          style: AppTypography.headline4.copyWith(
+                            color: AppColors.orange,
+                          ),
+                        ),
                       ],
                     ),
-                  ),),
+                  ),
+                ),
 
                 // 재고 패널
                 Padding(
@@ -93,7 +107,10 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                           loading: vm.loading,
                           saving: vm.saving,
                           stock: vm.groupStock(g.id),
-                          controller: _controllers.putIfAbsent(g.id, () => TextEditingController()),
+                          controller: _controllers.putIfAbsent(
+                            g.id,
+                            () => TextEditingController(),
+                          ),
                           onMinus: () {
                             if (!vm.open) {
                               vm.showOpenModal = true;
@@ -129,12 +146,21 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                           },
                         ),
                         const SizedBox(height: 28),
-                        const Divider(height: 1, thickness: 0.5, color: AppColors.gray5),
+                        const Divider(
+                          height: 1,
+                          thickness: 0.5,
+                          color: AppColors.gray5,
+                        ),
                         const SizedBox(height: 22),
                       ],
                       if (vm.errorMessage != null) ...[
                         const SizedBox(height: 12),
-                        Text(vm.errorMessage!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+                        Text(
+                          vm.errorMessage!,
+                          style: AppTypography.caption2.copyWith(
+                            color: AppColors.error,
+                          ),
+                        ),
                       ],
                       if (vm.loading) ...[
                         const SizedBox(height: 14),
@@ -152,15 +178,17 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
             Positioned.fill(
               child: Container(
                 color: Colors.black.withValues(alpha: 0.2),
-                child: const Center(
+                child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircularProgressIndicator(color: AppColors.blue),
-                      SizedBox(height: 12),
+                      const CircularProgressIndicator(color: AppColors.blue),
+                      const SizedBox(height: 12),
                       Text(
                         '저장 중...',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.black),
+                        style: AppTypography.caption2.copyWith(
+                          color: AppColors.black,
+                        ),
                       ),
                     ],
                   ),
@@ -175,26 +203,45 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                 color: Colors.black.withValues(alpha: 0.3),
                 child: Center(
                   child: Container(
-                    constraints: const BoxConstraints(minWidth: 280, maxWidth: 340, minHeight: 180),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                    decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16)),
+                    constraints: const BoxConstraints(
+                      minWidth: 280,
+                      maxWidth: 340,
+                      minHeight: 180,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 32,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           '아직 영업 전입니다',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.black),
+                          style: AppTypography.subtitle1.copyWith(
+                            color: AppColors.black,
+                            fontWeight: FontWeight.w700,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         RichText(
                           textAlign: TextAlign.center,
-                          text: const TextSpan(
-                            style: TextStyle(fontSize: 15, height: 1.45),
-                            children: [
-                              TextSpan(text: '영업중', style: TextStyle(color: AppColors.blue)),
-                              TextSpan(text: '으로 상태를 변경하시겠습니까?', style: TextStyle(color: AppColors.black)),
+                          text: TextSpan(
+                            style: AppTypography.body2.copyWith(height: 1.45),
+                            children: const [
+                              TextSpan(
+                                text: '영업중',
+                                style: TextStyle(color: AppColors.blue),
+                              ),
+                              TextSpan(
+                                text: '으로 상태를 변경하시겠습니까?',
+                                style: TextStyle(color: AppColors.black),
+                              ),
                             ],
                           ),
                         ),
@@ -220,7 +267,9 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                                 foregroundColor: AppColors.white,
                                 height: 48,
                                 loading: vm.saving,
-                                onPressed: vm.saving ? null : vm.confirmOpenAndUnlock,
+                                onPressed: vm.saving
+                                    ? null
+                                    : vm.confirmOpenAndUnlock,
                               ),
                             ),
                           ],
@@ -239,22 +288,38 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                 color: Colors.black.withValues(alpha: 0.3),
                 child: Center(
                   child: Container(
-                    constraints: const BoxConstraints(minWidth: 280, maxWidth: 340, minHeight: 180),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                    decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16)),
+                    constraints: const BoxConstraints(
+                      minWidth: 280,
+                      maxWidth: 340,
+                      minHeight: 180,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 32,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           "현재 재고가 '0개'입니다",
-                          style: TextStyle(fontSize: 15, color: AppColors.gray7, height: 1.45),
+                          style: AppTypography.body2.copyWith(
+                            color: AppColors.gray7,
+                            height: 1.45,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           '영업을 종료하시겠습니까?',
-                          style: TextStyle(fontSize: 15, color: AppColors.black, height: 1.45),
+                          style: AppTypography.body2.copyWith(
+                            color: AppColors.black,
+                            height: 1.45,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 28),
@@ -279,7 +344,9 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                                 foregroundColor: Colors.white,
                                 height: 48,
                                 loading: vm.saving,
-                                onPressed: vm.saving ? null : vm.confirmCloseAndLock,
+                                onPressed: vm.saving
+                                    ? null
+                                    : vm.confirmCloseAndLock,
                               ),
                             ),
                           ],
@@ -342,11 +409,8 @@ class _GroupStockCard extends StatelessWidget {
         children: [
           Text(
             '[${group.name}]  현재 수량',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+            style: AppTypography.headline4.copyWith(
               color: titleColor,
-              fontFamily: AppTypography.fontFamily,
               height: 1.6,
             ),
           ),
@@ -371,9 +435,12 @@ class _GroupStockCard extends StatelessWidget {
               deductEnabled && (open ? stock >= 1 : true),
             ],
             onDeduct: (i) {
-              if (i == 0) onDeduct(DeductionUnit.multiTen);
-              else if (i == 1) onDeduct(DeductionUnit.multiFive);
-              else onDeduct(DeductionUnit.single);
+              if (i == 0)
+                onDeduct(DeductionUnit.multiTen);
+              else if (i == 1)
+                onDeduct(DeductionUnit.multiFive);
+              else
+                onDeduct(DeductionUnit.single);
             },
           ),
         ],
@@ -401,6 +468,6 @@ _KstKoreanDate _formatKstKorean(String ymd) {
 }
 
 extension _ListExt<T> on List<T> {
-  T? elementAtOrNull(int index) => (index >= 0 && index < length) ? this[index] : null;
+  T? elementAtOrNull(int index) =>
+      (index >= 0 && index < length) ? this[index] : null;
 }
-

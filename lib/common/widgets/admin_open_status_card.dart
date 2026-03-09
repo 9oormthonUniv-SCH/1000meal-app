@@ -49,9 +49,7 @@ class AdminOpenStatusCard extends StatelessWidget {
                 children: [
                   Text(
                     isOpen ? '영업 중' : '영업 종료',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                    style: AppTypography.headline4.copyWith(
                       color: isOpen ? AppColors.white : AppColors.gray5,
                     ),
                   ),

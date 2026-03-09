@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:meal_app/util/colors.dart';
+import '../../../util/typography.dart';
 
 import '../../../common/utils/week_kst.dart';
 import '../../../common/widgets/app_bar_common.dart';
@@ -50,7 +51,9 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
     super.didChangeDependencies();
     if (_loaded) return;
     _loaded = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<AdminMenuViewModel>().init());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<AdminMenuViewModel>().init(),
+    );
   }
 
   @override
@@ -67,22 +70,34 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
             padding: const EdgeInsets.only(right: 8),
             child: TextButton(
               onPressed: () {
-                final gid = vm.selectedGroupId ?? (vm.groups.isNotEmpty ? vm.groups.first.id : null);
+                final gid =
+                    vm.selectedGroupId ??
+                    (vm.groups.isNotEmpty ? vm.groups.first.id : null);
                 if (gid == null) {
                   AppSnackBar.show(context, '먼저 메뉴 그룹을 선택해 주세요');
                   return;
                 }
-                Navigator.of(context).pushNamed(AdminFrequentMenuScreen.routeName, arguments: gid);
+                Navigator.of(
+                  context,
+                ).pushNamed(AdminFrequentMenuScreen.routeName, arguments: gid);
               },
               style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFFFB923C), // orange-400
+                backgroundColor: AppColors.orange, // orange-400
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text('자주 쓰는 메뉴', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, height: 1)),
+              child: Text(
+                '자주 쓰는 메뉴',
+                style: AppTypography.caption1.copyWith(height: 1),
+              ),
             ),
           ),
         ],
@@ -105,7 +120,9 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                         _GroupChip(
                           label: g.name,
                           selected: vm.selectedGroupId == g.id,
-                          onTap: () => context.read<AdminMenuViewModel>().selectGroup(g.id),
+                          onTap: () => context
+                              .read<AdminMenuViewModel>()
+                              .selectGroup(g.id),
                         ),
                         const SizedBox(width: 8),
                       ],
@@ -113,7 +130,8 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                   ),
                 ),
               ),
-            if (vm.groups.length > 1) const Divider(height: 1, thickness: 1, color: Color(0xFFFAFAF9)),
+            if (vm.groups.length > 1)
+              const Divider(height: 1, thickness: 1, color: Color(0xFFFAFAF9)),
             Expanded(
               child: vm.loading && vm.weeks.isEmpty
                   ? const Center(child: CircularProgressIndicator())
@@ -136,7 +154,9 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                       },
                       child: ListView.builder(
                         controller: _scroll,
-                        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
                         padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                         itemCount: vm.weeks.length + 1,
                         itemBuilder: (context, idx) {
@@ -145,7 +165,13 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               child: Center(
                                 child: vm.loadingNext
-                                    ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                                    ? const SizedBox(
+                                        height: 18,
+                                        width: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : const SizedBox.shrink(),
                               ),
                             );
@@ -153,7 +179,10 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
 
                           final week = vm.weeks[idx];
                           final monday = mondayOfYmd(week.first.id);
-                          final key = _weekKeys.putIfAbsent(monday, () => GlobalKey());
+                          final key = _weekKeys.putIfAbsent(
+                            monday,
+                            () => GlobalKey(),
+                          );
                           return KeyedSubtree(
                             key: key,
                             child: _WeekCard(
@@ -166,7 +195,9 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                                   arguments: {'date': ymd, 'groupId': groupId},
                                 );
                                 if (!context.mounted) return;
-                                await context.read<AdminMenuViewModel>().refreshAfterEdit();
+                                await context
+                                    .read<AdminMenuViewModel>()
+                                    .refreshAfterEdit();
                               },
                             ),
                           );
@@ -177,16 +208,24 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
             if (vm.errorMessage != null)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 color: const Color(0xFFFFF1F2),
-                child: Text(vm.errorMessage!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+                child: Text(
+                  vm.errorMessage!,
+                  style: AppTypography.caption2.copyWith(
+                    color: AppColors.error,
+                    fontSize: 12,
+                  ),
+                ),
               ),
           ],
         ),
       ),
     );
   }
-
 }
 
 class _GroupChip extends StatelessWidget {
@@ -208,16 +247,18 @@ class _GroupChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFFB923C) : const Color(0xFFF4F4F5), // orange-400 / zinc-100
+          color: selected
+              ? AppColors
+                    .orange // orange-400
+              : AppColors.gray2, // orange-400 / zinc-100
           borderRadius: BorderRadius.circular(30),
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
+          style: AppTypography.caption2.copyWith(
             fontWeight: FontWeight.w600,
             height: 1,
-            color: selected ? Colors.white : const Color(0xFF27272A), // zinc-800
+            color: selected ? AppColors.white : Color(0xFF27272A), // zinc-800
           ),
         ),
       ),
@@ -255,12 +296,15 @@ class _WeekCard extends StatelessWidget {
                       child: Text(
                         week[i].dateLabel,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: week[i].isToday ? const Color(0xFFFB923C) : const Color(0xFF737373), // orange-400 / neutral-500
-                          fontSize: 14,
-                          fontWeight: week[i].isToday ? FontWeight.w600 : FontWeight.w400,
-                          height: 1,
-                        ),
+                        style: week[i].isToday
+                            ? AppTypography.body3.copyWith(
+                                color: AppColors.orange,
+                                height: 1,
+                              )
+                            : AppTypography.body4.copyWith(
+                                color: AppColors.gray7,
+                                height: 1,
+                              ),
                       ),
                     ),
                   ),
@@ -282,19 +326,27 @@ class _WeekCard extends StatelessWidget {
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(i == 0 ? 16 : 0),
                             topRight: Radius.circular(i == 0 ? 16 : 0),
-                            bottomLeft: Radius.circular(i == week.length - 1 ? 16 : 0),
-                            bottomRight: Radius.circular(i == week.length - 1 ? 16 : 0),
+                            bottomLeft: Radius.circular(
+                              i == week.length - 1 ? 16 : 0,
+                            ),
+                            bottomRight: Radius.circular(
+                              i == week.length - 1 ? 16 : 0,
+                            ),
                           ),
                           child: Container(
                             height: 48,
-                            
+
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(i == 0 ? 16 : 0),
                                 topRight: Radius.circular(i == 0 ? 16 : 0),
-                                bottomLeft: Radius.circular(i == week.length - 1 ? 16 : 0),
-                                bottomRight: Radius.circular(i == week.length - 1 ? 16 : 0),
+                                bottomLeft: Radius.circular(
+                                  i == week.length - 1 ? 16 : 0,
+                                ),
+                                bottomRight: Radius.circular(
+                                  i == week.length - 1 ? 16 : 0,
+                                ),
                               ),
                             ),
                             child: Stack(
@@ -307,7 +359,9 @@ class _WeekCard extends StatelessWidget {
                                     bottom: 0,
                                     child: SizedBox(
                                       height: hairline,
-                                      child: const DecoratedBox(decoration: BoxDecoration(color: line)),
+                                      child: const DecoratedBox(
+                                        decoration: BoxDecoration(color: line),
+                                      ),
                                     ),
                                   ),
                                 Row(
@@ -315,41 +369,53 @@ class _WeekCard extends StatelessWidget {
                                     SizedBox(
                                       width: 48,
                                       child: Padding(
-                                        padding: const EdgeInsets.only(left: 19),
+                                        padding: const EdgeInsets.only(
+                                          left: 19,
+                                        ),
                                         child: Align(
                                           alignment: Alignment.centerLeft,
                                           child: Text(
                                             week[i].weekdayLabel,
-                                            style: const TextStyle(
-                                              color: Color(0xFF737373), // neutral-500
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w400,
+                                            style: AppTypography.body4.copyWith(
+                                              color: AppColors.gray7,
                                               height: 1,
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                    SizedBox(width: hairline), // divider 공간(실선은 Stack이 그림)
+                                    SizedBox(
+                                      width: hairline,
+                                    ), // divider 공간(실선은 Stack이 그림)
                                     Expanded(
                                       child: Padding(
-                                        padding: const EdgeInsets.only(left: 12, right: 8),
+                                        padding: const EdgeInsets.only(
+                                          left: 12,
+                                          right: 8,
+                                        ),
                                         child: Text(
-                                          week[i].items.isNotEmpty ? week[i].items.join(', ') : '',
+                                          week[i].items.isNotEmpty
+                                              ? week[i].items.join(', ')
+                                              : '',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
+                                          style: AppTypography.body4.copyWith(
                                             fontSize: 13,
                                             height: 1,
-                                            color: week[i].items.isNotEmpty ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
-                                            fontWeight: FontWeight.w400,
+                                            color: week[i].items.isNotEmpty
+                                                ? AppColors.black
+                                                : AppColors.gray5,
                                           ),
                                         ),
                                       ),
                                     ),
                                     const Padding(
                                       padding: EdgeInsets.only(right: 10),
-                                      child: Icon(Icons.chevron_right, color: Color(0xFFA3A3A3), size: 20),
+                                      child: Icon(
+                                        Icons.chevron_right,
+                                        color: Color(0xFFA3A3A3),
+                                        size: 20,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -367,7 +433,9 @@ class _WeekCard extends StatelessWidget {
                   bottom: 0,
                   child: SizedBox(
                     width: hairline,
-                    child: const DecoratedBox(decoration: BoxDecoration(color: line)),
+                    child: const DecoratedBox(
+                      decoration: BoxDecoration(color: line),
+                    ),
                   ),
                 ),
               ],
@@ -378,4 +446,3 @@ class _WeekCard extends StatelessWidget {
     );
   }
 }
-

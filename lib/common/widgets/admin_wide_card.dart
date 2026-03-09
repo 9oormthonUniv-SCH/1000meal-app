@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/typography.dart';
 import '../../../util/colors.dart';
 
 /// 관리자 페이지: 메뉴 관리 등 가로 전체 카드 (제목 + 우측 화살표)
@@ -22,7 +23,7 @@ class AdminWideCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [
             BoxShadow(
@@ -35,13 +36,7 @@ class AdminWideCard extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+              child: Text(title, style: AppTypography.headline4.copyWith()),
             ),
             trailing ??
                 const Icon(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../util/typography.dart';
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_confirm_dialog.dart';
 import '../viewmodels/admin_frequent_menu_edit_view_model.dart';
@@ -149,10 +150,7 @@ class _AdminFrequentMenuEditScreenState
                       )
                     : Text(
                         '저장',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          // 변경사항 있으면 흰색, 없으면 반투명으로 비활성화 상태 구분
+                        style: AppTypography.body3.copyWith(
                           color: vm.dirty ? Colors.white : Colors.white60,
                         ),
                       ),
@@ -211,9 +209,11 @@ class _AdminFrequentMenuEditScreenState
                       color: const Color(0xFF111827),
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    child: const Text(
+                    child: Text(
                       '저장되었습니다',
-                      style: TextStyle(color: Colors.white, fontSize: 12),
+                      style: AppTypography.caption2.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -302,7 +302,7 @@ class _InputBar extends StatelessWidget {
                           ),
                         ),
                 ),
-                style: const TextStyle(fontSize: 14),
+                style: AppTypography.body4,
                 onChanged: onChanged,
                 onSubmitted: (_) => onAdd(),
                 textInputAction: TextInputAction.done,
@@ -323,10 +323,7 @@ class _InputBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               minimumSize: const Size(60, 40),
             ),
-            child: const Text(
-              '입력',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-            ),
+            child: Text('입력', style: AppTypography.body3),
           ),
         ],
       ),
@@ -343,14 +340,10 @@ class _MenuList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (menus.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           '현재 작성된 메뉴가 없습니다',
-          style: TextStyle(
-            color: Color(0xFF9CA3AF),
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.body3.copyWith(color: const Color(0xFF9CA3AF)),
         ),
       );
     }
@@ -368,9 +361,8 @@ class _MenuList extends StatelessWidget {
                   child: Text(
                     '${i + 1}',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
+                    style: AppTypography.body4.copyWith(
+                      color: const Color(0xFF6B7280),
                     ),
                   ),
                 ),
@@ -391,9 +383,8 @@ class _MenuList extends StatelessWidget {
                     children: [
                       Text(
                         menus[i],
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF1F2937),
+                        style: AppTypography.body4.copyWith(
+                          color: const Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(width: 8),

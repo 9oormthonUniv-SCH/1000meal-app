@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_button.dart';
@@ -32,12 +33,20 @@ class AdminSettingsScreen extends StatelessWidget {
         children: [
           _SettingsItem(
             label: '이메일 변경',
-            onTap: disabled ? null : () => Navigator.of(context).pushNamed(ChangeEmailScreen.routeName),
+            onTap: disabled
+                ? null
+                : () => Navigator.of(
+                    context,
+                  ).pushNamed(ChangeEmailScreen.routeName),
           ),
           const Divider(height: 1, color: Color(0xFFE5E7EB)),
           _SettingsItem(
             label: '비밀번호 변경',
-            onTap: disabled ? null : () => Navigator.of(context).pushNamed(FindAccountScreen.routeName, arguments: 'pw'),
+            onTap: disabled
+                ? null
+                : () => Navigator.of(
+                    context,
+                  ).pushNamed(FindAccountScreen.routeName, arguments: 'pw'),
           ),
           const Divider(height: 1, color: Color(0xFFE5E7EB)),
           _SettingsItem(
@@ -54,7 +63,9 @@ class AdminSettingsScreen extends StatelessWidget {
                     if (ok != true) return;
                     await vm.logout();
                     if (!context.mounted) return;
-                    Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
                   },
           ),
           const Divider(height: 1, color: Color(0xFFE5E7EB)),
@@ -79,9 +90,15 @@ class AdminSettingsScreen extends StatelessWidget {
                     final success = await vm.deleteAccount();
                     if (!context.mounted) return;
                     if (success) {
-                      Navigator.of(context).pushNamedAndRemoveUntil(LoginScreen.routeName, (r) => false);
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        LoginScreen.routeName,
+                        (r) => false,
+                      );
                     } else {
-                      AppSnackBar.show(context, vm.errorMessage ?? '회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
+                      AppSnackBar.show(
+                        context,
+                        vm.errorMessage ?? '회원 탈퇴에 실패했습니다. 다시 시도해주세요.',
+                      );
                     }
                   },
           ),
@@ -96,8 +113,13 @@ class _SettingsItem extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final Color? labelColor;
-
-  const _SettingsItem({required this.label, required this.onTap, this.labelColor});
+  final FontWeight fontWeight;
+  const _SettingsItem({
+    required this.label,
+    required this.onTap,
+    this.labelColor,
+    this.fontWeight = FontWeight.w600, // 추후 디자인 qa 후 조정...
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +133,10 @@ class _SettingsItem extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(fontSize: 14, color: labelColor ?? const Color(0xFF111827)),
+                style: AppTypography.body3.copyWith(
+                  color: labelColor ?? const Color(0xFF111827),
+                  fontWeight: fontWeight,
+                ),
               ),
             ),
             const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
@@ -121,5 +146,3 @@ class _SettingsItem extends StatelessWidget {
     );
   }
 }
-
-

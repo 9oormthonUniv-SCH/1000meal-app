@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 import '../../../common/utils/week_kst.dart';
 import '../../../common/widgets/app_bar_common.dart';
@@ -39,7 +40,9 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
     super.didChangeDependencies();
     if (_loaded) return;
     _loaded = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<AdminMenuEditViewModel>().load());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<AdminMenuEditViewModel>().load(),
+    );
   }
 
   Future<bool> _confirmDiscardIfDirty(AdminMenuEditViewModel vm) async {
@@ -79,13 +82,20 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
           titleWidget: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('메뉴 수정', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+              Text(
+                '메뉴 수정',
+                style: AppTypography.headline3.copyWith(
+                  color: const Color(0xFF111827),
+                ),
+              ),
               if (vm.groupName.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     vm.groupName,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6B7280)),
+                    style: AppTypography.caption1.copyWith(
+                      color: const Color(0xFF6B7280),
+                    ),
                   ),
                 ),
             ],
@@ -102,24 +112,29 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
               padding: const EdgeInsets.only(right: 12),
               child: ElevatedButton(
                 onPressed: (vm.saving || vm.groupId == null)
-                  ? null
-                  : () async {
-                      final editVm = context.read<AdminMenuEditViewModel>();
-                      await editVm.save();
-                      if (!context.mounted) return;
-                      if (editVm.errorMessage != null) {
-                        AppSnackBar.show(context, editVm.errorMessage!);
-                      }
-                    },
+                    ? null
+                    : () async {
+                        final editVm = context.read<AdminMenuEditViewModel>();
+                        await editVm.save();
+                        if (!context.mounted) return;
+                        if (editVm.errorMessage != null) {
+                          AppSnackBar.show(context, editVm.errorMessage!);
+                        }
+                      },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF97316),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.orange,
+                  foregroundColor: AppColors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   minimumSize: const Size(40, 20),
                 ),
-                child: Text('저장', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                child: Text('저장', style: AppTypography.body3),
               ),
             ),
           ],
@@ -133,11 +148,17 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                   if (vm.errorMessage != null)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       color: const Color(0xFFFFF1F2),
                       child: Text(
                         vm.errorMessage!,
-                        style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                        style: AppTypography.caption2.copyWith(
+                          fontSize: 13,
+                          color: const Color(0xFFEF4444),
+                        ),
                       ),
                     ),
                   _WeekNavigator(
@@ -161,16 +182,20 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                     },
                   ),
                   if (vm.groupId == null)
-                    const Expanded(
+                    Expanded(
                       child: Center(
                         child: Text(
                           '메뉴 그룹을 선택해주세요',
-                          style: TextStyle(color: Color(0xFF6B7280), fontSize: 14, fontWeight: FontWeight.w600),
+                          style: AppTypography.body3.copyWith(
+                            color: const Color(0xFF6B7280),
+                          ),
                         ),
                       ),
                     )
                   else if (vm.loading)
-                    const Expanded(child: Center(child: CircularProgressIndicator()))
+                    const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
                   else
                     Expanded(
                       child: Stack(
@@ -181,69 +206,134 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                             children: [
                               _InputBar(
                                 controller: _controller,
-                                onChanged: (v) => context.read<AdminMenuEditViewModel>().setInput(v),
-                                onAdd: () => context.read<AdminMenuEditViewModel>().addMenu(),
+                                onChanged: (v) => context
+                                    .read<AdminMenuEditViewModel>()
+                                    .setInput(v),
+                                onAdd: () => context
+                                    .read<AdminMenuEditViewModel>()
+                                    .addMenu(),
                                 onTapMenu: () async {
-                                  final hasMenus = await context.read<AdminMenuEditViewModel>().toggleFrequentMenu();
+                                  final hasMenus = await context
+                                      .read<AdminMenuEditViewModel>()
+                                      .toggleFrequentMenu();
                                   if (!context.mounted) return;
                                   if (!hasMenus) {
-                                    AppSnackBar.show(context, '자주 쓰는 메뉴가 없습니다', duration: const Duration(milliseconds: 1500));
+                                    AppSnackBar.show(
+                                      context,
+                                      '자주 쓰는 메뉴가 없습니다',
+                                      duration: const Duration(
+                                        milliseconds: 1500,
+                                      ),
+                                    );
                                   }
                                 },
                                 showFrequentMenu: vm.showFrequentMenu,
                                 frequentMenus: vm.frequentMenus,
-                                onSelectFrequentMenu: (group) => context.read<AdminMenuEditViewModel>().selectFrequentMenu(group),
+                                onSelectFrequentMenu: (group) => context
+                                    .read<AdminMenuEditViewModel>()
+                                    .selectFrequentMenu(group),
                               ),
                               const SizedBox(height: 16),
                               _MenuList(
                                 menus: vm.menus,
-                                onRemove: (i) => context.read<AdminMenuEditViewModel>().removeMenu(i),
+                                onRemove: (i) => context
+                                    .read<AdminMenuEditViewModel>()
+                                    .removeMenu(i),
                               ),
                             ],
                           ),
                           // 드롭다운을 Stack의 최상위에 배치
-                          if (vm.showFrequentMenu && vm.frequentMenus.isNotEmpty)
+                          if (vm.showFrequentMenu &&
+                              vm.frequentMenus.isNotEmpty)
                             Positioned(
-                              top: 72, // ListView padding(16) + InputBar padding(4) + InputBar height(40) + spacing(12)
-                              left: 20, // ListView padding(16) + InputBar padding(4)
+                              top:
+                                  72, // ListView padding(16) + InputBar padding(4) + InputBar height(40) + spacing(12)
+                              left:
+                                  20, // ListView padding(16) + InputBar padding(4)
                               child: Material(
                                 elevation: 8,
                                 borderRadius: BorderRadius.circular(12),
                                 child: Container(
                                   width: 285,
-                                  constraints: const BoxConstraints(maxHeight: 300),
+                                  constraints: const BoxConstraints(
+                                    maxHeight: 300,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+                                    border: Border.all(
+                                      color: const Color(0xFFE5E7EB),
+                                      width: 1,
+                                    ),
                                   ),
                                   child: ListView(
                                     shrinkWrap: true,
                                     children: [
-                                      for (int i = 0; i < vm.frequentMenus.length; i++)
+                                      for (
+                                        int i = 0;
+                                        i < vm.frequentMenus.length;
+                                        i++
+                                      )
                                         InkWell(
-                                          onTap: () => context.read<AdminMenuEditViewModel>().selectFrequentMenu(vm.frequentMenus[i]),
+                                          onTap: () => context
+                                              .read<AdminMenuEditViewModel>()
+                                              .selectFrequentMenu(
+                                                vm.frequentMenus[i],
+                                              ),
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 12,
+                                            ),
                                             decoration: BoxDecoration(
-                                              border: i < vm.frequentMenus.length - 1
-                                                  ? const Border(bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1))
+                                              border:
+                                                  i <
+                                                      vm.frequentMenus.length -
+                                                          1
+                                                  ? const Border(
+                                                      bottom: BorderSide(
+                                                        color: Color(
+                                                          0xFFE5E7EB,
+                                                        ),
+                                                        width: 1,
+                                                      ),
+                                                    )
                                                   : null,
                                             ),
                                             child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
                                                 Expanded(
                                                   child: Text(
-                                                    vm.frequentMenus[i].preview.isNotEmpty
-                                                        ? vm.frequentMenus[i].preview
-                                                        : vm.frequentMenus[i].menus.join(', '),
-                                                    style: const TextStyle(fontSize: 14, color: Color(0xFF374151)),
+                                                    vm
+                                                            .frequentMenus[i]
+                                                            .preview
+                                                            .isNotEmpty
+                                                        ? vm
+                                                              .frequentMenus[i]
+                                                              .preview
+                                                        : vm
+                                                              .frequentMenus[i]
+                                                              .menus
+                                                              .join(', '),
+                                                    style: AppTypography.body4
+                                                        .copyWith(
+                                                          color: const Color(
+                                                            0xFF374151,
+                                                          ),
+                                                        ),
                                                     maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
-                                                const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 16),
+                                                const Icon(
+                                                  Icons.chevron_right,
+                                                  color: Color(0xFF9CA3AF),
+                                                  size: 16,
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -265,9 +355,20 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(color: const Color(0xFF111827), borderRadius: BorderRadius.circular(999)),
-                    child: const Text('저장되었습니다', style: TextStyle(color: Colors.white, fontSize: 12)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF111827),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      '저장되었습니다',
+                      style: AppTypography.caption2.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -320,7 +421,9 @@ class _WeekNavigator extends StatelessWidget {
                 for (int i = 0; i < days.length; i++)
                   Flexible(
                     child: GestureDetector(
-                      onTap: i >= 5 ? null : () => onSelect(days[i]), // ✅ 토/일 클릭 불가
+                      onTap: i >= 5
+                          ? null
+                          : () => onSelect(days[i]), // ✅ 토/일 클릭 불가
                       child: Container(
                         constraints: const BoxConstraints(minWidth: 36),
                         height: 44,
@@ -328,7 +431,9 @@ class _WeekNavigator extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: (i < 5 && days[i] == selectedId) ? const Color(0xFFF97316) : Colors.transparent,
+                            color: (i < 5 && days[i] == selectedId)
+                                ? const Color(0xFFF97316)
+                                : Colors.transparent,
                             width: 1,
                           ),
                         ),
@@ -340,16 +445,22 @@ class _WeekNavigator extends StatelessWidget {
                               weekdayLabels[i.clamp(0, 6)],
                               style: TextStyle(
                                 fontSize: 10,
-                                color: i >= 5 ? const Color(0xFFD6D3D1) : const Color(0xFF6B7280), // stone-300 / gray
+                                color: i >= 5
+                                    ? const Color(0xFFD6D3D1)
+                                    : const Color(
+                                        0xFF6B7280,
+                                      ), // stone-300 / gray
                               ),
                             ),
                             const SizedBox(height: 1),
                             Text(
                               days[i].substring(8), // DD
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: i >= 5 ? const Color(0xFFD6D3D1) : const Color(0xFF111827), // stone-300 / zinc-900
+                              style: AppTypography.body3.copyWith(
+                                color: i >= 5
+                                    ? const Color(0xFFD6D3D1)
+                                    : const Color(
+                                        0xFF111827,
+                                      ), // stone-300 / zinc-900
                               ),
                             ),
                           ],
@@ -417,19 +528,34 @@ class _InputBar extends StatelessWidget {
                   hintText: '메뉴 입력',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1), // stone-300
+                    borderSide: const BorderSide(
+                      color: Color(0xFFD6D3D1),
+                      width: 1,
+                    ), // stone-300
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1),
+                    borderSide: const BorderSide(
+                      color: Color(0xFFD6D3D1),
+                      width: 1,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1),
+                    borderSide: const BorderSide(
+                      color: Color(0xFFD6D3D1),
+                      width: 1,
+                    ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   isDense: true,
-                  suffixIconConstraints: const BoxConstraints.tightFor(width: 40, height: 40),
+                  suffixIconConstraints: const BoxConstraints.tightFor(
+                    width: 40,
+                    height: 40,
+                  ),
                   // 피그마: 우측 동그란 X(입력 클리어)
                   suffixIcon: controller.text.isEmpty
                       ? null
@@ -445,13 +571,17 @@ class _InputBar extends StatelessWidget {
                                 shape: BoxShape.circle,
                               ),
                               child: const Center(
-                                child: Icon(Icons.close, size: 10, color: Colors.white),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 10,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
                         ),
                 ),
-                style: const TextStyle(fontSize: 14),
+                style: AppTypography.body4,
                 onChanged: onChanged,
                 onSubmitted: (_) => onAdd(),
                 textInputAction: TextInputAction.done,
@@ -466,11 +596,13 @@ class _InputBar extends StatelessWidget {
               backgroundColor: const Color(0xFFE5E7EB), // zinc-100
               foregroundColor: const Color(0xFF111827),
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               minimumSize: const Size(60, 40),
             ),
-            child: const Text('입력', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            child: Text('입력', style: AppTypography.body3),
           ),
         ],
       ),
@@ -487,8 +619,11 @@ class _MenuList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (menus.isEmpty) {
-      return const Center(
-        child: Text('현재 작성된 메뉴가 없습니다', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14, fontWeight: FontWeight.w600)),
+      return Center(
+        child: Text(
+          '현재 작성된 메뉴가 없습니다',
+          style: AppTypography.body3.copyWith(color: const Color(0xFF9CA3AF)),
+        ),
       );
     }
 
@@ -505,14 +640,19 @@ class _MenuList extends StatelessWidget {
                   child: Text(
                     '${i + 1}',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                    style: AppTypography.body4.copyWith(
+                      color: const Color(0xFF6B7280),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Container(width: 1, height: 20, color: const Color(0xFFD1D5DB)),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.orangeSelected,
                     borderRadius: BorderRadius.circular(999),
@@ -522,7 +662,9 @@ class _MenuList extends StatelessWidget {
                     children: [
                       Text(
                         menus[i],
-                        style: const TextStyle(fontSize: 14, color: Color(0xFF1F2937)),
+                        style: AppTypography.body4.copyWith(
+                          color: const Color(0xFF1F2937),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       InkWell(
@@ -536,7 +678,11 @@ class _MenuList extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           child: const Center(
-                            child: Icon(Icons.close, size: 10, color: Colors.white),
+                            child: Icon(
+                              Icons.close,
+                              size: 10,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -550,4 +696,3 @@ class _MenuList extends StatelessWidget {
     );
   }
 }
-

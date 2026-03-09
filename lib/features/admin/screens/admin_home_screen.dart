@@ -9,6 +9,7 @@ import '../../../common/widgets/profile_card.dart';
 import 'admin_settings_screen.dart';
 import '../viewmodels/admin_home_view_model.dart';
 import '../../../util/colors.dart';
+import '../../../util/typography.dart';
 
 /// MainScreen 탭 0에서 사용: 마이페이지와 동일한 헤더 + 관리자 대시보드 본문 + (바텀바는 MainScreen에서 제공)
 class AdminTabContent extends StatefulWidget {
@@ -74,7 +75,7 @@ class _AdminDashboardBody extends StatelessWidget {
         children: [
           // 상단 흰색 바: 마이페이지처럼 프로필 카드 아래까지 내려오게 처리
           Container(
-            color: Colors.white,
+            color: AppColors.white,
             padding: const EdgeInsets.only(bottom: 20),
             child: AdminProfileCard(storeName: storeName),
           ),
@@ -131,7 +132,9 @@ class _AdminDashboardBody extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 vm.errorMessage!,
-                style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12),
+                style: AppTypography.caption2.copyWith(
+                  color: const Color(0xFFEF4444),
+                ),
               ),
             ),
           ],

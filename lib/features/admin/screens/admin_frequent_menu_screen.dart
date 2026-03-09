@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 import 'package:provider/provider.dart';
 
 import '../../../common/widgets/app_bar_common.dart';
@@ -15,7 +17,8 @@ class AdminFrequentMenuScreen extends StatefulWidget {
   const AdminFrequentMenuScreen({super.key, required this.groupId});
 
   @override
-  State<AdminFrequentMenuScreen> createState() => _AdminFrequentMenuScreenState();
+  State<AdminFrequentMenuScreen> createState() =>
+      _AdminFrequentMenuScreenState();
 }
 
 class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
@@ -28,7 +31,9 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
     super.didChangeDependencies();
     if (_loaded) return;
     _loaded = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<AdminFrequentMenuViewModel>().init());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<AdminFrequentMenuViewModel>().init(),
+    );
   }
 
   void _toggleSelect(int groupId) {
@@ -63,7 +68,12 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                 _selectedIds.clear();
               });
             },
-            child: const Text('취소', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF6B7280))),
+            child: Text(
+              '취소',
+              style: AppTypography.body3.copyWith(
+                color: const Color(0xFF6B7280),
+              ),
+            ),
           ),
           TextButton(
             onPressed: _selectedIds.isEmpty
@@ -80,9 +90,11 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                     }
                   },
             style: TextButton.styleFrom(
-              foregroundColor: _selectedIds.isEmpty ? const Color(0xFF9CA3AF) : const Color(0xFFF97316),
+              foregroundColor: _selectedIds.isEmpty
+                  ? const Color(0xFF9CA3AF)
+                  : const Color(0xFFF97316),
             ),
-            child: const Text('삭제', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            child: Text('삭제', style: AppTypography.body3),
           ),
         ],
       );
@@ -93,7 +105,10 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
             _selectMode = true;
           });
         },
-        child: const Text('선택', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF9CA3AF))),
+        child: Text(
+          '선택',
+          style: AppTypography.body3.copyWith(color: const Color(0xFF9CA3AF)),
+        ),
       );
     }
   }
@@ -118,13 +133,13 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
           ? null
           : FloatingActionButton(
               onPressed: () async {
-                    await Navigator.of(context).pushNamed(
-                      AdminFrequentMenuEditScreen.routeName,
-                      arguments: {'groupId': widget.groupId},
-                    );
-                    if (!context.mounted) return;
-                    context.read<AdminFrequentMenuViewModel>().refresh();
-                  },
+                await Navigator.of(context).pushNamed(
+                  AdminFrequentMenuEditScreen.routeName,
+                  arguments: {'groupId': widget.groupId},
+                );
+                if (!context.mounted) return;
+                context.read<AdminFrequentMenuViewModel>().refresh();
+              },
               backgroundColor: const Color(0xFFD1D5DB),
               child: const Icon(Icons.add, color: Colors.white),
             ),
@@ -137,11 +152,22 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                 children: [
                   Expanded(
                     child: vm.groups.isEmpty
-                        ? const Center(child: Text('자주 쓰는 메뉴가 없습니다', style: TextStyle(fontSize: 14, color: Color(0xFF9CA3AF))))
+                        ? Center(
+                            child: Text(
+                              '자주 쓰는 메뉴가 없습니다',
+                              style: AppTypography.body4.copyWith(
+                                color: const Color(0xFF9CA3AF),
+                              ),
+                            ),
+                          )
                         : RefreshIndicator.adaptive(
-                            onRefresh: () => context.read<AdminFrequentMenuViewModel>().refresh(),
+                            onRefresh: () => context
+                                .read<AdminFrequentMenuViewModel>()
+                                .refresh(),
                             child: ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                              physics: const AlwaysScrollableScrollPhysics(
+                                parent: BouncingScrollPhysics(),
+                              ),
                               padding: const EdgeInsets.all(16),
                               itemCount: vm.groups.length,
                               itemBuilder: (context, index) {
@@ -156,10 +182,15 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                                     } else {
                                       await Navigator.of(context).pushNamed(
                                         AdminFrequentMenuEditScreen.routeName,
-                                        arguments: {'groupId': widget.groupId, 'presetId': group.id},
+                                        arguments: {
+                                          'groupId': widget.groupId,
+                                          'presetId': group.id,
+                                        },
                                       );
                                       if (!context.mounted) return;
-                                      context.read<AdminFrequentMenuViewModel>().refresh();
+                                      context
+                                          .read<AdminFrequentMenuViewModel>()
+                                          .refresh();
                                     }
                                   },
                                 );
@@ -170,9 +201,17 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                   if (vm.errorMessage != null)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       color: const Color(0xFFFFF1F2),
-                      child: Text(vm.errorMessage!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+                      child: Text(
+                        vm.errorMessage!,
+                        style: AppTypography.caption2.copyWith(
+                          color: const Color(0xFFEF4444),
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -200,9 +239,7 @@ class _FrequentMenuRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 1),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
       ),
       child: InkWell(
         onTap: onTap,
@@ -213,8 +250,10 @@ class _FrequentMenuRow extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  group.preview.isNotEmpty ? group.preview : group.menus.join(', '),
-                  style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                  group.preview.isNotEmpty
+                      ? group.preview
+                      : group.menus.join(', '),
+                  style: AppTypography.body4.copyWith(color: AppColors.black),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -226,7 +265,11 @@ class _FrequentMenuRow extends StatelessWidget {
                   activeColor: const Color(0xFFF97316),
                 )
               else
-                const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 20),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Color(0xFF9CA3AF),
+                  size: 25,
+                ),
             ],
           ),
         ),
