@@ -4,7 +4,7 @@ import 'package:meal_app/util/typography.dart';
 
 import '../features/store/models/store_models.dart';
 
-class StoreCard extends StatelessWidget {
+class StoreCard extends StatefulWidget {
   final StoreListItem store;
   final bool isSelected;
   final VoidCallback? onTap;
@@ -17,24 +17,32 @@ class StoreCard extends StatelessWidget {
   });
 
   @override
+  State<StoreCard> createState() => _StoreCardState();
+}
+
+class _StoreCardState extends State<StoreCard> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
+    final store = widget.store;
     final groups = [...store.menuGroups]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     final isMultiGroup = groups.length >= 2;
+    final showActive = widget.isSelected || _pressed;
 
     return GestureDetector(
-      onTap: () {
-        onTap?.call();
-        // 네비게이션 로직 추가 필요
-        // Navigator.push(context, ); -> 각 가게 상세페이지로 이동... 라우팅 ㄱㄱ
-      },
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTap: () => widget.onTap?.call(),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16), // mb-4
         padding: const EdgeInsets.all(12), // p-4
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.orangeSelected : AppColors.white,
+          color: showActive ? AppColors.orangeSelected : AppColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.lightOrange : AppColors.gray3,
+            color: showActive ? AppColors.lightOrange : AppColors.gray3,
             width: 1,
           ),
           boxShadow: [
@@ -52,7 +60,6 @@ class StoreCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _SingleGroupLayout extends StatelessWidget {

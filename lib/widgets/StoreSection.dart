@@ -14,8 +14,6 @@ class StoreSection extends StatefulWidget {
 }
 
 class _StoreSectionState extends State<StoreSection> {
-  int? _selectedStoreId;
-
   @override
   void initState() {
     super.initState();
@@ -78,9 +76,8 @@ class _StoreSectionState extends State<StoreSection> {
             ...stores.map((store) {
               return StoreCard(
                 store: store,
-                isSelected: _selectedStoreId == store.id,
+                isSelected: false,
                 onTap: () {
-                  setState(() => _selectedStoreId = store.id);
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => StoreDetailScreen(storeId: store.id),
