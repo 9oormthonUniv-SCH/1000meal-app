@@ -97,21 +97,7 @@ class WeeklyMenuCard extends StatelessWidget {
                     ),
                   ),
           ),
-          if (showRemain != null) ...[
-            const SizedBox(height: 8),
-            RichText(
-              text: TextSpan(
-                style: AppTypography.caption2.copyWith(color: AppColors.gray7),
-                children: [
-                  TextSpan(
-                    text: '$showRemain개',
-                    style: AppTypography.caption1.copyWith(color: AppColors.orange),
-                  ),
-                  const TextSpan(text: ' 남았어요!'),
-                ],
-              ),
-            ),
-          ],
+          
         ],
       ),
     );

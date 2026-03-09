@@ -27,6 +27,7 @@ Future<void> showStoreBottomSheet(BuildContext context, StoreListItem store) {
     context: context,
     backgroundColor: AppColors.white,
     barrierColor: Colors.transparent,
+    isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -66,26 +67,28 @@ class StoreBottomSheet extends StatelessWidget {
     return SafeArea(
       top: false,
       bottom: false,
-      child: SizedBox(
-        height: bottomHeight + bottomInset,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: AppColors.gray3,
-                        borderRadius: BorderRadius.circular(999),
+      child: Listener(
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          height: bottomHeight + bottomInset,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: AppColors.gray3,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
                       ),
                     ),
-                  ),
                   const SizedBox(height: 6),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,6 +258,7 @@ class StoreBottomSheet extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

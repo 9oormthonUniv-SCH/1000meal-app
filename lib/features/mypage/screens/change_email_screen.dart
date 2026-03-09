@@ -33,7 +33,7 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
 
     return Scaffold(
       appBar: const AppBarCommon(
-        title: '회원정보 변경',
+        title: '이메일 변경',
         centerTitle: true,
       ),
       body: SafeArea(

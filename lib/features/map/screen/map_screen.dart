@@ -208,7 +208,8 @@ class _MapScreenState extends State<MapScreen> {
           final refreshBottom = _currentSheetHeight != null
               ? _currentSheetHeight! + _refreshGapAboveSheet
               : baseBottom + bottomInset + refreshOffset;
-          final zoomBottom = baseBottom + bottomInset;
+          const zoomOffset = 56.0; // 확대/축소 버튼을 더 위로
+          final zoomBottom = baseBottom + bottomInset + zoomOffset;
 
           return Stack(
             children: [

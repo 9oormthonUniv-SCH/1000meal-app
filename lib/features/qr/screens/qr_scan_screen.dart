@@ -9,6 +9,7 @@ import '../../../common/widgets/app_snackbar.dart';
 import '../data/qr_api.dart';
 import '../models/qr_models.dart';
 import '../../auth/repositories/auth_repository.dart';
+import '../../auth/screens/login_screen.dart';
 import 'qr_auth_screen.dart';
 import 'qr_camera_view.dart';
 import 'qr_confirm_screen.dart';
@@ -61,6 +62,8 @@ class _QrScanScreenState extends State<QrScanScreen> {
   static const _cooldown = Duration(seconds: 2);
 
   bool _didCheckToday = false;
+  /// 비로그인 시 카메라 진입 시 하단에 로그인 유도 문구·버튼 표시
+  bool _showLoginPromptOnCamera = false;
 
   @override
   void didChangeDependencies() {
@@ -85,6 +88,7 @@ class _QrScanScreenState extends State<QrScanScreen> {
       setState(() {
         _todayUsage = null;
         _view = _QrView.camera;
+        _showLoginPromptOnCamera = true;
       });
       return;
     }
@@ -94,10 +98,14 @@ class _QrScanScreenState extends State<QrScanScreen> {
       setState(() {
         _todayUsage = today;
         _view = today != null ? _QrView.auth : _QrView.camera;
+        _showLoginPromptOnCamera = false;
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _view = _QrView.camera);
+      setState(() {
+        _view = _QrView.camera;
+        _showLoginPromptOnCamera = false;
+      });
     }
   }
 
@@ -163,7 +171,7 @@ class _QrScanScreenState extends State<QrScanScreen> {
         _lastProcessedUrl = url;
         _lastProcessedAt = now;
       });
-      AppSnackBar.show(context, _QrMessages.alreadyUsedToday);
+      AppSnackBar.showWithShake(context, _QrMessages.alreadyUsedToday);
       return;
     }
 
@@ -172,14 +180,14 @@ class _QrScanScreenState extends State<QrScanScreen> {
       debugPrint('[QR] 스캔 raw(${url.length}): "$url" → qrToken: ${qrToken ?? "null"}');
     }
     if (qrToken == null) {
-      AppSnackBar.show(
+      AppSnackBar.showWithShake(
         context,
         _isAppDownloadUrl(url) ? _QrMessages.noStoreInfoInQr : _QrMessages.notStoreQr,
       );
       return;
     }
     if (!_isValidQrToken(qrToken)) {
-      AppSnackBar.show(context, _QrMessages.invalidStoreQr);
+      AppSnackBar.showWithShake(context, _QrMessages.invalidStoreQr);
       return;
     }
 
@@ -195,7 +203,7 @@ class _QrScanScreenState extends State<QrScanScreen> {
       if (!mounted) return;
       if (token == null || token.isEmpty) {
         setState(() => _isProcessing = false);
-        AppSnackBar.show(context, _QrMessages.loginRequired);
+        _showLoginRequiredDialog(context);
         return;
       }
       String storeName = '매장';
@@ -219,6 +227,33 @@ class _QrScanScreenState extends State<QrScanScreen> {
       _pendingQrToken = null;
       _pendingStoreName = '매장';
     });
+  }
+
+  void _showLoginRequiredDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('로그인이 필요해요'),
+        content: const Text(
+          '로그인하면 매장 QR 명부 등록을 할 수 있어요.',
+          style: TextStyle(fontSize: 15, height: 1.45),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(ctx).pushNamedAndRemoveUntil('/login', (route) => false);
+            },
+            child: const Text('로그인 하기'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onConfirmSubmit() {
@@ -339,6 +374,15 @@ class _QrScanScreenState extends State<QrScanScreen> {
       onClose: _onCameraClose,
       onExit: widget.onExit,
       onTestScan: kDebugMode ? _runTestScan : null,
+      showLoginPrompt: _showLoginPromptOnCamera,
+      onLoginTap: _showLoginPromptOnCamera
+          ? () async {
+              await Navigator.of(context).pushNamed(LoginScreen.routeName);
+              if (!mounted) return;
+              _didCheckToday = false;
+              _checkTodayAndOpen();
+            }
+          : null,
     );
   }
 

@@ -73,6 +73,7 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
                               final userId = hasPassedData
                                   ? widget.userId
                                   : null;
+                              final dateText = _formatCardDate(widget.today.usedDate, widget.today.usedAt);
                               if (!hasPassedData) {
                                 return FutureBuilder<MeResponse?>(
                                   future: _meFuture,
@@ -81,6 +82,7 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
                                     return _buildCard(
                                       width: w,
                                       storeName: widget.today.storeName,
+                                      dateText: dateText,
                                       name: me?.name?.trim() ?? '',
                                       userId: me?.username.trim() ?? '',
                                     );
@@ -90,6 +92,7 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
                               return _buildCard(
                                 width: w,
                                 storeName: widget.today.storeName,
+                                dateText: dateText,
                                 name: name ?? '',
                                 userId: userId ?? '',
                               );
@@ -122,9 +125,33 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
     );
   }
 
+  /// usedDate/usedAt → "26.03.16" 형식
+  static String _formatCardDate(String? usedDate, String? usedAt) {
+    if (usedDate != null && usedDate.trim().isNotEmpty) {
+      final parsed = DateTime.tryParse(usedDate.trim());
+      if (parsed != null) {
+        final y = parsed.year % 100;
+        final m = parsed.month.toString().padLeft(2, '0');
+        final d = parsed.day.toString().padLeft(2, '0');
+        return '$y.$m.$d';
+      }
+    }
+    if (usedAt != null && usedAt.trim().isNotEmpty) {
+      final parsed = DateTime.tryParse(usedAt.trim());
+      if (parsed != null) {
+        final y = parsed.year % 100;
+        final m = parsed.month.toString().padLeft(2, '0');
+        final d = parsed.day.toString().padLeft(2, '0');
+        return '$y.$m.$d';
+      }
+    }
+    return '';
+  }
+
   Widget _buildCard({
     required double width,
     required String storeName,
+    required String dateText,
     required String name,
     required String userId,
   }) {
@@ -144,13 +171,30 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
               left: 24,
               top: 24,
               right: 24,
-              child: Text(
-                storeName.isNotEmpty ? storeName : '매장',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    storeName.isNotEmpty ? storeName : '매장',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (dateText.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      dateText,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             Positioned(

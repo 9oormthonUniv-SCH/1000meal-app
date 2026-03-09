@@ -76,6 +76,8 @@ class AppBarCommon extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       toolbarHeight: toolbarHeight,
       backgroundColor: bg,
+      elevation: 0,
+      scrolledUnderElevation: 0,
       centerTitle: centerTitle,
       titleSpacing: titleSpacing ?? (showBack ? 0 : 16),
       leadingWidth: showBack ? null : 0,

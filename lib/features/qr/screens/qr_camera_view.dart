@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
 import 'package:meal_app/util/typography.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../../common/widgets/app_button.dart';
 import '../../../widgets/app_text_logo.dart';
 
-/// 카메라 화면: 로고·X, 스캔 영역 오버레이, 하단 안내 문구
+/// 카메라 화면: 로고·X, 스캔 영역 오버레이, 하단 안내 문구(또는 비로그인 시 로그인 유도)
 class QrCameraView extends StatelessWidget {
   final MobileScannerController controller;
   final void Function(BarcodeCapture) onDetect;
@@ -13,6 +15,9 @@ class QrCameraView extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback? onExit;
   final VoidCallback? onTestScan;
+  /// true면 하단에 "로그인이 필요해요" 문구 + 로그인 하기 버튼 표시
+  final bool showLoginPrompt;
+  final VoidCallback? onLoginTap;
 
   const QrCameraView({
     super.key,
@@ -23,6 +28,8 @@ class QrCameraView extends StatelessWidget {
     required this.onClose,
     this.onExit,
     this.onTestScan,
+    this.showLoginPrompt = false,
+    this.onLoginTap,
   });
 
   @override
@@ -33,7 +40,12 @@ class QrCameraView extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           MobileScanner(controller: controller, onDetect: onDetect),
-          _ScanOverlay(isProcessing: isProcessing, fromAuth: fromAuth),
+          _ScanOverlay(
+            isProcessing: isProcessing,
+            fromAuth: fromAuth,
+            showLoginPrompt: showLoginPrompt,
+            onLoginTap: onLoginTap,
+          ),
           Positioned(
             top: 0,
             left: 0,
@@ -91,8 +103,15 @@ class QrCameraView extends StatelessWidget {
 class _ScanOverlay extends StatelessWidget {
   final bool isProcessing;
   final bool fromAuth;
+  final bool showLoginPrompt;
+  final VoidCallback? onLoginTap;
 
-  const _ScanOverlay({required this.isProcessing, required this.fromAuth});
+  const _ScanOverlay({
+    required this.isProcessing,
+    required this.fromAuth,
+    this.showLoginPrompt = false,
+    this.onLoginTap,
+  });
 
   static const double _frameSizeMax = 360;
   static const double _frameSizeMin = 240;
@@ -159,46 +178,48 @@ class _ScanOverlay extends StatelessWidget {
                         ),
                       ),
                     )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '천원의 아침밥 결제 전',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            height: 1.6,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.5),
-                                blurRadius: 6,
-                                offset: const Offset(0, 1),
+                  : showLoginPrompt && onLoginTap != null
+                      ? _LoginPromptOverlay(onLoginTap: onLoginTap!)
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '천원의 아침밥 결제 전',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                height: 1.6,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.5),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '가게 앞의 QR코드를 스캔하세요',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            height: 1.6,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.5),
-                                blurRadius: 6,
-                                offset: const Offset(0, 1),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '가게 앞의 QR코드를 스캔하세요',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                height: 1.6,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.5),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
             ),
             if (isProcessing)
               Positioned(
@@ -267,6 +288,76 @@ class _ScanFramePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _ScanFramePainter oldDelegate) =>
       oldDelegate.holeRect != holeRect;
+}
+
+/// 비로그인 시 카메라 하단: 로그인 유도 문구 + 로그인 하기 버튼
+class _LoginPromptOverlay extends StatelessWidget {
+  final VoidCallback onLoginTap;
+
+  const _LoginPromptOverlay({required this.onLoginTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '로그인이 필요해요',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              fontFamily: AppTypography.fontFamily,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '로그인하면 매장 QR 명부 등록을 할 수 있어요',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              height: 1.5,
+              fontFamily: AppTypography.fontFamily,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: AppButton(
+              label: '로그인 하기',
+              variant: AppButtonVariant.primary,
+              backgroundColor: AppColors.orange,
+              foregroundColor: Colors.white,
+              height: 48,
+              onPressed: onLoginTap,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _TestScanButton extends StatelessWidget {

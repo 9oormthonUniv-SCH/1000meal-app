@@ -282,12 +282,11 @@ class _DialogContent extends StatelessWidget {
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 280, maxWidth: 340, minHeight: 180),
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: 340),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          padding: const EdgeInsets.fromLTRB(12,48, 12, 12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (title != null && title!.isNotEmpty) ...[

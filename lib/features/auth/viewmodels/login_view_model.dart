@@ -75,9 +75,9 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
-  /// 로그아웃 후 로그인 화면 진입 시 true. 이번 진입에서는 자동 로그인 건너뜀(한 번 읽으면 플래그 초기화).
+  /// 로그아웃 후 true. 로그인 성공 전까지 자동 로그인 건너뜀.
   Future<bool> shouldSkipAutoLoginThisTime() async {
-    return _prefs.getAndClearSkipAutoLoginOnce();
+    return _prefs.getSkipAutoLoginOnce();
   }
 
   /// 성공 시 role 반환(라우팅 분기용)
@@ -98,6 +98,7 @@ class LoginViewModel extends ChangeNotifier {
             roleKey: roleKey,
             password: password,
           );
+          await _prefs.clearSkipAutoLoginOnce();
         } catch (_) {
           // 아이디/자동 로그인 저장 실패해도 로그인 성공은 유지
         }

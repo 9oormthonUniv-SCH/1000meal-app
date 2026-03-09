@@ -44,12 +44,16 @@ class LoginPreferenceStorage {
 
   Future<String?> getSavedPassword() async => _secure.read(key: _securePassword);
 
-  /// 로그아웃 시 true로 설정. 로그인 화면 진입 시 한 번만 자동 로그인을 건너뛰고, 읽은 뒤 false로 초기화.
-  Future<bool> getAndClearSkipAutoLoginOnce() async {
+  /// 로그아웃 시 true로 설정. 로그인 성공 전까지 자동 로그인 건너뜀. (초기화는 로그인 성공 시에만)
+  Future<bool> getSkipAutoLoginOnce() async {
     final prefs = await SharedPreferences.getInstance();
-    final value = prefs.getBool(_prefSkipAutoLoginOnce) ?? false;
-    if (value) await prefs.setBool(_prefSkipAutoLoginOnce, false);
-    return value;
+    return prefs.getBool(_prefSkipAutoLoginOnce) ?? false;
+  }
+
+  /// 로그인 성공 시 호출하여 자동 로그인 건너뛰기 플래그 해제.
+  Future<void> clearSkipAutoLoginOnce() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_prefSkipAutoLoginOnce, false);
   }
 
   Future<void> setSkipAutoLoginOnce() async {

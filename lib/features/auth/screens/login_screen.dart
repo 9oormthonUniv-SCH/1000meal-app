@@ -473,7 +473,7 @@ class _LabeledTextField extends StatelessWidget {
   }
 }
 
-class _PasswordField extends StatelessWidget {
+class _PasswordField extends StatefulWidget {
   final TextEditingController controller;
   final bool enabled;
   final Color primary;
@@ -489,6 +489,13 @@ class _PasswordField extends StatelessWidget {
   });
 
   @override
+  State<_PasswordField> createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<_PasswordField> {
+  bool _obscureText = true;
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -498,10 +505,10 @@ class _PasswordField extends StatelessWidget {
           style: AppTypography.headline4.copyWith(color: AppColors.gray7),
         ),
         TextField(
-          controller: controller,
-          enabled: enabled,
-          obscureText: true,
-          cursorColor: primary,
+          controller: widget.controller,
+          enabled: widget.enabled,
+          obscureText: _obscureText,
+          cursorColor: widget.primary,
           style: AppTypography.headline5.copyWith(color: AppColors.black),
           decoration: InputDecoration(
             border: UnderlineInputBorder(
@@ -511,15 +518,23 @@ class _PasswordField extends StatelessWidget {
               borderSide: BorderSide(color: AppColors.gray3),
             ),
             focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: primary, width: 2),
+              borderSide: BorderSide(color: widget.primary, width: 2),
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                color: AppColors.gray7,
+                size: 22,
+              ),
+              onPressed: () => setState(() => _obscureText = !_obscureText),
             ),
           ),
-          onChanged: onChanged,
+          onChanged: widget.onChanged,
         ),
-        if (errorText != null) ...[
+        if (widget.errorText != null) ...[
           const SizedBox(height: 6),
           Text(
-            errorText!,
+            widget.errorText!,
             style: AppTypography.caption1.copyWith(color: AppColors.error),
           ),
         ],

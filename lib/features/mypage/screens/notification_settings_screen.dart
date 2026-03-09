@@ -4,7 +4,9 @@ import 'package:meal_app/util/typography.dart';
 
 import '../../../common/notification/fcm_notification_storage.dart';
 import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_button.dart';
 import '../../../common/widgets/notification_list_item.dart';
+import '../../auth/screens/login_screen.dart';
 
 /// 알림 화면 (웹 notification 페이지와 동일: 수신 알림 목록 + 설정 안내)
 class NotificationSettingsScreen extends StatefulWidget {
@@ -82,45 +84,115 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+          : _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (!_isLoggedInForNotifications) {
+      return _buildLoginRequiredView();
+    }
+    if (_list.isEmpty) {
+      return _buildEmptyNotificationView();
+    }
+    return ListView.builder(
+      itemCount: _list.length,
+      itemBuilder: (context, index) {
+        final item = _list[index];
+        final timeRight = _formatTimeAgo(item.createdAt);
+        final isRead = _readIds.contains(item.id);
+        return NotificationListItem(
+          title: item.title,
+          body: item.body,
+          timeRight: timeRight,
+          isRead: isRead,
+          onTap: () => _markAsRead(item.id),
+          leading: Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
+              color: AppColors.gray3,
+              shape: BoxShape.circle,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLoginRequiredView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '로그인이 필요해요',
+              style: AppTypography.headline4.copyWith(
+                color: AppColors.black,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '로그인하면 즐겨찾기 한 가게의 알림을 받을 수 있어요',
+              style: AppTypography.body4.copyWith(color: AppColors.gray7),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: AppButton(
+                label: '로그인 하기',
+                variant: AppButtonVariant.primary,
+                backgroundColor: AppColors.orange,
+                foregroundColor: AppColors.white,
+                height: 52,
+                onPressed: () {
+                  Navigator.of(context).pushNamed(LoginScreen.routeName);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyNotificationView() {
+    return CustomScrollView(
+      slivers: [
+        const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (_list.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                    child: Text(
-                      _isLoggedInForNotifications ? '아직 받은 알림이 없습니다.' : '로그인 후 알림을 확인할 수 있습니다.',
-                      style: AppTypography.body4.copyWith(color: AppColors.gray7),
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _list.length,
-                      itemBuilder: (context, index) {
-                        final item = _list[index];
-                        final timeRight = _formatTimeAgo(item.createdAt);
-                        final isRead = _readIds.contains(item.id);
-                        return NotificationListItem(
-                          title: item.title,
-                          body: item.body,
-                          timeRight: timeRight,
-                          isRead: isRead,
-                          onTap: () => _markAsRead(item.id),
-                          leading: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: const BoxDecoration(
-                              color: AppColors.gray3,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                Text(
+                  '새로운 알림이 없어요',
+                  style: AppTypography.headline4.copyWith(
+                    color: AppColors.black,
+                    fontWeight: FontWeight.w700,
                   ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '가게를 즐겨찾기하면 새 메뉴가 올라올 때와 품절이 임박했을 때 알려드려요',
+                  style: AppTypography.body4.copyWith(color: AppColors.gray7),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 48),
               ],
             ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -181,9 +181,8 @@ class _HomePageState extends State<HomePage> {
                                     height: 20,
                                     colorFilter: const ColorFilter.mode(AppColors.gray6, BlendMode.srcIn),
                                   ),
-                            highlightColor: AppColors.orange.withValues(
-                              alpha: 0.2,
-                            ),
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),

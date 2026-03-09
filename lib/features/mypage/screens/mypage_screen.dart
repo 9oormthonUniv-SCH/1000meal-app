@@ -229,7 +229,7 @@ class _Body extends StatelessWidget {
             child: Column(
               children: [
                 _MenuItem(
-                  label: '회원정보 수정',
+                  label: '이메일 변경',
                   onTap: () => Navigator.of(context).pushNamed('/change-email'),
                   trailing: Icon(Icons.chevron_right, color: AppColors.gray5, size: 22),
                 ),
