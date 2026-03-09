@@ -42,7 +42,7 @@ class _AdminTabContentState extends State<AdminTabContent> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: AppColors.gray5, size: 22),
+            icon: const Icon(Icons.settings, color: AppColors.gray5, size: 24),
             onPressed: () =>
                 Navigator.of(context).pushNamed(AdminSettingsScreen.routeName),
           ),
