@@ -5,6 +5,8 @@ import '../../../common/utils/external_link.dart';
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_button.dart';
 import '../../../common/widgets/app_segment_tabs.dart';
+import '../../../util/colors.dart';
+import '../../../util/typography.dart';
 import '../viewmodels/find_account_view_model.dart';
 
 class FindAccountScreen extends StatefulWidget {
@@ -32,7 +34,7 @@ class _FindAccountScreenState extends State<FindAccountScreen> {
     final vm = context.watch<FindAccountViewModel>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: AppColors.white,
       appBar: const AppBarCommon(title: ''),
       body: SafeArea(
         child: Padding(
@@ -75,14 +77,14 @@ class _FindIdForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('이름', style: TextStyle(fontSize: 14, color: Color(0xFF374151))),
+        Text('이름', style: AppTypography.body4.copyWith(color: AppColors.gray8)),
         const SizedBox(height: 8),
         TextField(
           decoration: const InputDecoration(hintText: '이름 입력', border: UnderlineInputBorder()),
           onChanged: vm.setName,
         ),
         const SizedBox(height: 16),
-        const Text('이메일', style: TextStyle(fontSize: 14, color: Color(0xFF374151))),
+        Text('이메일', style: AppTypography.body4.copyWith(color: AppColors.gray8)),
         const SizedBox(height: 8),
         TextField(
           keyboardType: TextInputType.emailAddress,
@@ -104,16 +106,19 @@ class _FindIdForm extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              color: AppColors.gray1,
+              border: Border.all(color: AppColors.gray3),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Text('입력하신 회원정보와 일치하는 아이디는 ${vm.foundUserId} 입니다.'),
+            child: Text(
+              '입력하신 회원정보와 일치하는 아이디는 ${vm.foundUserId} 입니다.',
+              style: AppTypography.body4.copyWith(color: AppColors.black),
+            ),
           ),
         ],
         if (vm.error != null) ...[
           const SizedBox(height: 10),
-          Text(vm.error!, style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626))),
+          Text(vm.error!, style: AppTypography.caption2.copyWith(color: AppColors.error)),
         ],
       ],
     );
@@ -133,7 +138,7 @@ class _ResetPasswordForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('이메일', style: TextStyle(fontSize: 14, color: Color(0xFF374151))),
+        Text('이메일', style: AppTypography.body4.copyWith(color: AppColors.gray8)),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -162,15 +167,15 @@ class _ResetPasswordForm extends StatelessWidget {
         ),
         if (vm.error != null) ...[
           const SizedBox(height: 8),
-          Text(vm.error!, style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626))),
+          Text(vm.error!, style: AppTypography.caption2.copyWith(color: AppColors.error)),
         ],
         if (vm.success != null) ...[
           const SizedBox(height: 8),
-          Text('✅ ${vm.success!}', style: const TextStyle(fontSize: 12, color: Color(0xFF16A34A))),
+          Text('✅ ${vm.success!}', style: AppTypography.caption2.copyWith(color: AppColors.success)),
         ],
         if (vm.emailSent) ...[
           const SizedBox(height: 16),
-          const Text('인증 코드', style: TextStyle(fontSize: 14, color: Color(0xFF374151))),
+          Text('인증 코드', style: AppTypography.body4.copyWith(color: AppColors.gray8)),
           const SizedBox(height: 8),
           TextField(
             decoration: const InputDecoration(
@@ -184,12 +189,12 @@ class _ResetPasswordForm extends StatelessWidget {
             onTap: () => openExternalUrl(domain.isNotEmpty ? 'https://mail.$domain' : 'https://mail.sch.ac.kr'),
             child: Text(
               mailLinkText,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF2563EB), decoration: TextDecoration.underline),
+              style: AppTypography.caption2.copyWith(color: AppColors.blue, decoration: TextDecoration.underline),
             ),
           ),
         ],
         const SizedBox(height: 18),
-        const Text('새 비밀번호', style: TextStyle(fontSize: 14, color: Color(0xFF374151))),
+        Text('새 비밀번호', style: AppTypography.body4.copyWith(color: AppColors.gray8)),
         const SizedBox(height: 8),
         TextField(
           obscureText: true,
@@ -197,7 +202,7 @@ class _ResetPasswordForm extends StatelessWidget {
           onChanged: vm.setNewPw,
         ),
         const SizedBox(height: 16),
-        const Text('비밀번호 확인', style: TextStyle(fontSize: 14, color: Color(0xFF374151))),
+        Text('비밀번호 확인', style: AppTypography.body4.copyWith(color: AppColors.gray8)),
         const SizedBox(height: 8),
         TextField(
           obscureText: true,

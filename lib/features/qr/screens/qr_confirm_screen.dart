@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_button.dart';
+import '../../../util/colors.dart';
+import '../../../util/typography.dart';
 
 /// "'매장이름'에서 명부를 등록하시겠습니까?" 확인 화면
 class QrConfirmScreen extends StatelessWidget {
@@ -26,7 +28,7 @@ class QrConfirmScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: AppBarCommon(
         title: '',
         onBackPressed: onBack,
@@ -50,39 +52,34 @@ class QrConfirmScreen extends StatelessWidget {
                     RichText(
                       textAlign: TextAlign.center,
                       text: TextSpan(
-                        style: const TextStyle(color: Colors.black87, fontSize: 18),
+                        style: AppTypography.headline5.copyWith(color: AppColors.black),
                         children: [
-                          const TextSpan(
+                          TextSpan(
                             text: "'",
-                            style: TextStyle(
-                                color: Color(0xFFF97316), fontWeight: FontWeight.w700),
+                            style: AppTypography.headline4.copyWith(color: AppColors.orange),
                           ),
                           TextSpan(
                             text: storeName,
-                            style: const TextStyle(
-                              color: Color(0xFFF97316),
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: AppTypography.headline4.copyWith(color: AppColors.orange),
                           ),
-                          const TextSpan(
+                          TextSpan(
                             text: "'",
-                            style: TextStyle(
-                                color: Color(0xFFF97316), fontWeight: FontWeight.w700),
+                            style: AppTypography.headline4.copyWith(color: AppColors.orange),
                           ),
-                          const TextSpan(text: '에서 명부를 등록하시겠습니까?'),
+                          TextSpan(text: '에서 명부를 등록하시겠습니까?'),
                         ],
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       '명부 등록은 1일 1회만 가능합니다',
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                      style: AppTypography.body4.copyWith(color: AppColors.gray7),
                     ),
                     if (kDebugMode && debugTokenSuffix != null && debugTokenSuffix!.isNotEmpty) ...[
                       const SizedBox(height: 24),
                       Text(
                         '보낼 토큰(끝): …$debugTokenSuffix',
-                        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                        style: AppTypography.caption2.copyWith(color: AppColors.gray6),
                       ),
                     ],
                   ],
@@ -95,8 +92,8 @@ class QrConfirmScreen extends StatelessWidget {
                   child: AppButton(
                     label: '확인',
                     variant: AppButtonVariant.primary,
-                    backgroundColor: const Color(0xFFF97316),
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.orange,
+                    foregroundColor: AppColors.white,
                     height: 52,
                     loading: isLoading,
                     onPressed: isLoading ? null : onConfirm,

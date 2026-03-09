@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../util/colors.dart';
+import '../../util/typography.dart';
+
 /// 앱 전체에서 사용하는 주황색 토스트(스낵바) 공통 스타일.
 /// ScaffoldMessenger 대신 [AppSnackBar.show]를 사용하면 됩니다.
 abstract class AppSnackBar {
-  static const Color _backgroundColor = Color(0xFFF97316);
   static const Duration _defaultDuration = Duration(seconds: 2);
 
   /// 주황색 스타일로 스낵바 표시.
@@ -22,9 +24,9 @@ abstract class AppSnackBar {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(color: Colors.white),
+          style: AppTypography.body3.copyWith(color: AppColors.white),
         ),
-        backgroundColor: _backgroundColor,
+        backgroundColor: AppColors.orange,
         behavior: SnackBarBehavior.floating,
         duration: duration ?? _defaultDuration,
       ),
@@ -86,11 +88,11 @@ abstract class AppSnackBar {
             margin: const EdgeInsets.symmetric(horizontal: 40),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             decoration: BoxDecoration(
-              color: _backgroundColor,
+              color: AppColors.orange,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black26,
+                  color: AppColors.black.withValues(alpha: 0.26),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -98,7 +100,7 @@ abstract class AppSnackBar {
             ),
             child: Text(
               message,
-              style: const TextStyle(color: Colors.white, fontSize: 15),
+              style: AppTypography.body3.copyWith(color: AppColors.white),
               textAlign: TextAlign.center,
             ),
           ),
@@ -183,19 +185,19 @@ class _ShakeableToastState extends State<_ShakeableToast>
             margin: const EdgeInsets.symmetric(horizontal: 40),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF97316),
+              color: AppColors.orange,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
-                const BoxShadow(
-                  color: Colors.black26,
+                BoxShadow(
+                  color: AppColors.black.withValues(alpha: 0.26),
                   blurRadius: 12,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Text(
               widget.message,
-              style: const TextStyle(color: Colors.white, fontSize: 15),
+              style: AppTypography.body3.copyWith(color: AppColors.white),
               textAlign: TextAlign.center,
             ),
           ),

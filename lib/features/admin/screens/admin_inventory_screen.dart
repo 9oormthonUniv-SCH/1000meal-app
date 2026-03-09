@@ -177,7 +177,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
           if (vm.saving)
             Positioned.fill(
               child: Container(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: AppColors.black.withValues(alpha: 0.2),
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -200,7 +200,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
           if (vm.showOpenModal)
             Positioned.fill(
               child: Container(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: AppColors.black.withValues(alpha: 0.3),
                 child: Center(
                   child: Container(
                     constraints: const BoxConstraints(
@@ -285,7 +285,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
           if (vm.showCloseModal)
             Positioned.fill(
               child: Container(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: AppColors.black.withValues(alpha: 0.3),
                 child: Center(
                   child: Container(
                     constraints: const BoxConstraints(
@@ -341,7 +341,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                                 label: '네',
                                 variant: AppButtonVariant.primaryBlue,
                                 backgroundColor: AppColors.gray7,
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppColors.white,
                                 height: 48,
                                 loading: vm.saving,
                                 onPressed: vm.saving

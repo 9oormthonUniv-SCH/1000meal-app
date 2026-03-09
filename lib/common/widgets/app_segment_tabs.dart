@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../util/colors.dart';
+import '../../util/typography.dart';
+
 /// 상단 텍스트 2탭 (아이디 찾기 / 비밀번호 찾기 등). 피그마 공통 탭 스타일.
 class AppSegmentTabs<T> extends StatelessWidget {
   const AppSegmentTabs({
@@ -52,12 +55,12 @@ class _SegmentTabTile<T> extends StatelessWidget {
   final bool selected;
   final VoidCallback? onTap;
 
-  static const Color _activeColor = Color(0xFFF97316);
-  static const Color _inactiveColor = Color(0xFF9CA3AF);
-  static const Color _borderColor = Color(0xFFE5E7EB);
-
   @override
   Widget build(BuildContext context) {
+    final activeColor = AppColors.orange;
+    final inactiveColor = AppColors.gray6;
+    final borderColor = AppColors.gray3;
+
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -65,7 +68,7 @@ class _SegmentTabTile<T> extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: selected ? _activeColor : _borderColor,
+              color: selected ? activeColor : borderColor,
               width: selected ? 2 : 1,
             ),
           ),
@@ -73,9 +76,8 @@ class _SegmentTabTile<T> extends StatelessWidget {
         child: Text(
           label,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: selected ? _activeColor : _inactiveColor,
-            fontWeight: FontWeight.w600,
+          style: AppTypography.body3.copyWith(
+            color: selected ? activeColor : inactiveColor,
           ),
         ),
       ),

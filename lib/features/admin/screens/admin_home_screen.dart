@@ -35,7 +35,7 @@ class _AdminTabContentState extends State<AdminTabContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: AppColors.background,
       appBar: AppBarCommon(
         showBack: false,
         title: '',
@@ -69,7 +69,7 @@ class _AdminDashboardBody extends StatelessWidget {
               : '가게명 불러오는 중...');
 
     return Container(
-      color: const Color(0xFFF3F4F6),
+      color: AppColors.background,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
@@ -133,7 +133,7 @@ class _AdminDashboardBody extends StatelessWidget {
               child: Text(
                 vm.errorMessage!,
                 style: AppTypography.caption2.copyWith(
-                  color: const Color(0xFFEF4444),
+                  color: AppColors.error,
                 ),
               ),
             ),

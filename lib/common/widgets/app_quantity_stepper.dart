@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_app/util/colors.dart';
 import 'package:meal_app/util/typography.dart';
 
 import 'app_button.dart';
@@ -34,8 +35,6 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
   /// 텍스트를 직접 입력했고 아직 적용하지 않은 상태일 때만 적용 버튼 표시
   bool _isDirty = false;
 
-  static const Color _disabledColor = Color(0xFFBDBDBD);
-
   void _onChanged(String v) {
     widget.onChanged(v);
     if (!_isDirty) setState(() => _isDirty = true);
@@ -49,7 +48,7 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
   @override
   Widget build(BuildContext context) {
     final enabled = widget.enabled;
-    final textColor = widget.valueColor ?? (enabled ? const Color(0xFF1A1A1A) : _disabledColor);
+    final textColor = widget.valueColor ?? (enabled ? AppColors.black : AppColors.gray5);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -64,23 +63,17 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
             enabled: enabled,
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: textColor,
-              fontFamily: AppTypography.fontFamily,
-              height: 1.0,
-            ),
+            style: AppTypography.body1.copyWith(fontSize: 20, color: textColor, height: 1.0),
             decoration: InputDecoration(
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFBDBDBD), width: 0.72),
+                borderSide: const BorderSide(color: AppColors.gray5, width: 0.72),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFBDBDBD), width: 0.72),
+                borderSide: const BorderSide(color: AppColors.gray5, width: 0.72),
               ),
             ),
             onChanged: _onChanged,
@@ -97,8 +90,8 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
             child: AppButton(
               label: '적용',
               variant: AppButtonVariant.primaryBlue,
-              backgroundColor: const Color(0xFF54AAFF),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.blue,
+              foregroundColor: AppColors.white,
               height: 40,
               minWidth: 70,
               onPressed: enabled ? _onCommit : null,
@@ -126,11 +119,11 @@ class _CircleButton extends StatelessWidget {
         width: 20,
         height: 20,
         decoration: BoxDecoration(
-          color: const Color(0xFFBDBDBD).withValues(alpha: 0.7),
+          color: AppColors.gray5.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Center(
-          child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.0)),
+          child: Text(label, style: AppTypography.body3.copyWith(color: AppColors.white, height: 1.0)),
         ),
       ),
     );

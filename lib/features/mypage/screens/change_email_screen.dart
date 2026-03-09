@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/utils/external_link.dart';
+import '../../../util/colors.dart';
+import '../../../util/typography.dart';
 import '../viewmodels/change_email_view_model.dart';
 
 class ChangeEmailScreen extends StatefulWidget {
@@ -44,13 +46,13 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   '안전하게 이메일을 변경하기 위해서\n비밀번호를 한 번 더 입력해주세요',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Color(0xFF6B7280), height: 1.35),
+                  style: AppTypography.body4.copyWith(color: AppColors.gray7, height: 1.35),
                 ),
                 const SizedBox(height: 22),
-                const Text('현재 이메일', style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
+                Text('현재 이메일', style: AppTypography.caption2.copyWith(color: AppColors.gray6)),
                 const SizedBox(height: 6),
                 TextField(
                   enabled: false,
@@ -59,7 +61,7 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
                   decoration: const InputDecoration(
                     border: UnderlineInputBorder(),
                   ),
-                  style: const TextStyle(color: Color(0xFF9CA3AF)),
+                  style: TextStyle(color: AppColors.gray6),
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -81,24 +83,24 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
                       child: TextButton(
                         onPressed: (!vm.step1Done && vm.password.isNotEmpty && !vm.loading) ? vm.verifyPassword : null,
                         style: TextButton.styleFrom(
-                          backgroundColor: const Color(0xFFF97316),
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppColors.orange,
+                          foregroundColor: AppColors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ).copyWith(
                           backgroundColor: WidgetStateProperty.resolveWith((states) {
-                            if (states.contains(WidgetState.disabled)) return const Color(0xFFD1D5DB);
-                            return const Color(0xFFF97316);
+                            if (states.contains(WidgetState.disabled)) return AppColors.gray3;
+                            return AppColors.orange;
                           }),
                         ),
                         child: vm.step1Done
-                            ? const Text('완료', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))
+                            ? Text('완료', style: AppTypography.caption1.copyWith(color: AppColors.white))
                             : (vm.loading
                                 ? const SizedBox(
                                     height: 16,
                                     width: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
                                   )
-                                : const Text('확인', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
+                                : Text('확인', style: AppTypography.caption1.copyWith(color: AppColors.white))),
                       ),
                     ),
                   ],
@@ -124,24 +126,24 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
                         child: TextButton(
                           onPressed: (!vm.step2Done && vm.isValidNewEmail && !vm.loading) ? vm.sendCode : null,
                           style: TextButton.styleFrom(
-                            backgroundColor: const Color(0xFFF97316),
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.orange,
+                            foregroundColor: AppColors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ).copyWith(
                             backgroundColor: WidgetStateProperty.resolveWith((states) {
-                              if (states.contains(WidgetState.disabled)) return const Color(0xFFD1D5DB);
-                              return const Color(0xFFF97316);
+                              if (states.contains(WidgetState.disabled)) return AppColors.gray3;
+                              return AppColors.orange;
                             }),
                           ),
                           child: vm.step2Done
-                              ? const Text('완료', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))
+                              ? Text('완료', style: AppTypography.caption1.copyWith(color: AppColors.white))
                               : (vm.loading
                                   ? const SizedBox(
                                       height: 16,
                                       width: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
                                     )
-                                  : const Text('인증 요청', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
+                                  : Text('인증 요청', style: AppTypography.caption1.copyWith(color: AppColors.white))),
                         ),
                       ),
                     ],
@@ -151,11 +153,10 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
                   const SizedBox(height: 10),
                   InkWell(
                     onTap: () => openExternalUrl('https://mail.sch.ac.kr'),
-                    child: const Text(
+                    child: Text(
                       '메일함 열기 (mail.sch.ac.kr)',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF2563EB),
+                      style: AppTypography.caption2.copyWith(
+                        color: AppColors.blue,
                         decoration: TextDecoration.underline,
                       ),
                     ),
@@ -179,24 +180,24 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
                         child: TextButton(
                           onPressed: (!vm.verified && vm.code.isNotEmpty && !vm.loading) ? vm.verifyCode : null,
                           style: TextButton.styleFrom(
-                            backgroundColor: const Color(0xFF22C55E),
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.success,
+                            foregroundColor: AppColors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ).copyWith(
                             backgroundColor: WidgetStateProperty.resolveWith((states) {
-                              if (states.contains(WidgetState.disabled)) return const Color(0xFFD1D5DB);
-                              return const Color(0xFF22C55E);
+                              if (states.contains(WidgetState.disabled)) return AppColors.gray3;
+                              return AppColors.success;
                             }),
                           ),
                           child: vm.verified
-                              ? const Text('완료', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))
+                              ? Text('완료', style: AppTypography.caption1.copyWith(color: AppColors.white))
                               : (vm.loading
                                   ? const SizedBox(
                                       height: 16,
                                       width: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
                                     )
-                                  : const Text('확인', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700))),
+                                  : Text('확인', style: AppTypography.caption1.copyWith(color: AppColors.white))),
                         ),
                       ),
                     ],
@@ -208,8 +209,8 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF97316),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.orange,
+                        foregroundColor: AppColors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                       onPressed: () async {
@@ -237,7 +238,7 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
                           Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
                         }
                       },
-                      child: const Text('이메일 변경하기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                      child: Text('이메일 변경하기', style: AppTypography.subtitle1.copyWith(color: AppColors.white)),
                     ),
                   ),
                 ],
@@ -246,7 +247,7 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
                   Text(
                     vm.errMsg!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12),
+                    style: AppTypography.caption2.copyWith(color: AppColors.error),
                   ),
                 ],
               ],

@@ -17,10 +17,10 @@ class AdminOpenStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = isOpen ? AppColors.lightBlue : AppColors.white;
-    final fg = isOpen ? AppColors.white : const Color(0xFF9CA3AF);
+    final bg = isOpen ? AppColors.blue : AppColors.white;
+    final fg = isOpen ? AppColors.white : AppColors.gray6;
     final toggleTrack = isOpen ? AppColors.white : AppColors.gray3;
-    final toggleThumb = isOpen ? AppColors.lightBlue : AppColors.white;
+    final toggleThumb = isOpen ? AppColors.blue : AppColors.white;
 
     return InkWell(
       onTap: loading ? null : onToggle,
@@ -34,11 +34,11 @@ class AdminOpenStatusCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                color: Color(0x11000000),
+                color: AppColors.black.withValues(alpha: 0.07),
                 blurRadius: 10,
-                offset: Offset(0, 4),
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -55,7 +55,10 @@ class AdminOpenStatusCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   if (loading)
-                    Text('처리 중...', style: TextStyle(fontSize: 12, color: fg)),
+                    Text(
+                      '처리 중...',
+                      style: AppTypography.caption2.copyWith(color: fg),
+                    ),
                 ],
               ),
               Positioned(

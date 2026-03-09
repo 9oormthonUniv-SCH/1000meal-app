@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 
 import 'app_button.dart';
 
@@ -248,13 +249,13 @@ class _DialogContent extends StatelessWidget {
         children: [
           Text(
             parts[0],
-            style: TextStyle(fontSize: 15, color: contentLine1Color ?? const Color(0xFF767676), height: 1.45),
+            style: AppTypography.body2.copyWith(color: contentLine1Color ?? AppColors.gray7, height: 1.45),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
             parts[1],
-            style: TextStyle(fontSize: 15, color: contentLine2Color ?? const Color(0xFF1A1A1A), height: 1.45),
+            style: AppTypography.body2.copyWith(color: contentLine2Color ?? AppColors.black, height: 1.45),
             textAlign: TextAlign.center,
           ),
         ],
@@ -262,7 +263,7 @@ class _DialogContent extends StatelessWidget {
     } else {
       contentChild = Text(
         content,
-        style: TextStyle(fontSize: 15, color: contentColor ?? const Color(0xFF6B7280), height: 1.45),
+        style: AppTypography.body2.copyWith(color: contentColor ?? AppColors.gray7, height: 1.45),
         textAlign: TextAlign.center,
       );
     }
@@ -279,7 +280,7 @@ class _DialogContent extends StatelessWidget {
     final rightLoading = primaryOnLeft ? false : loading;
 
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 340),
@@ -292,7 +293,7 @@ class _DialogContent extends StatelessWidget {
               if (title != null && title!.isNotEmpty) ...[
                 Text(
                   title!,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: titleColor ?? const Color(0xFF111827)),
+                  style: AppTypography.subtitle1.copyWith(fontWeight: FontWeight.w700, color: titleColor ?? AppColors.black),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),

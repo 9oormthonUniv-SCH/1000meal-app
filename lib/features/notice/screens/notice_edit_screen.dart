@@ -10,6 +10,8 @@ import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_snackbar.dart';
+import '../../../util/colors.dart';
+import '../../../util/typography.dart';
 import '../models/notice_models.dart';
 import '../repositories/notice_repository.dart';
 import '../viewmodels/notice_list_view_model.dart';
@@ -111,15 +113,15 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
     if (!mounted) return;
     await showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (context) {
         Widget item({required IconData icon, required String label, required VoidCallback onTap}) {
           return ListTile(
-            leading: Icon(icon, color: const Color(0xFF111827)),
-            title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+            leading: Icon(icon, color: AppColors.black),
+            title: Text(label, style: AppTypography.subtitle1),
             onTap: onTap,
           );
         }
@@ -129,7 +131,7 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 8),
-              Container(width: 36, height: 4, decoration: BoxDecoration(color: const Color(0xFFE5E7EB), borderRadius: BorderRadius.circular(999))),
+              Container(width: 36, height: 4, decoration: BoxDecoration(color: AppColors.gray3, borderRadius: BorderRadius.circular(999))),
               const SizedBox(height: 8),
               item(
                 icon: Icons.photo_library_outlined,
@@ -272,7 +274,7 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                       Text(
                         _errorMessage!,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Color(0xFF6B7280)),
+                        style: AppTypography.body4.copyWith(color: AppColors.gray7),
                       ),
                       const SizedBox(height: 12),
                       TextButton(onPressed: _load, child: const Text('다시 시도')),
@@ -290,9 +292,9 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               border: Border(
-                                bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
+                                bottom: BorderSide(color: AppColors.gray7, width: 0.5),
                               ),
                             ),
                             child: TextField(
@@ -300,14 +302,14 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                               enabled: !_saving,
                               textInputAction: TextInputAction.next,
                               onChanged: (_) => setState(() {}),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 hintText: '제목을 입력해주세요',
-                                hintStyle: TextStyle(color: Color(0xFFD1D5DB), fontSize: 14),
+                                hintStyle: AppTypography.body4.copyWith(color: AppColors.gray5),
                                 border: InputBorder.none,
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
                               ),
-                              style: const TextStyle(fontSize: 14, color: Color(0xFF111827)),
+                              style: AppTypography.headline5.copyWith(color: AppColors.black),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -321,28 +323,28 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                               expands: true,
                               textAlignVertical: TextAlignVertical.top,
                               onChanged: (_) => setState(() {}),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 hintText: '본문을 입력해주세요',
-                                hintStyle: TextStyle(color: Color(0xFFD1D5DB), fontSize: 14),
+                                hintStyle: AppTypography.body4.copyWith(color: AppColors.gray5),
                                 border: InputBorder.none,
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
                               ),
-                              style: const TextStyle(fontSize: 14, color: Color(0xFF111827), height: 1.4),
+                              style: AppTypography.body4.copyWith(color: AppColors.black, height: 1.4),
                             ),
                           ),
                           const SizedBox(height: 10),
                           InkWell(
                             onTap: _openImageSourceSheet,
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 10),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
                               child: Row(
                                 children: [
-                                  Icon(Icons.photo_camera_outlined, size: 18, color: Color(0xFF9CA3AF)),
-                                  SizedBox(width: 8),
+                                  Icon(Icons.photo_camera_outlined, size: 18, color: AppColors.gray6),
+                                  const SizedBox(width: 8),
                                   Text(
                                     '사진 첨부하기',
-                                    style: TextStyle(fontSize: 13, color: Color(0xFF9CA3AF)),
+                                    style: AppTypography.caption1.copyWith(color: AppColors.gray6),
                                   ),
                                 ],
                               ),
@@ -382,10 +384,10 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                                             width: 20,
                                             height: 20,
                                             decoration: BoxDecoration(
-                                              color: const Color(0xAA111827),
+                                              color: AppColors.black.withValues(alpha: 0.67),
                                               borderRadius: BorderRadius.circular(999),
                                             ),
-                                            child: const Icon(Icons.close, size: 14, color: Colors.white),
+                                            child: Icon(Icons.close, size: 14, color: AppColors.white),
                                           ),
                                         ),
                                       ),
@@ -405,20 +407,19 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           '이메일 문의: jeong01101095@gmail.com',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+                          style: AppTypography.caption2.copyWith(color: AppColors.gray7),
                         ),
                         const SizedBox(height: 8),
                         InkWell(
                           onTap: () {
                             AppSnackBar.show(context, 'About 화면은 다음 작업에서 연결됩니다.');
                           },
-                          child: const Text(
+                          child: Text(
                             'About 오늘손밥',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF6B7280),
+                            style: AppTypography.caption2.copyWith(
+                              color: AppColors.gray7,
                               decoration: TextDecoration.underline,
                             ),
                           ),
@@ -430,7 +431,7 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
               );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: AppBarCommon(
         title: '글쓰기',
         centerTitle: true,
@@ -442,25 +443,25 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
               onPressed: _canSubmit ? _submit : null,
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.resolveWith((states) {
-                  if (states.contains(WidgetState.disabled)) return const Color(0xFFD9D9D9);
-                  return const Color(0xFFFF6E3F);
+                  if (states.contains(WidgetState.disabled)) return AppColors.gray4;
+                  return AppColors.orange;
                 }),
                 shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
                 overlayColor: WidgetStateProperty.all(
-                  const Color(0x1A111827),
+                  AppColors.black.withValues(alpha: 0.1),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 '완료',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                style: AppTypography.body3.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.white,
                 ),
               ),
             ),

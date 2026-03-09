@@ -25,11 +25,11 @@ class AdminWideCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Color(0x11000000),
+              color: AppColors.black.withValues(alpha: 0.07),
               blurRadius: 10,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),

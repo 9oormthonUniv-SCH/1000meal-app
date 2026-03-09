@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../../../util/typography.dart';
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_confirm_dialog.dart';
 import '../viewmodels/admin_frequent_menu_edit_view_model.dart';
@@ -127,8 +127,8 @@ class _AdminFrequentMenuEditScreenState
                         }
                       },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF97316),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.orange,
+                  foregroundColor: AppColors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -140,18 +140,18 @@ class _AdminFrequentMenuEditScreenState
                   minimumSize: Size.zero,
                 ),
                 child: vm.saving
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 16,
                         width: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                       )
                     : Text(
                         '저장',
                         style: AppTypography.body3.copyWith(
-                          color: vm.dirty ? Colors.white : Colors.white60,
+                          color: vm.dirty ? AppColors.white : AppColors.white.withValues(alpha: 0.6),
                         ),
                       ),
               ),
@@ -161,7 +161,7 @@ class _AdminFrequentMenuEditScreenState
         body: Stack(
           children: [
             Container(
-              color: const Color(0xFFF5F6F7),
+              color: AppColors.gray1,
               child: Column(
                 children: [
                   if (vm.loading)
@@ -206,13 +206,13 @@ class _AdminFrequentMenuEditScreenState
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF111827),
+                      color: AppColors.black,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       '저장되었습니다',
                       style: AppTypography.caption2.copyWith(
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                     ),
                   ),
@@ -250,22 +250,22 @@ class _InputBar extends StatelessWidget {
                   hintText: '메뉴 입력',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFD6D3D1),
+                    borderSide: BorderSide(
+                      color: AppColors.gray4,
                       width: 1,
-                    ), // stone-300
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFD6D3D1),
+                    borderSide: BorderSide(
+                      color: AppColors.gray4,
                       width: 1,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFD6D3D1),
+                    borderSide: BorderSide(
+                      color: AppColors.gray4,
                       width: 1,
                     ),
                   ),
@@ -287,15 +287,15 @@ class _InputBar extends StatelessWidget {
                             child: Container(
                               width: 15,
                               height: 15,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFA1A1A1), // neutral-400
+                              decoration: BoxDecoration(
+                                color: AppColors.gray6,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Center(
+                              child: Center(
                                 child: Icon(
                                   Icons.close,
                                   size: 10,
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                 ),
                               ),
                             ),
@@ -314,8 +314,8 @@ class _InputBar extends StatelessWidget {
           ElevatedButton(
             onPressed: onAdd,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE5E7EB),
-              foregroundColor: const Color(0xFF111827),
+              backgroundColor: AppColors.gray3,
+              foregroundColor: AppColors.black,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -343,7 +343,7 @@ class _MenuList extends StatelessWidget {
       return Center(
         child: Text(
           '현재 작성된 메뉴가 없습니다',
-          style: AppTypography.body3.copyWith(color: const Color(0xFF9CA3AF)),
+          style: AppTypography.body3.copyWith(color: AppColors.gray6),
         ),
       );
     }
@@ -362,12 +362,12 @@ class _MenuList extends StatelessWidget {
                     '${i + 1}',
                     textAlign: TextAlign.right,
                     style: AppTypography.body4.copyWith(
-                      color: const Color(0xFF6B7280),
+                      color: AppColors.gray7,
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                Container(width: 1, height: 20, color: const Color(0xFFD1D5DB)),
+                Container(width: 1, height: 20, color: AppColors.gray4),
                 const SizedBox(width: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -375,7 +375,7 @@ class _MenuList extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF7ED), // orange-50
+                    color: AppColors.orangeSelected,
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Row(
@@ -384,7 +384,7 @@ class _MenuList extends StatelessWidget {
                       Text(
                         menus[i],
                         style: AppTypography.body4.copyWith(
-                          color: const Color(0xFF1F2937),
+                          color: AppColors.gray8,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -394,15 +394,15 @@ class _MenuList extends StatelessWidget {
                         child: Container(
                           width: 15,
                           height: 15,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFA1A1A1), // neutral-400
+                          decoration: BoxDecoration(
+                            color: AppColors.gray6,
                             shape: BoxShape.circle,
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               Icons.close,
                               size: 10,
-                              color: Colors.white,
+                              color: AppColors.white,
                             ),
                           ),
                         ),

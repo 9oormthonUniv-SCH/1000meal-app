@@ -31,8 +31,8 @@ class AppDeductRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(color: Color(0x26000000), blurRadius: 20, offset: Offset(0, 0)),
+        boxShadow: [
+          BoxShadow(color: AppColors.black.withValues(alpha: 0.15), blurRadius: 20, offset: Offset.zero),
         ],
       ),
       child: Row(
@@ -100,8 +100,8 @@ class _DeductCell extends StatelessWidget {
                   color: AppColors.gray5.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Center(
-                  child: Text('–', style: TextStyle(color: Colors.white, fontSize: 14, height: 1.0)),
+                child: Center(
+                  child: Text('–', style: AppTypography.body3.copyWith(color: AppColors.white, height: 1.0)),
                 ),
               ),
               const SizedBox(width: 10),

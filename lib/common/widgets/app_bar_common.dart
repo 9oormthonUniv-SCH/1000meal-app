@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../util/colors.dart';
+import '../../util/typography.dart';
+
 /// 앱 공통 AppBar. 모든 화면에서 이 컴포넌트만 사용해 헤더 통일.
 /// - [showBack]: 좌측 뒤로가기 버튼 표시 여부
 /// - [title]: 제목 텍스트 ([titleWidget]이 없을 때만 사용)
@@ -37,8 +40,8 @@ class AppBarCommon extends StatelessWidget implements PreferredSizeWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
 
-  static const Color _defaultBg = Colors.white;
-  static const Color _defaultFg = Color(0xFF111827);
+  static const Color _defaultBg = AppColors.white;
+  static const Color _defaultFg = AppColors.black;
 
   @override
   Size get preferredSize => Size.fromHeight(toolbarHeight);
@@ -66,11 +69,7 @@ class AppBarCommon extends StatelessWidget implements PreferredSizeWidget {
             ? const SizedBox.shrink()
             : Text(
                 title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: fg,
-                ),
+                style: AppTypography.headline4.copyWith(color: fg),
               ));
 
     return AppBar(

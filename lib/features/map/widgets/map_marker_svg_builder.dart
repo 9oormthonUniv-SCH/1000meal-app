@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
@@ -22,8 +23,8 @@ class MapMarkerSvgBuilder {
   /// 100~51 초록, 50~31 주황, 30~0 빨강
   static Color colorForRemain(int remain) {
     if (remain <= 30) return AppColors.error;
-    if (remain <= 50) return const Color(0xFFF97316);
-    return const Color(0xFF34C759);
+    if (remain <= 50) return AppColors.orange;
+    return AppColors.success;
   }
 
   static Future<ui.Picture?> _loadSvgPicture(String path) async {
@@ -66,7 +67,7 @@ class MapMarkerSvgBuilder {
     canvas.translate(2, 3);
     canvas.saveLayer(
       Rect.fromLTWH(0, 0, _width.toDouble(), _height.toDouble()),
-      Paint()..colorFilter = const ColorFilter.mode(Color(0x50000000), BlendMode.srcIn),
+      Paint()..colorFilter = ColorFilter.mode(AppColors.black.withValues(alpha: 0.31), BlendMode.srcIn),
     );
     canvas.drawPicture(pictureFill);
     canvas.restore();
@@ -92,7 +93,8 @@ class MapMarkerSvgBuilder {
         style: TextStyle(
           fontSize: 6.0 * _pixelRatio,
           fontWeight: FontWeight.w800,
-          color: Colors.white,
+          color: AppColors.white,
+          fontFamily: AppTypography.fontFamily,
         ),
       ),
       textAlign: TextAlign.center,

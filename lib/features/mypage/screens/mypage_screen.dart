@@ -203,7 +203,7 @@ class _Body extends StatelessWidget {
 
     final isStudent = me.role == Role.student;
     // 이미지 스타일: 학생 = 주황·빨강 배경 + 흰색 글씨, 관리자 = 파랑 계열
-    final badgeBg = isStudent ? const Color(0xFFFF623F) : const Color(0xFF2563EB);
+    final badgeBg = isStudent ? AppColors.orange : AppColors.blue;
     final badgeText = isStudent ? '학생' : '관리자';
     // 상단 카드 제목: 학생·관리자 모두 이름(displayName) 표시, 그 밑 이메일
     final String cardTitle = me.displayName.isNotEmpty ? me.displayName : '회원';
@@ -432,14 +432,14 @@ class _AppPushToggle extends StatelessWidget {
                 child: Container(
                   width: _thumbSize,
                   height: _thumbSize,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: _thumb,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0x26000000),
+                        color: AppColors.black.withValues(alpha: 0.15),
                         blurRadius: 2,
-                        offset: Offset(0, 1),
+                        offset: const Offset(0, 1),
                       ),
                     ],
                   ),

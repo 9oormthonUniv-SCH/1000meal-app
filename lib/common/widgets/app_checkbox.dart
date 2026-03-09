@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// 앱 공통 체크박스. 피그마 디자인 시스템 적용 전까지 스타일 통일.
+import '../../util/colors.dart';
+
+/// 앱 공통 체크박스. Figma: default = white + border neutral-500, active = orange-400 + white check.
+/// activeColor 옵션으로 primary 외 색 지정 가능.
 class AppCheckbox extends StatelessWidget {
   const AppCheckbox({
     super.key,
@@ -13,14 +16,12 @@ class AppCheckbox extends StatelessWidget {
   final ValueChanged<bool?>? onChanged;
   final Color? activeColor;
 
-  static const Color _defaultActive = Color(0xFFF97316);
-
   @override
   Widget build(BuildContext context) {
     return Checkbox(
       value: value,
       onChanged: onChanged,
-      activeColor: activeColor ?? _defaultActive,
+      activeColor: activeColor ?? AppColors.orange,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     );
   }

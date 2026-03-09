@@ -82,8 +82,8 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                 ).pushNamed(AdminFrequentMenuScreen.routeName, arguments: gid);
               },
               style: TextButton.styleFrom(
-                backgroundColor: AppColors.orange, // orange-400
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.orange,
+                foregroundColor: AppColors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: 6,
@@ -110,7 +110,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
               Container(
                 width: double.infinity,
                 height: 48,
-                color: Colors.white,
+                color: AppColors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -131,7 +131,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                 ),
               ),
             if (vm.groups.length > 1)
-              const Divider(height: 1, thickness: 1, color: Color(0xFFFAFAF9)),
+              Divider(height: 1, thickness: 1, color: AppColors.gray1),
             Expanded(
               child: vm.loading && vm.weeks.isEmpty
                   ? const Center(child: CircularProgressIndicator())
@@ -212,7 +212,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
                   horizontal: 16,
                   vertical: 10,
                 ),
-                color: const Color(0xFFFFF1F2),
+                color: AppColors.error.withValues(alpha: 0.08),
                 child: Text(
                   vm.errorMessage!,
                   style: AppTypography.caption2.copyWith(
@@ -241,24 +241,28 @@ class _GroupChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 메인 '오늘의 천밥 | 공지사항' 탭과 동일: 흰 배경 + 테두리, 선택 시 orange / 비선택 gray4·gray6
+    final Color borderColor = selected ? AppColors.orange : AppColors.gray4;
+    final Color textColor = selected ? AppColors.orange : AppColors.gray6;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(30),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        height: 31,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: selected
-              ? AppColors
-                    .orange // orange-400
-              : AppColors.gray2, // orange-400 / zinc-100
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: borderColor, width: 1),
         ),
+        alignment: Alignment.center,
         child: Text(
           label,
           style: AppTypography.caption2.copyWith(
-            fontWeight: FontWeight.w600,
-            height: 1,
-            color: selected ? AppColors.white : Color(0xFF27272A), // zinc-800
+            color: textColor,
+            fontWeight: FontWeight.w400,
+            height: 20 / 12,
           ),
         ),
       ),
@@ -274,7 +278,6 @@ class _WeekCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const line = Color(0xFFD9D9D9); // zinc-300 (figma)
     final hairline = 1 / MediaQuery.of(context).devicePixelRatio;
 
     return Padding(
@@ -337,7 +340,7 @@ class _WeekCard extends StatelessWidget {
                             height: 48,
 
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.white,
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(i == 0 ? 16 : 0),
                                 topRight: Radius.circular(i == 0 ? 16 : 0),
@@ -359,8 +362,8 @@ class _WeekCard extends StatelessWidget {
                                     bottom: 0,
                                     child: SizedBox(
                                       height: hairline,
-                                      child: const DecoratedBox(
-                                        decoration: BoxDecoration(color: line),
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(color: AppColors.gray4),
                                       ),
                                     ),
                                   ),
@@ -409,11 +412,11 @@ class _WeekCard extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                    const Padding(
-                                      padding: EdgeInsets.only(right: 10),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 10),
                                       child: Icon(
                                         Icons.chevron_right,
-                                        color: Color(0xFFA3A3A3),
+                                        color: AppColors.gray6,
                                         size: 20,
                                       ),
                                     ),
@@ -433,8 +436,8 @@ class _WeekCard extends StatelessWidget {
                   bottom: 0,
                   child: SizedBox(
                     width: hairline,
-                    child: const DecoratedBox(
-                      decoration: BoxDecoration(color: line),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(color: AppColors.gray4),
                     ),
                   ),
                 ),

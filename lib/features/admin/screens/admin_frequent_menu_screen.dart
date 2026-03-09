@@ -71,7 +71,7 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
             child: Text(
               '취소',
               style: AppTypography.body3.copyWith(
-                color: const Color(0xFF6B7280),
+                color: AppColors.gray7,
               ),
             ),
           ),
@@ -91,8 +91,8 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                   },
             style: TextButton.styleFrom(
               foregroundColor: _selectedIds.isEmpty
-                  ? const Color(0xFF9CA3AF)
-                  : const Color(0xFFF97316),
+                  ? AppColors.gray6
+                  : AppColors.orange,
             ),
             child: Text('삭제', style: AppTypography.body3),
           ),
@@ -107,7 +107,7 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
         },
         child: Text(
           '선택',
-          style: AppTypography.body3.copyWith(color: const Color(0xFF9CA3AF)),
+          style: AppTypography.body3.copyWith(color: AppColors.gray6),
         ),
       );
     }
@@ -140,12 +140,12 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                 if (!context.mounted) return;
                 context.read<AdminFrequentMenuViewModel>().refresh();
               },
-              backgroundColor: const Color(0xFFD1D5DB),
-              child: const Icon(Icons.add, color: Colors.white),
+              backgroundColor: AppColors.gray4,
+              child: Icon(Icons.add, color: AppColors.white),
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: Container(
-        color: const Color(0xFFF5F6F7),
+        color: AppColors.gray1,
         child: vm.loading && vm.groups.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : Column(
@@ -156,7 +156,7 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                             child: Text(
                               '자주 쓰는 메뉴가 없습니다',
                               style: AppTypography.body4.copyWith(
-                                color: const Color(0xFF9CA3AF),
+                                color: AppColors.gray6,
                               ),
                             ),
                           )
@@ -205,11 +205,11 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                         horizontal: 16,
                         vertical: 10,
                       ),
-                      color: const Color(0xFFFFF1F2),
+                      color: AppColors.error.withValues(alpha: 0.08),
                       child: Text(
                         vm.errorMessage!,
                         style: AppTypography.caption2.copyWith(
-                          color: const Color(0xFFEF4444),
+                          color: AppColors.error,
                         ),
                       ),
                     ),
@@ -238,8 +238,8 @@ class _FrequentMenuRow extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 1),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
+        color: AppColors.white,
+        border: Border(bottom: BorderSide(color: AppColors.gray3, width: 1)),
       ),
       child: InkWell(
         onTap: onTap,
@@ -262,12 +262,12 @@ class _FrequentMenuRow extends StatelessWidget {
                 Checkbox(
                   value: isSelected,
                   onChanged: (_) => onTap(),
-                  activeColor: const Color(0xFFF97316),
+                  activeColor: AppColors.orange,
                 )
               else
-                const Icon(
+                Icon(
                   Icons.chevron_right,
-                  color: Color(0xFF9CA3AF),
+                  color: AppColors.gray6,
                   size: 25,
                 ),
             ],

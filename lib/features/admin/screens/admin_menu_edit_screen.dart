@@ -85,7 +85,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
               Text(
                 '메뉴 수정',
                 style: AppTypography.headline3.copyWith(
-                  color: const Color(0xFF111827),
+                  color: AppColors.black,
                 ),
               ),
               if (vm.groupName.isNotEmpty)
@@ -94,7 +94,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                   child: Text(
                     vm.groupName,
                     style: AppTypography.caption1.copyWith(
-                      color: const Color(0xFF6B7280),
+                      color: AppColors.gray7,
                     ),
                   ),
                 ),
@@ -142,7 +142,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
         body: Stack(
           children: [
             Container(
-              color: Colors.white,
+              color: AppColors.white,
               child: Column(
                 children: [
                   if (vm.errorMessage != null)
@@ -152,12 +152,12 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                         horizontal: 16,
                         vertical: 10,
                       ),
-                      color: const Color(0xFFFFF1F2),
+                      color: AppColors.error.withValues(alpha: 0.08),
                       child: Text(
                         vm.errorMessage!,
                         style: AppTypography.caption2.copyWith(
                           fontSize: 13,
-                          color: const Color(0xFFEF4444),
+                          color: AppColors.error,
                         ),
                       ),
                     ),
@@ -187,7 +187,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                         child: Text(
                           '메뉴 그룹을 선택해주세요',
                           style: AppTypography.body3.copyWith(
-                            color: const Color(0xFF6B7280),
+                            color: AppColors.gray7,
                           ),
                         ),
                       ),
@@ -259,10 +259,10 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                                     maxHeight: 300,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: AppColors.white,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: const Color(0xFFE5E7EB),
+                                      color: AppColors.gray3,
                                       width: 1,
                                     ),
                                   ),
@@ -331,7 +331,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                                                 ),
                                                 const Icon(
                                                   Icons.chevron_right,
-                                                  color: Color(0xFF9CA3AF),
+                                                  color: AppColors.gray6,
                                                   size: 16,
                                                 ),
                                               ],
@@ -360,13 +360,13 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF111827),
+                      color: AppColors.black,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       '저장되었습니다',
                       style: AppTypography.caption2.copyWith(
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                     ),
                   ),
@@ -402,8 +402,8 @@ class _WeekNavigator extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
+        color: AppColors.white,
+        border: Border(bottom: BorderSide(color: AppColors.gray3, width: 1)),
       ),
       child: Row(
         children: [
@@ -412,7 +412,7 @@ class _WeekNavigator extends StatelessWidget {
             icon: const Icon(Icons.chevron_left, size: 18),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            color: const Color(0xFF374151),
+            color: AppColors.gray8,
           ),
           Expanded(
             child: Row(
@@ -432,7 +432,7 @@ class _WeekNavigator extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: (i < 5 && days[i] == selectedId)
-                                ? const Color(0xFFF97316)
+                                ? AppColors.orange
                                 : Colors.transparent,
                             width: 1,
                           ),
@@ -443,24 +443,16 @@ class _WeekNavigator extends StatelessWidget {
                           children: [
                             Text(
                               weekdayLabels[i.clamp(0, 6)],
-                              style: TextStyle(
+                              style: AppTypography.caption2.copyWith(
                                 fontSize: 10,
-                                color: i >= 5
-                                    ? const Color(0xFFD6D3D1)
-                                    : const Color(
-                                        0xFF6B7280,
-                                      ), // stone-300 / gray
+                                color: i >= 5 ? AppColors.gray4 : AppColors.gray7,
                               ),
                             ),
                             const SizedBox(height: 1),
                             Text(
                               days[i].substring(8), // DD
                               style: AppTypography.body3.copyWith(
-                                color: i >= 5
-                                    ? const Color(0xFFD6D3D1)
-                                    : const Color(
-                                        0xFF111827,
-                                      ), // stone-300 / zinc-900
+                                color: i >= 5 ? AppColors.gray4 : AppColors.black,
                               ),
                             ),
                           ],
@@ -476,7 +468,7 @@ class _WeekNavigator extends StatelessWidget {
             icon: const Icon(Icons.chevron_right, size: 18),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            color: const Color(0xFF374151),
+            color: AppColors.gray8,
           ),
         ],
       ),
@@ -516,7 +508,7 @@ class _InputBar extends StatelessWidget {
             child: const SizedBox(
               width: 40,
               height: 40,
-              child: Icon(Icons.menu, color: Color(0xFF9CA3AF), size: 24),
+              child: Icon(Icons.menu, color: AppColors.gray6, size: 24),
             ),
           ),
           const SizedBox(width: 8),
@@ -529,21 +521,21 @@ class _InputBar extends StatelessWidget {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(
-                      color: Color(0xFFD6D3D1),
+                      color: AppColors.gray4,
                       width: 1,
                     ), // stone-300
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(
-                      color: Color(0xFFD6D3D1),
+                      color: AppColors.gray4,
                       width: 1,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(
-                      color: Color(0xFFD6D3D1),
+                      color: AppColors.gray4,
                       width: 1,
                     ),
                   ),
@@ -574,7 +566,7 @@ class _InputBar extends StatelessWidget {
                                 child: Icon(
                                   Icons.close,
                                   size: 10,
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                 ),
                               ),
                             ),
@@ -593,8 +585,8 @@ class _InputBar extends StatelessWidget {
           ElevatedButton(
             onPressed: onAdd,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE5E7EB), // zinc-100
-              foregroundColor: const Color(0xFF111827),
+              backgroundColor: AppColors.gray3,
+              foregroundColor: AppColors.black,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -622,7 +614,7 @@ class _MenuList extends StatelessWidget {
       return Center(
         child: Text(
           '현재 작성된 메뉴가 없습니다',
-          style: AppTypography.body3.copyWith(color: const Color(0xFF9CA3AF)),
+          style: AppTypography.body3.copyWith(color: AppColors.gray6),
         ),
       );
     }
@@ -641,12 +633,12 @@ class _MenuList extends StatelessWidget {
                     '${i + 1}',
                     textAlign: TextAlign.right,
                     style: AppTypography.body4.copyWith(
-                      color: const Color(0xFF6B7280),
+                      color: AppColors.gray7,
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                Container(width: 1, height: 20, color: const Color(0xFFD1D5DB)),
+                Container(width: 1, height: 20, color: AppColors.gray4),
                 const SizedBox(width: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -663,7 +655,7 @@ class _MenuList extends StatelessWidget {
                       Text(
                         menus[i],
                         style: AppTypography.body4.copyWith(
-                          color: const Color(0xFF1F2937),
+                          color: AppColors.gray8,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -681,7 +673,7 @@ class _MenuList extends StatelessWidget {
                             child: Icon(
                               Icons.close,
                               size: 10,
-                              color: Colors.white,
+                              color: AppColors.white,
                             ),
                           ),
                         ),

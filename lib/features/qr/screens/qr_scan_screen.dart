@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../common/config/app_config.dart';
 import '../../../common/dio/api_exception.dart';
 import '../../../common/widgets/app_snackbar.dart';
+import '../../../util/colors.dart';
 import '../data/qr_api.dart';
 import '../models/qr_models.dart';
 import '../../auth/repositories/auth_repository.dart';
@@ -337,10 +338,10 @@ class _QrScanScreenState extends State<QrScanScreen> {
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => _notifyAuthScreenVisible());
     if (_view == _QrView.loading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF111827),
+      return Scaffold(
+        backgroundColor: AppColors.black,
         body: Center(
-          child: CircularProgressIndicator(color: Colors.white),
+          child: CircularProgressIndicator(color: AppColors.white),
         ),
       );
     }

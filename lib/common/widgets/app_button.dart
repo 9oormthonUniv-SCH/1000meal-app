@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../util/colors.dart';
 import '../../util/typography.dart';
 
 /// 앱 공통 버튼. 피그마 디자인 시스템 적용 전까지 스타일만 통일.
@@ -43,13 +44,13 @@ class AppButton extends StatelessWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
 
-  static const Color _primaryBg = Color(0xFFF97316);
-  static const Color _primaryBlueBg = Color(0xFF60A5FA);
-  static const Color _secondaryBg = Color(0xFFF3F4F6);
-  static const Color _secondaryFg = Color(0xFF6B7280);
-  static const Color _destructiveBg = Color(0xFFEF4444);
-  static const Color _destructiveBgLight = Color(0xFFFEF2F2);
-  static const Color _destructiveFg = Color(0xFFEF4444);
+  static Color get _primaryBg => AppColors.orange;
+  static Color get _primaryBlueBg => AppColors.blue;
+  static Color get _secondaryBg => AppColors.background;
+  static Color get _secondaryFg => AppColors.gray7;
+  static Color get _destructiveBg => AppColors.error;
+  static Color get _destructiveBgLight => AppColors.gray1;
+  static Color get _destructiveFg => AppColors.error;
 
   /// large일 때 버튼 라벨 스타일: white, 20px, semibold, Pretendard, height 32
   static TextStyle _largeLabelStyle(Color fg) => AppTypography.body2.copyWith(
@@ -71,12 +72,12 @@ class AppButton extends StatelessWidget {
         child: TextButton(
           onPressed: loading ? null : onPressed,
           style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFF9CA3AF),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+foregroundColor: AppColors.gray6,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           ),
           child: loading
               ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
-              : Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              : Text(label, style: AppTypography.body3.copyWith(color: AppColors.gray6)),
         ),
       );
     }
@@ -87,25 +88,25 @@ class AppButton extends StatelessWidget {
       case AppButtonVariant.primary:
         final base = backgroundColor ?? _primaryBg;
         bg = isDisabled ? base.withValues(alpha: 0.4) : base;
-        fg = foregroundColor ?? Colors.white;
+        fg = foregroundColor ?? AppColors.white;
         break;
       case AppButtonVariant.primaryBlue:
         final baseBlue = backgroundColor ?? _primaryBlueBg;
         bg = isDisabled ? baseBlue.withValues(alpha: 0.5) : baseBlue;
-        fg = foregroundColor ?? Colors.white;
+        fg = foregroundColor ?? AppColors.white;
         break;
       case AppButtonVariant.secondary:
         bg = backgroundColor ?? _secondaryBg;
-        fg = foregroundColor ?? Colors.white;
+        fg = foregroundColor ?? AppColors.gray7;
         break;
       case AppButtonVariant.destructive:
         bg = backgroundColor ?? _destructiveBgLight;
-        fg = foregroundColor ?? Colors.white;
+        fg = foregroundColor ?? AppColors.error;
         break;
       case AppButtonVariant.destructiveFilled:
         final baseDest = backgroundColor ?? _destructiveBg;
         bg = isDisabled ? baseDest.withValues(alpha: 0.5) : baseDest;
-        fg = foregroundColor ?? Colors.white;
+        fg = foregroundColor ?? AppColors.white;
         break;
       case AppButtonVariant.text:
         bg = Colors.transparent;
@@ -141,7 +142,7 @@ class AppButton extends StatelessWidget {
               )
             : Text(
                 label,
-                style: large ? _largeLabelStyle(fg) : TextStyle(fontWeight: FontWeight.w600, color: fg),
+                style: large ? _largeLabelStyle(fg) : AppTypography.body3.copyWith(color: fg),
               ),
       ),
     );

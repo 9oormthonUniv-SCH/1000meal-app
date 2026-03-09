@@ -23,7 +23,7 @@ class AdminSettingsScreen extends StatelessWidget {
     final disabled = vm.loading;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       appBar: AppBarCommon(
         title: '설정',
         centerTitle: true,
@@ -39,7 +39,7 @@ class AdminSettingsScreen extends StatelessWidget {
                     context,
                   ).pushNamed(ChangeEmailScreen.routeName),
           ),
-          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+          Divider(height: 1, color: AppColors.gray3),
           _SettingsItem(
             label: '비밀번호 변경',
             onTap: disabled
@@ -48,7 +48,7 @@ class AdminSettingsScreen extends StatelessWidget {
                     context,
                   ).pushNamed(FindAccountScreen.routeName, arguments: 'pw'),
           ),
-          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+          Divider(height: 1, color: AppColors.gray3),
           _SettingsItem(
             label: '로그아웃',
             onTap: disabled
@@ -68,10 +68,10 @@ class AdminSettingsScreen extends StatelessWidget {
                     ).pushNamedAndRemoveUntil('/', (r) => false, arguments: 3);
                   },
           ),
-          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+          Divider(height: 1, color: AppColors.gray3),
           _SettingsItem(
             label: '회원탈퇴',
-            labelColor: const Color(0xFFEF4444),
+            labelColor: AppColors.error,
             onTap: disabled
                 ? null
                 : () async {
@@ -82,9 +82,9 @@ class AdminSettingsScreen extends StatelessWidget {
                       primaryLabel: '탈퇴하기',
                       primaryOnLeft: true,
                       primaryBg: AppColors.gray2,
-                      primaryFg: Colors.red,
+                      primaryFg: AppColors.error,
                       secondaryBg: AppColors.gray7,
-                      secondaryFg: Colors.white,
+                      secondaryFg: AppColors.white,
                     );
                     if (ok != true) return;
                     final success = await vm.deleteAccount();
@@ -102,7 +102,7 @@ class AdminSettingsScreen extends StatelessWidget {
                     }
                   },
           ),
-          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+          Divider(height: 1, color: AppColors.gray3),
         ],
       ),
     );
@@ -134,12 +134,12 @@ class _SettingsItem extends StatelessWidget {
               child: Text(
                 label,
                 style: AppTypography.body3.copyWith(
-                  color: labelColor ?? const Color(0xFF111827),
+                  color: labelColor ?? AppColors.black,
                   fontWeight: fontWeight,
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 22),
+            Icon(Icons.chevron_right, color: AppColors.gray6, size: 22),
           ],
         ),
       ),

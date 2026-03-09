@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../common/widgets/app_bar_common.dart';
+import '../../../util/colors.dart';
+import '../../../util/typography.dart';
 
 /// 이용약관·개인정보 수집 및 이용 동의 전문 (내용 보기용)
 class SignupTermsScreen extends StatelessWidget {
@@ -75,17 +77,16 @@ class SignupTermsScreen extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                style: AppTypography.headline4.copyWith(color: AppColors.black),
               ),
               const SizedBox(height: 12),
               Expanded(
                 child: SingleChildScrollView(
                   child: Text(
                     content.trim(),
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: AppTypography.body4.copyWith(
                       height: 1.6,
-                      color: Color(0xFF374151),
+                      color: AppColors.black,
                     ),
                   ),
                 ),

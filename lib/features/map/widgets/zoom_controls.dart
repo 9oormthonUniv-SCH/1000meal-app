@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../util/colors.dart';
+
 class MapZoomControls extends StatelessWidget {
   final VoidCallback onZoomIn;
   final VoidCallback onZoomOut;
@@ -32,7 +34,7 @@ class _ZoomButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppColors.white,
       shape: const CircleBorder(),
       elevation: 2,
       child: InkWell(
@@ -41,7 +43,7 @@ class _ZoomButton extends StatelessWidget {
         child: SizedBox(
           width: 34,
           height: 34,
-          child: Icon(icon, size: 18, color: const Color(0xFF111827)),
+          child: Icon(icon, size: 18, color: AppColors.black),
         ),
       ),
     );

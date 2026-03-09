@@ -35,7 +35,7 @@ class QrCameraView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.black,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -70,7 +70,7 @@ class QrCameraView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(right: 16),
                       child: Material(
-                        color: Colors.black26,
+                        color: AppColors.black.withValues(alpha: 0.26),
                         borderRadius: BorderRadius.circular(20),
                         child: InkWell(
                           onTap: fromAuth
@@ -81,7 +81,7 @@ class QrCameraView extends StatelessWidget {
                             padding: EdgeInsets.all(10),
                             child: Icon(
                               Icons.close,
-                              color: Colors.white,
+                              color: AppColors.white,
                               size: 24,
                             ),
                           ),
@@ -162,18 +162,15 @@ class _ScanOverlay extends StatelessWidget {
                           bottom: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFB923C), // orange-400
+                          color: AppColors.orange,
                           borderRadius: BorderRadius.circular(100),
                         ),
-                        child: const Text(
+                        child: Text(
                           '오늘 이미 명부 등록을 완료했습니다',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                          style: AppTypography.body3.copyWith(
+                            color: AppColors.white,
                             height: 2.0,
-                            fontFamily: AppTypography.fontFamily,
                           ),
                         ),
                       ),
@@ -186,14 +183,12 @@ class _ScanOverlay extends StatelessWidget {
                             Text(
                               '천원의 아침밥 결제 전',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
+                              style: AppTypography.body2.copyWith(
+                                color: AppColors.white,
                                 height: 1.6,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.black.withOpacity(0.5),
+                                    color: AppColors.black.withValues(alpha: 0.5),
                                     blurRadius: 6,
                                     offset: const Offset(0, 1),
                                   ),
@@ -204,14 +199,12 @@ class _ScanOverlay extends StatelessWidget {
                             Text(
                               '가게 앞의 QR코드를 스캔하세요',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
+                              style: AppTypography.headline2.copyWith(
+                                color: AppColors.white,
                                 height: 1.6,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.black.withOpacity(0.5),
+                                    color: AppColors.black.withValues(alpha: 0.5),
                                     blurRadius: 6,
                                     offset: const Offset(0, 1),
                                   ),
@@ -233,7 +226,7 @@ class _ScanOverlay extends StatelessWidget {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white),
+                          AlwaysStoppedAnimation<Color>(AppColors.white),
                     ),
                   ),
                 ),
@@ -259,7 +252,7 @@ class _OverlayWithHolePainter extends CustomPainter {
         Path.combine(PathOperation.difference, fullPath, holePath);
     canvas.drawPath(
       path,
-      Paint()..color = Colors.black.withOpacity(0.5),
+      Paint()..color = AppColors.black.withValues(alpha: 0.5),
     );
   }
 
@@ -274,7 +267,7 @@ class _ScanFramePainter extends CustomPainter {
   _ScanFramePainter({required this.holeRect});
 
   static const double _strokeWidth = 3;
-  static const Color _frameColor = Color(0xFFF97316);
+  static const Color _frameColor = AppColors.orange;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -301,7 +294,7 @@ class _LoginPromptOverlay extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
-        color: Colors.black54,
+        color: AppColors.black.withValues(alpha: 0.54),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -310,14 +303,11 @@ class _LoginPromptOverlay extends StatelessWidget {
           Text(
             '로그인이 필요해요',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              fontFamily: AppTypography.fontFamily,
+            style: AppTypography.headline4.copyWith(
+              color: AppColors.white,
               shadows: [
                 Shadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: AppColors.black.withValues(alpha: 0.5),
                   blurRadius: 6,
                   offset: const Offset(0, 1),
                 ),
@@ -328,14 +318,12 @@ class _LoginPromptOverlay extends StatelessWidget {
           Text(
             '로그인하면 매장 QR 명부 등록을 할 수 있어요',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
+            style: AppTypography.body4.copyWith(
+              color: AppColors.white.withValues(alpha: 0.7),
               height: 1.5,
-              fontFamily: AppTypography.fontFamily,
               shadows: [
                 Shadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: AppColors.black.withValues(alpha: 0.5),
                   blurRadius: 4,
                   offset: const Offset(0, 1),
                 ),
@@ -349,7 +337,7 @@ class _LoginPromptOverlay extends StatelessWidget {
               label: '로그인 하기',
               variant: AppButtonVariant.primary,
               backgroundColor: AppColors.orange,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.white,
               height: 48,
               onPressed: onLoginTap,
             ),
@@ -372,21 +360,21 @@ class _TestScanButton extends StatelessWidget {
       bottom: 32,
       child: SafeArea(
         child: Material(
-          color: Colors.black54,
+          color: AppColors.black.withValues(alpha: 0.54),
           borderRadius: BorderRadius.circular(8),
           child: InkWell(
             onTap: onPressed,
             borderRadius: BorderRadius.circular(8),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.qr_code_2, color: Colors.white70, size: 20),
-                  SizedBox(width: 8),
+                  Icon(Icons.qr_code_2, color: AppColors.white.withValues(alpha: 0.7), size: 20),
+                  const SizedBox(width: 8),
                   Text(
                     '테스트 스캔',
-                    style: TextStyle(color: Colors.white, fontSize: 13),
+                    style: AppTypography.body4.copyWith(color: AppColors.white),
                   ),
                 ],
               ),

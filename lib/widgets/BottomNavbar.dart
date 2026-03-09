@@ -33,13 +33,13 @@ class BottomNavbar extends StatelessWidget {
         elevation: 0,
         currentIndex: currentIndex,
         onTap: onTap,
-        selectedItemColor: AppColors.black,
+        selectedItemColor: AppColors.gray7,
         unselectedItemColor: AppColors.gray4,
         selectedFontSize: 12,
         unselectedFontSize: 12,
         selectedLabelStyle: AppTypography.caption2.copyWith(
           fontWeight: FontWeight.w400,
-          color: AppColors.black,
+          color: AppColors.gray7,
         ),
         unselectedLabelStyle: AppTypography.caption2.copyWith(
           color: AppColors.gray4,

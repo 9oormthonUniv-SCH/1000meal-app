@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:meal_app/util/colors.dart';
+import 'package:meal_app/util/typography.dart';
+
 class MapMarkerPin extends StatelessWidget {
   final int count;
   final Color color;
@@ -48,12 +51,12 @@ class MarkerPinPainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.fill;
     final strokePaint = Paint()
-      ..color = Colors.white
+      ..color = AppColors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = borderWidth;
 
     final pinPath = _buildPinPath(size);
-    canvas.drawShadow(pinPath, const Color(0x4D000000), 10.73, true);
+    canvas.drawShadow(pinPath, AppColors.black.withValues(alpha: 0.3), 10.73, true);
     canvas.drawPath(pinPath, fillPaint);
     canvas.drawPath(pinPath, strokePaint);
 
@@ -61,10 +64,8 @@ class MarkerPinPainter extends CustomPainter {
     final textPainter = TextPainter(
       text: TextSpan(
         text: count.toString(),
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
+        style: AppTypography.caption1.copyWith(
+          color: AppColors.white,
         ),
       ),
       textAlign: TextAlign.center,
