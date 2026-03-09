@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../util/colors.dart';
+import '../../../util/typography.dart';
 import '../../../widgets/app_text_logo.dart';
 import '../../auth/repositories/auth_repository.dart';
 import '../../users/models/me_response.dart';
@@ -41,7 +43,7 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -101,16 +103,15 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Text(
                           '명부 등록이 완료되었습니다\n직원에게 화면을 보여주세요',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Color(0xFF383230),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5,
+                          style: AppTypography.body4.copyWith(
+                            color: AppColors.gray7,
+                            fontSize: 14,
+                            height: 20 / 14,
                           ),
                         ),
                       ),
@@ -177,20 +178,19 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
                 children: [
                   Text(
                     storeName.isNotEmpty ? storeName : '매장',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
+                    style: AppTypography.headline2.copyWith(
+                      color: AppColors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   if (dateText.isNotEmpty) ...[
-                    const SizedBox(height: 4),
                     Text(
                       dateText,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                      style: AppTypography.headline5.copyWith(
+                        color: AppColors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],
@@ -208,20 +208,17 @@ class _QrAuthScreenState extends State<QrAuthScreen> {
                   if (name.isNotEmpty)
                     Text(
                       name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                      style: AppTypography.subtitle1.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   if (userId.isNotEmpty) ...[
-                    if (name.isNotEmpty) const SizedBox(height: 4),
                     Text(
                       userId,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                      style: AppTypography.subtitle1.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -243,26 +240,25 @@ class _AuthReturnCameraButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppColors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(100),
-        side: BorderSide(color: Colors.grey.shade300),
+        side: const BorderSide(color: AppColors.gray3),
       ),
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(100),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.camera_alt, size: 18, color: Colors.grey.shade600),
+              Icon(Icons.camera_alt, size: 18, color: AppColors.gray6),
               const SizedBox(width: 8),
               Text(
                 '카메라로 돌아가기',
-                style: TextStyle(
-                  color: const Color(0xFF383230),
-                  fontSize: 16,
+                style: AppTypography.subtitle1.copyWith(
+                  color: AppColors.black,
                   fontWeight: FontWeight.w600,
                 ),
               ),
