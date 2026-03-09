@@ -216,8 +216,8 @@ class _MapScreenState extends State<MapScreen> {
           return Stack(
             children: [
               Positioned.fill(
-                child: IgnorePointer(
-                  ignoring: _isBottomSheetOpen,
+                child: AbsorbPointer(
+                  absorbing: _isBottomSheetOpen,
                   child: KakaoMap(
                     onMapCreated: (controller) {
                       _mapController = controller;
