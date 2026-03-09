@@ -74,13 +74,6 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         showBack: true,
         title: '알림',
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.black),
-            onPressed: _loading ? null : () => _load(),
-            tooltip: '새로고침',
-          ),
-        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
