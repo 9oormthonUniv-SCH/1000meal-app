@@ -86,83 +86,89 @@ class _LoginBodyState extends State<_LoginBody> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<LoginViewModel>();
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _RoleTabs(role: vm.role, onChanged: vm.loading ? null : vm.setRole),
-          const SizedBox(height: 18),
-          _HeroCopy(role: vm.role),
-          const SizedBox(height: 40),
-          Form(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _LabeledTextField(
-                  controller: _userIdController,
-                  label: '아이디',
-                  primary: widget.primary,
-                  studentHint: '학번 8자리를 입력해주세요',
-                  adminHint: '아이디를 입력해주세요',
-                  studentKeyboardType: TextInputType.number,
-                  adminKeyboardType: TextInputType.text,
-                  onChanged: vm.setUserId,
-                ),
-                const SizedBox(height: 30),
-                _PasswordField(
-                  controller: _passwordController,
-                  enabled: !vm.loading,
-                  primary: widget.primary,
-                  onChanged: vm.setPassword,
-                  errorText: vm.errorMessage,
-                ),
-                const SizedBox(height: 16),
-                _LoginOptions(
-                  primary: widget.primary,
-                  saveUserId: vm.saveUserIdOption,
-                  autoLogin: vm.autoLoginOption,
-                  onSaveUserIdChanged: vm.setSaveUserIdOption,
-                  onAutoLoginChanged: vm.setAutoLoginOption,
-                  loading: vm.loading,
-                ),
-                const SizedBox(height: 16),
-                AppButton(
-                  label: '로그인',
-                  variant: AppButtonVariant.primary,
-                  large: true,
-                  backgroundColor: widget.primary,
-                  onPressed: vm.canSubmit
-                      ? () async {
-                          final role = await vm.submit();
-                          if (!context.mounted || role == null) return;
-                          // 기존 스택을 모두 제거하고, role에 따라 홈(/) 또는 관리자(/admin) 화면으로 이동
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                            role == Role.admin ? '/admin' : '/',
-                            (route) => false,
-                          );
-                        }
-                      : null,
-                  loading: vm.loading,
-                ),
-                const SizedBox(height: 12),
-                _BottomLinks(enabled: !vm.loading),
-                const SizedBox(height: 28),
-                _ContactFooter(),
-                if (kDebugMode) ...[
-                  const SizedBox(height: 24),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pushNamed(SignupCompleteScreen.routeName),
-                    child: Text(
-                      '[디버그] 회원가입 완료 페이지',
-                      style: AppTypography.caption1.copyWith(color: AppColors.gray6),
-                    ),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _RoleTabs(role: vm.role, onChanged: vm.loading ? null : vm.setRole),
+            const SizedBox(height: 18),
+            _HeroCopy(role: vm.role),
+            const SizedBox(height: 40),
+            Form(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _LabeledTextField(
+                    controller: _userIdController,
+                    label: '아이디',
+                    primary: widget.primary,
+                    studentHint: '학번 8자리를 입력해주세요',
+                    adminHint: '아이디를 입력해주세요',
+                    studentKeyboardType: TextInputType.number,
+                    adminKeyboardType: TextInputType.text,
+                    onChanged: vm.setUserId,
                   ),
+                  const SizedBox(height: 30),
+                  _PasswordField(
+                    controller: _passwordController,
+                    enabled: !vm.loading,
+                    primary: widget.primary,
+                    onChanged: vm.setPassword,
+                    errorText: vm.errorMessage,
+                  ),
+                  const SizedBox(height: 16),
+                  _LoginOptions(
+                    primary: widget.primary,
+                    saveUserId: vm.saveUserIdOption,
+                    autoLogin: vm.autoLoginOption,
+                    onSaveUserIdChanged: vm.setSaveUserIdOption,
+                    onAutoLoginChanged: vm.setAutoLoginOption,
+                    loading: vm.loading,
+                  ),
+                  const SizedBox(height: 16),
+                  AppButton(
+                    label: '로그인',
+                    variant: AppButtonVariant.primary,
+                    large: true,
+                    backgroundColor: widget.primary,
+                    onPressed: vm.canSubmit
+                        ? () async {
+                            final role = await vm.submit();
+                            if (!context.mounted || role == null) return;
+                            // 기존 스택을 모두 제거하고, role에 따라 홈(/) 또는 관리자(/admin) 화면으로 이동
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              role == Role.admin ? '/admin' : '/',
+                              (route) => false,
+                            );
+                          }
+                        : null,
+                    loading: vm.loading,
+                  ),
+                  const SizedBox(height: 12),
+                  _BottomLinks(enabled: !vm.loading),
+                  const SizedBox(height: 28),
+                  _ContactFooter(),
+                  if (kDebugMode) ...[
+                    const SizedBox(height: 24),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pushNamed(
+                        SignupCompleteScreen.routeName,
+                      ),
+                      child: Text(
+                        '[디버그] 회원가입 완료 페이지',
+                        style: AppTypography.caption1.copyWith(
+                          color: AppColors.gray6,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
         ],
+      ),
       ),
     );
   }

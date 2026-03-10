@@ -211,12 +211,13 @@ class _Body extends StatelessWidget {
 
     return Container(
       color: AppColors.background,
-      child: Column(
-        children: [
-          Container(
-            color: AppColors.white,
-            padding: const EdgeInsets.only(bottom: 20),
-            child: UserProfileCard(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              color: AppColors.white,
+              padding: const EdgeInsets.only(bottom: 20),
+              child: UserProfileCard(
               username: cardTitle,
               subtitle: cardSubtitle,
               badgeText: badgeText,
@@ -314,10 +315,11 @@ class _Body extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
-          const _ContactFooter(),
-          const SizedBox(height: 24),
-        ],
+            const SizedBox(height: 24),
+            const _ContactFooter(),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
