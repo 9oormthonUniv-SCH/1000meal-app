@@ -5,11 +5,130 @@ import '../../../common/widgets/admin_open_status_card.dart';
 import '../../../common/widgets/admin_square_card.dart';
 import '../../../common/widgets/admin_wide_card.dart';
 import '../../../common/widgets/app_bar_common.dart';
+import '../../../common/widgets/app_button.dart';
 import '../../../common/widgets/profile_card.dart';
 import 'admin_settings_screen.dart';
 import '../viewmodels/admin_home_view_model.dart';
 import '../../../util/colors.dart';
 import '../../../util/typography.dart';
+
+/// 영업중으로 전환 확인 팝업 (재고 관리 페이지 "영업 전" 모달과 동일 스타일). 맨트만 수정해서 사용 가능.
+Future<bool?> _showOpenConfirmDialog(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => Dialog(
+      backgroundColor: AppColors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: 340),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: AppTypography.body2.copyWith(height: 1.45),
+                children: const [
+                  TextSpan(
+                    text: '영업중',
+                    style: TextStyle(color: AppColors.blue),
+                  ),
+                  TextSpan(
+                    text: '으로 상태를 변경하시겠습니까?',
+                    style: TextStyle(color: AppColors.black),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 28),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton(
+                    label: '아니요',
+                    variant: AppButtonVariant.secondary,
+                    backgroundColor: AppColors.gray2,
+                    foregroundColor: AppColors.gray7,
+                    height: 48,
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AppButton(
+                    label: '네',
+                    variant: AppButtonVariant.primaryBlue,
+                    backgroundColor: AppColors.blue,
+                    foregroundColor: AppColors.white,
+                    height: 48,
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// 영업 종료 확인 팝업 (재고 관리 페이지 "재고 0개 → 영업 종료" 모달과 동일 스타일). 맨트만 수정해서 사용 가능.
+Future<bool?> _showCloseConfirmDialog(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => Dialog(
+      backgroundColor: AppColors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: 340),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '영업을 종료하시겠습니까?',
+              style: AppTypography.body2.copyWith(
+                color: AppColors.black,
+                height: 1.45,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 28),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton(
+                    label: '아니요',
+                    variant: AppButtonVariant.secondary,
+                    backgroundColor: AppColors.gray2,
+                    foregroundColor: AppColors.gray7,
+                    height: 48,
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AppButton(
+                    label: '네',
+                    variant: AppButtonVariant.primaryBlue,
+                    backgroundColor: AppColors.gray7,
+                    foregroundColor: AppColors.white,
+                    height: 48,
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 
 /// MainScreen 탭 0에서 사용: 마이페이지와 동일한 헤더 + 관리자 대시보드 본문 + (바텀바는 MainScreen에서 제공)
 class AdminTabContent extends StatefulWidget {
@@ -88,7 +207,16 @@ class _AdminDashboardBody extends StatelessWidget {
                   child: AdminOpenStatusCard(
                     isOpen: vm.isOpen,
                     loading: vm.loading || vm.toggling,
-                    onToggle: vm.toggling ? null : () => vm.toggleOpen(),
+                    onToggle: vm.toggling
+                        ? null
+                        : () async {
+                            final confirmed = await (vm.isOpen
+                                ? _showCloseConfirmDialog(context)
+                                : _showOpenConfirmDialog(context));
+                            if (confirmed == true && context.mounted) {
+                              vm.toggleOpen();
+                            }
+                          },
                   ),
                 ),
                 const SizedBox(width: 12),

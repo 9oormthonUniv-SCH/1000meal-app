@@ -145,7 +145,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     : 'assets/icon/alarm.svg',
                 width: 24,
                 height: 24,
-                colorFilter: const ColorFilter.mode(AppColors.gray5, BlendMode.srcIn),
               ),
               onPressed: () async {
                 await Navigator.of(context).pushNamed(NotificationSettingsScreen.routeName);

@@ -248,7 +248,9 @@ class _TiltCard extends StatefulWidget {
 
 class _TiltCardState extends State<_TiltCard> with SingleTickerProviderStateMixin {
   static const double _maxRotDeg = 8.0;
-  static const double _sensitivity = 0.12;
+  static const double _sensitivity = 0.11;
+  /// 드래그 시 회전이 목표치를 향해 부드럽게 따라가도록 하는 보간 비율 (0~1, 클수록 빠름)
+  static const double _dragLerp = 0.25;
   static final double _maxR = _maxRotDeg * (3.141592 / 180);
 
   double _rotX = 0;
@@ -264,11 +266,11 @@ class _TiltCardState extends State<_TiltCard> with SingleTickerProviderStateMixi
     super.initState();
     _resetController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 350),
+      duration: const Duration(milliseconds: 480),
     );
     _resetAnim = CurvedAnimation(
       parent: _resetController,
-      curve: Curves.easeOutCubic,
+      curve: Curves.easeOutQuart,
     );
   }
 
@@ -290,8 +292,8 @@ class _TiltCardState extends State<_TiltCard> with SingleTickerProviderStateMixi
         _frameScheduled = false;
         if (!mounted || _resetController.isAnimating) return;
         setState(() {
-          _rotX = _pendingRotX;
-          _rotY = _pendingRotY;
+          _rotX = _rotX + (_pendingRotX - _rotX) * _dragLerp;
+          _rotY = _rotY + (_pendingRotY - _rotY) * _dragLerp;
         });
       });
     }
