@@ -8,6 +8,7 @@ import 'package:meal_app/util/colors.dart';
 import 'package:meal_app/util/typography.dart';
 
 import '../../../common/notification/fcm_notification_storage.dart';
+import '../../../common/utils/external_link.dart';
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_button.dart';
 import '../../../common/widgets/app_confirm_dialog.dart';
@@ -311,6 +312,46 @@ class _Body extends StatelessWidget {
                   trailing: Icon(Icons.chevron_right, color: AppColors.gray5, size: 22),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          const _ContactFooter(),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+/// 마이페이지 하단 문의 정보 (회원탈퇴 밑 빈 공간)
+class _ContactFooter extends StatelessWidget {
+  const _ContactFooter();
+
+  static const String _email = 'jeong01101095@gmail.com';
+  static const String _siteUrl = 'https://1000meal.store';
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppTypography.caption2.copyWith(color: AppColors.gray6);
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: () => openExternalUrl('mailto:$_email'),
+            borderRadius: BorderRadius.circular(2),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: Text('문의 : jeong01101095@gmail.com', style: style),
+            ),
+          ),
+          Text('  |  ', style: style),
+          InkWell(
+            onTap: () => openExternalUrl(_siteUrl),
+            borderRadius: BorderRadius.circular(2),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: Text('About 오늘순밥', style: style),
             ),
           ),
         ],

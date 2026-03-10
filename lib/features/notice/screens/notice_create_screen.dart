@@ -422,7 +422,7 @@ class _NoticeCreateScreenState extends State<NoticeCreateScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '이메일 문의: cheonbab@sch.ac.kr',
+                      '이메일 문의: jeong01101095@gmail.com',
                       style: AppTypography.caption2.copyWith(color: AppColors.gray7),
                     ),
                     const SizedBox(height: 8),

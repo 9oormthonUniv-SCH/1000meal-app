@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../common/utils/external_link.dart';
 import '../../../common/widgets/app_bar_common.dart';
 import '../../signup/screens/signup_complete_screen.dart';
 import '../../../util/colors.dart';
@@ -146,6 +147,8 @@ class _LoginBodyState extends State<_LoginBody> {
                 ),
                 const SizedBox(height: 12),
                 _BottomLinks(enabled: !vm.loading),
+                const SizedBox(height: 28),
+                _ContactFooter(),
                 if (kDebugMode) ...[
                   const SizedBox(height: 24),
                   TextButton(
@@ -539,6 +542,43 @@ class _PasswordFieldState extends State<_PasswordField> {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// 로그인 하단 문의 정보 (이메일 / 사이트)
+class _ContactFooter extends StatelessWidget {
+  const _ContactFooter();
+
+  static const String _email = 'jeong01101095@gmail.com';
+  static const String _siteUrl = 'https://1000meal.store';
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppTypography.caption2.copyWith(color: AppColors.gray6);
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: () => openExternalUrl('mailto:$_email'),
+            borderRadius: BorderRadius.circular(2),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: Text('문의 : jeong01101095@gmail.com', style: style),
+            ),
+          ),
+          Text('  |  ', style: style),
+          InkWell(
+            onTap: () => openExternalUrl(_siteUrl),
+            borderRadius: BorderRadius.circular(2),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: Text('About 오늘순밥', style: style),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
