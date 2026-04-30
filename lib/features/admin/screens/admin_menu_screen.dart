@@ -209,7 +209,7 @@ class _AdminMenuScreenState extends State<AdminMenuScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
+                  horizontal: 20,
                   vertical: 10,
                 ),
                 color: AppColors.error.withValues(alpha: 0.08),

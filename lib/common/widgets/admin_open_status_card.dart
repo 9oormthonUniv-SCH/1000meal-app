@@ -63,7 +63,7 @@ class AdminOpenStatusCard extends StatelessWidget {
               ),
               Positioned(
                 bottom: 10,
-                right: 10,
+                right: 14,
                 child: IgnorePointer(
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),

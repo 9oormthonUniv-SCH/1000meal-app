@@ -104,7 +104,7 @@ class _FindIdForm extends StatelessWidget {
         if (vm.foundUserId != null) ...[
           const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
               color: AppColors.gray1,
               border: Border.all(color: AppColors.gray3),

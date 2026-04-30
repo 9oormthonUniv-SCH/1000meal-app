@@ -71,7 +71,7 @@ class SignupTermsScreen extends StatelessWidget {
       appBar: AppBarCommon(title: title),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

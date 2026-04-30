@@ -119,7 +119,7 @@ class _NoticeListSectionState extends State<NoticeListSection> {
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: AppTypography.subtitle1.copyWith(
-                                        color: AppColors.gray7,
+                                        color: AppColors.black,
                                         fontSize: 16,
                                         height: 32 / 16,
                                       ),

@@ -40,7 +40,8 @@ class WeeklyDayGroup {
   }
 }
 
-/// GET /menus/daily/weekly/{storeId}/groups?date= 응답의 day item
+/// GET /menus/daily/weekly/{storeId}/groups?date= 응답의 day item.
+/// 매장 영업 여부는 data/store 레벨 open을 사용한다.
 class WeeklyMenuDay {
   final int id;
   final String date; // YYYY-MM-DD
@@ -48,7 +49,6 @@ class WeeklyMenuDay {
   final bool holiday;
   final int totalStock;
   final List<WeeklyDayGroup> groups;
-  final bool open;
 
   WeeklyMenuDay({
     required this.id,
@@ -57,7 +57,6 @@ class WeeklyMenuDay {
     required this.holiday,
     required this.totalStock,
     required this.groups,
-    required this.open,
   });
 
   /// 임시 호환용: 기존 UI가 "문자열 메뉴 리스트"를 기대할 때 사용.
@@ -82,7 +81,6 @@ class WeeklyMenuDay {
       holiday: _toBool(json['holiday']),
       totalStock: _toInt(json['totalStock']),
       groups: groups,
-      open: _toBool(json['open']),
     );
   }
 }
@@ -149,14 +147,14 @@ class DailyMenuGroupItem {
   }
 }
 
-/// GET /menus/daily/{storeId}/groups?date= 응답 (특정 날짜의 그룹 목록 + 재고)
+/// GET /menus/daily/{storeId}/groups?date= 응답 (특정 날짜의 그룹 목록 + 재고).
+/// 매장 영업 여부(open)는 매장 API(getStoreDetail)에서만 사용한다.
 class DailyMenuResponse {
   final int id;
   final String date; // YYYY-MM-DD
   final String dayOfWeek; // MONDAY, ...
   final int totalStock;
   final List<DailyMenuGroupItem> groups;
-  final bool open;
   final bool? holiday;
 
   DailyMenuResponse({
@@ -165,7 +163,6 @@ class DailyMenuResponse {
     required this.dayOfWeek,
     required this.totalStock,
     required this.groups,
-    required this.open,
     required this.holiday,
   });
 
@@ -190,7 +187,6 @@ class DailyMenuResponse {
       dayOfWeek: (json['dayOfWeek'] ?? '').toString(),
       totalStock: _toInt(json['totalStock']),
       groups: groups,
-      open: _toBool(json['open']),
       holiday: json.containsKey('holiday') ? _toBool(json['holiday']) : null,
     );
   }

@@ -6,6 +6,7 @@ import '../../../common/notification/fcm_notification_storage.dart';
 import '../../../common/widgets/app_bar_common.dart';
 import '../../../common/widgets/app_button.dart';
 import '../../../common/widgets/notification_list_item.dart';
+import '../../../common/widgets/profile_card.dart';
 import '../../auth/screens/login_screen.dart';
 
 /// 알림 화면 (웹 notification 페이지와 동일: 수신 알림 목록 + 설정 안내)
@@ -94,20 +95,16 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         final item = _list[index];
         final timeRight = _formatTimeAgo(item.createdAt);
         final isRead = _readIds.contains(item.id);
+        final storeId = item.data != null && item.data!['storeId'] != null
+            ? int.tryParse(item.data!['storeId']!)
+            : null;
         return NotificationListItem(
           title: item.title,
           body: item.body,
           timeRight: timeRight,
           isRead: isRead,
           onTap: () => _markAsRead(item.id),
-          leading: Container(
-            width: 48,
-            height: 48,
-            decoration: const BoxDecoration(
-              color: AppColors.gray3,
-              shape: BoxShape.circle,
-            ),
-          ),
+          leading: buildStoreLeadingWidget(storeId, size: 48),
         );
       },
     );

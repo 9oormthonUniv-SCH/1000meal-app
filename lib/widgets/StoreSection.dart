@@ -29,7 +29,7 @@ class _StoreSectionState extends State<StoreSection> {
     final stores = vm.items;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         children: [
           if (vm.loading && stores.isEmpty)

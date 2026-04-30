@@ -149,7 +149,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 20,
                         vertical: 10,
                       ),
                       color: AppColors.error.withValues(alpha: 0.08),
@@ -202,7 +202,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                         clipBehavior: Clip.none,
                         children: [
                           ListView(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(20),
                             children: [
                               _InputBar(
                                 controller: _controller,
@@ -233,7 +233,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                                     .read<AdminMenuEditViewModel>()
                                     .selectFrequentMenu(group),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 20),
                               _MenuList(
                                 menus: vm.menus,
                                 onRemove: (i) => context
@@ -242,21 +242,29 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                               ),
                             ],
                           ),
-                          // 드롭다운을 Stack의 최상위에 배치
+                          // 바깥 터치 시 드롭다운 닫기
+                          if (vm.showFrequentMenu &&
+                              vm.frequentMenus.isNotEmpty)
+                            Positioned.fill(
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => context
+                                    .read<AdminMenuEditViewModel>()
+                                    .toggleFrequentMenu(),
+                              ),
+                            ),
                           if (vm.showFrequentMenu &&
                               vm.frequentMenus.isNotEmpty)
                             Positioned(
-                              top:
-                                  72, // ListView padding(16) + InputBar padding(4) + InputBar height(40) + spacing(12)
-                              left:
-                                  20, // ListView padding(16) + InputBar padding(4)
+                              top: 76,
+                              left: 24,
                               child: Material(
                                 elevation: 8,
                                 borderRadius: BorderRadius.circular(12),
                                 child: Container(
                                   width: 285,
                                   constraints: const BoxConstraints(
-                                    maxHeight: 300,
+                                    maxHeight: 280,
                                   ),
                                   decoration: BoxDecoration(
                                     color: AppColors.white,
@@ -266,9 +274,10 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                                       width: 1,
                                     ),
                                   ),
-                                  child: ListView(
-                                    shrinkWrap: true,
-                                    children: [
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
                                       for (
                                         int i = 0;
                                         i < vm.frequentMenus.length;
@@ -283,7 +292,7 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                                           child: Container(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 16,
-                                              vertical: 12,
+                                              vertical: 10,
                                             ),
                                             decoration: BoxDecoration(
                                               border:
@@ -332,13 +341,14 @@ class _AdminMenuEditScreenState extends State<AdminMenuEditScreen> {
                                                 const Icon(
                                                   Icons.chevron_right,
                                                   color: AppColors.gray6,
-                                                  size: 16,
+                                                  size: 22,
                                                 ),
                                               ],
                                             ),
                                           ),
                                         ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -400,7 +410,7 @@ class _WeekNavigator extends StatelessWidget {
   Widget build(BuildContext context) {
     const weekdayLabels = ['월', '화', '수', '목', '금', '토', '일'];
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
       decoration: const BoxDecoration(
         color: AppColors.white,
         border: Border(bottom: BorderSide(color: AppColors.gray3, width: 1)),
@@ -409,65 +419,80 @@ class _WeekNavigator extends StatelessWidget {
         children: [
           IconButton(
             onPressed: onPrevWeek,
-            icon: const Icon(Icons.chevron_left, size: 18),
+            icon: const Icon(Icons.chevron_left, size: 22),
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            constraints: const BoxConstraints(minWidth: 16, minHeight: 32),
+            visualDensity: VisualDensity.compact,
             color: AppColors.gray8,
           ),
           Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                for (int i = 0; i < days.length; i++)
-                  Flexible(
-                    child: GestureDetector(
-                      onTap: i >= 5
-                          ? null
-                          : () => onSelect(days[i]), // ✅ 토/일 클릭 불가
-                      child: Container(
-                        constraints: const BoxConstraints(minWidth: 36),
-                        height: 44,
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: (i < 5 && days[i] == selectedId)
-                                ? AppColors.orange
-                                : Colors.transparent,
-                            width: 1,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                final dayWidth = (width / 7).clamp(32.0, double.infinity);
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    for (int i = 0; i < days.length; i++)
+                      SizedBox(
+                        width: dayWidth,
+                        child: GestureDetector(
+                          onTap: i >= 5
+                              ? null
+                              : () => onSelect(days[i]), // 토/일 클릭 불가
+                          child: Container(
+                            constraints: const BoxConstraints(minHeight: 48),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 2,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: (i < 5 && days[i] == selectedId)
+                                    ? AppColors.orange
+                                    : Colors.transparent,
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  weekdayLabels[i.clamp(0, 6)],
+                                  style: AppTypography.caption1.copyWith(
+                                    color: AppColors.gray5,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  days[i].substring(8), // DD
+                                  style: AppTypography.body2.copyWith(
+                                    color: i >= 5
+                                        ? AppColors.gray4
+                                        : AppColors.black,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              weekdayLabels[i.clamp(0, 6)],
-                              style: AppTypography.caption2.copyWith(
-                                fontSize: 10,
-                                color: i >= 5 ? AppColors.gray4 : AppColors.gray7,
-                              ),
-                            ),
-                            const SizedBox(height: 1),
-                            Text(
-                              days[i].substring(8), // DD
-                              style: AppTypography.body3.copyWith(
-                                color: i >= 5 ? AppColors.gray4 : AppColors.black,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
-                  ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
           IconButton(
             onPressed: onNextWeek,
-            icon: const Icon(Icons.chevron_right, size: 18),
+            icon: const Icon(Icons.chevron_right, size: 22),
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            constraints: const BoxConstraints(minWidth: 16, minHeight: 32),
+            visualDensity: VisualDensity.compact,
             color: AppColors.gray8,
           ),
         ],
@@ -498,7 +523,7 @@ class _InputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 12),
       child: Row(
         children: [
           // 피그마: 햄버거 아이콘(회색), 배경 없음
@@ -624,15 +649,15 @@ class _MenuList extends StatelessWidget {
       children: [
         for (int i = 0; i < menus.length; i++)
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 16),
             child: Row(
               children: [
                 SizedBox(
-                  width: 16,
+                  width: 20,
                   child: Text(
                     '${i + 1}',
                     textAlign: TextAlign.right,
-                    style: AppTypography.body4.copyWith(
+                    style: AppTypography.body3.copyWith(
                       color: AppColors.gray7,
                     ),
                   ),
@@ -642,8 +667,8 @@ class _MenuList extends StatelessWidget {
                 const SizedBox(width: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 14,
+                    vertical: 8,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.orangeSelected,
@@ -654,8 +679,9 @@ class _MenuList extends StatelessWidget {
                     children: [
                       Text(
                         menus[i],
-                        style: AppTypography.body4.copyWith(
-                          color: AppColors.gray8,
+                        style: AppTypography.body3.copyWith(
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(width: 8),

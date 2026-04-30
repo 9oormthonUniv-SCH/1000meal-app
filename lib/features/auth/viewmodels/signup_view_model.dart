@@ -296,6 +296,8 @@ class SignupViewModel extends ChangeNotifier {
   Future<void> verifyEmailCode() async {
     if (!emailSent) return;
     if (emailCode.trim().isEmpty) return;
+    // 이미 인증된 상태에서 확인을 다시 누르면 API가 에러를 돌려 verified가 false로 바뀌어 가입 불가 → 재호출 방지
+    if (verified) return;
 
     verifyingEmail = true;
     emailError = null;

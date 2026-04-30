@@ -196,7 +196,7 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
                 Text(
                   title,
                   style: AppTypography.subtitle1.copyWith(
-                    color: AppColors.gray7,
+                    color: AppColors.black,
                     fontSize: 16,
                     height: 32 / 16,
                   ),
@@ -257,10 +257,10 @@ class _NoticeDetailScreenState extends State<NoticeDetailScreen> {
                 ] else ...[
                   const SizedBox(height: 16),
                 ],
-                Text(
+                SelectableText(
                   content,
                   style: AppTypography.body4.copyWith(
-                    color: AppColors.gray7,
+                    color: AppColors.black,
                     fontSize: 14,
                     height: 20 / 14,
                   ),

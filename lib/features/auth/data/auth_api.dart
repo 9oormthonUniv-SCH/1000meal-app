@@ -94,17 +94,24 @@ class AuthApi {
     );
   }
 
+  /// 이메일로 가입된 계정이 있는지 조회. true면 이미 가입된 이메일(인증 요청 불가).
   Future<bool> getSignupEmailStatus(String email) async {
     final root = await _client.get<Map<String, dynamic>>(
       '/auth/email/status',
       queryParameters: {'email': email},
     );
-    // 서버가 data에 bool을 주거나, data에 { verified: bool } 형태를 줄 수 있음
     final data = root['data'];
     if (data is bool) return data;
     if (data is String) return data.toLowerCase() == 'true';
 
     final unwrapped = _unwrapData(root);
+    // 계정 존재 여부는 accountExists로 판단 (verified는 인증 완료 여부용)
+    final accountExists = unwrapped['accountExists'];
+    if (accountExists != null) {
+      if (accountExists is bool) return accountExists;
+      if (accountExists is String) return accountExists.toLowerCase() == 'true';
+    }
+    // 하위 호환: accountExists 없으면 verified로 판단
     final v = unwrapped['verified'];
     if (v is bool) return v;
     if (v is String) return v.toLowerCase() == 'true';

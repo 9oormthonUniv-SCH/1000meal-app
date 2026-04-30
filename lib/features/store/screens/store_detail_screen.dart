@@ -63,7 +63,7 @@ class _StoreDetailView extends StatelessWidget {
     if (vm.errorMessage != null && vm.detail == null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Text(
             vm.errorMessage!,
             style: const TextStyle(color: AppColors.error),
@@ -398,7 +398,7 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            '일주일 메뉴',
+            '주간 메뉴',
             style: AppTypography.headline2.copyWith(
               fontSize: 24,
               height: 32 / 24,
@@ -506,7 +506,7 @@ class _WeeklyMenuSectionState extends State<_WeeklyMenuSection> {
 
     Widget buildCardsForGroup(StoreDetailDayGroup? group) {
       return SizedBox(
-        height: 206,
+        height: 216,
         child: ListView.builder(
           controller: controllerForGroup(group),
           scrollDirection: Axis.horizontal,

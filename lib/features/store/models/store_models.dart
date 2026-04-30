@@ -373,6 +373,7 @@ class StoreDetailDayGroup {
   }
 }
 
+/// 주간 메뉴의 하루. 매장 영업 여부는 상위 [StoreDetail.open]을 사용한다.
 class StoreWeeklyMenuDay {
   final int id;
   final String date; // YYYY-MM-DD
@@ -380,7 +381,6 @@ class StoreWeeklyMenuDay {
   final bool? holiday;
   final int? totalStock;
   final List<StoreDetailDayGroup> groups;
-  final bool open;
 
   StoreWeeklyMenuDay({
     required this.id,
@@ -389,7 +389,6 @@ class StoreWeeklyMenuDay {
     required this.holiday,
     required this.totalStock,
     required this.groups,
-    required this.open,
   });
 
   factory StoreWeeklyMenuDay.fromJson(Map<String, dynamic> json) {
@@ -420,7 +419,6 @@ class StoreWeeklyMenuDay {
       holiday: json.containsKey('holiday') ? toBool(json['holiday']) : null,
       totalStock: json['totalStock'] == null ? null : toInt(json['totalStock']),
       groups: groups,
-      open: toBool(json['open']),
     );
   }
 }

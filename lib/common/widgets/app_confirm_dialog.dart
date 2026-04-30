@@ -285,7 +285,7 @@ class _DialogContent extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 340),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12,48, 12, 12),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

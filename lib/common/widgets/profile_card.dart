@@ -160,30 +160,66 @@ class UserProfileCard extends StatelessWidget {
   }
 }
 
+/// storeId별 매장 이미지 경로 (좌측 썸네일용, PNG 사용). 알림 등에서도 재사용.
+String? storeImageAssetPathFor(int? storeId) {
+  switch (storeId) {
+    case 1:
+      return 'assets/icon/dorm_1.png';
+    case 2:
+      return 'assets/icon/grazie_outside.png';
+    case 3:
+      return 'assets/icon/bakery_kyung.png';
+    case 4:
+      return 'assets/icon/dorm_2.png';
+    default:
+      return null;
+  }
+}
+
+/// 매장 썸네일 위젯 (관리자 카드·알림 목록 등). storeId가 1~4가 아니면 회색 원.
+Widget buildStoreLeadingWidget(int? storeId, {double size = 48}) {
+  final path = storeImageAssetPathFor(storeId);
+  if (path != null) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(size / 2),
+      child: Image.asset(path, width: size, height: size, fit: BoxFit.cover),
+    );
+  }
+  return Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      color: AppColors.gray3,
+      borderRadius: BorderRadius.circular(size / 2),
+    ),
+  );
+}
+
 /// 관리자 페이지: 매장명 + 관리자 뱃지
 class AdminProfileCard extends StatelessWidget {
-  const AdminProfileCard({super.key, required this.storeName, this.leading});
+  const AdminProfileCard({
+    super.key,
+    required this.storeName,
+    this.storeId,
+    this.leading,
+  });
 
   final String storeName;
+  final int? storeId;
   final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
+    final leadingWidget =
+        leading ?? buildStoreLeadingWidget(storeId, size: 48);
+
     return Container(
       margin: profileCardMargin,
       padding: profileCardPadding,
       decoration: profileCardDecoration,
       child: Row(
         children: [
-          leading ??
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.gray3,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-              ),
+          leadingWidget,
           const SizedBox(width: 12),
           Expanded(
             child: Text(storeName, style: AppTypography.headline4.copyWith()),

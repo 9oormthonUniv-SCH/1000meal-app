@@ -6,6 +6,7 @@ import '../../../common/dio/api_error_mapper.dart';
 import '../../../common/dio/api_exception.dart';
 import '../../../common/utils/kst_date.dart';
 import '../models/menu_models.dart';
+import '../models/store_models.dart';
 import '../repositories/admin_repository.dart';
 
 class AdminInventoryViewModel extends ChangeNotifier {
@@ -54,8 +55,8 @@ class AdminInventoryViewModel extends ChangeNotifier {
   /// 버튼 적용(저장) 시 API가 멈추면 무한 로딩 방지.
   static const Duration _saveTimeout = Duration(seconds: 15);
 
-  /// 188488b 시절과 동일: getDailyMenu() 단일 호출, open은 응답의 res?.open 사용.
-  /// getStoreDetail 제거로 "한쪽만 완료되고 다른 쪽이 안 끝나는" 무한로딩 원인 제거.
+  /// 당일 메뉴는 getDailyMenu, 매장 영업 여부(open)는 getStoreDetail의 매장 open만 사용.
+  /// 두 API를 병렬 호출해 한쪽만 끝나서 무한 로딩되는 상황을 방지.
   Future<void> loadToday() async {
     if (loading) {
       loading = false;
@@ -75,12 +76,20 @@ class AdminInventoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final res = await _repo.getDailyMenu(date: date).timeout(
-        _loadTimeout,
-        onTimeout: () => throw TimeoutException('로딩 시간이 초과되었습니다. 네트워크를 확인해 주세요.'),
-      );
+      final results = await Future.wait<dynamic>([
+        _repo.getDailyMenu(date: date).timeout(
+          _loadTimeout,
+          onTimeout: () => throw TimeoutException('로딩 시간이 초과되었습니다. 네트워크를 확인해 주세요.'),
+        ),
+        _repo.getStoreDetail().timeout(
+          _loadTimeout,
+          onTimeout: () => throw TimeoutException('로딩 시간이 초과되었습니다. 네트워크를 확인해 주세요.'),
+        ),
+      ]);
+      final res = results[0] as DailyMenuResponse?;
+      final store = results[1];
       daily = res;
-      open = res?.open ?? false;
+      open = store is StoreDetail ? store.open : false;
       _groupStocks
         ..clear()
         ..addEntries((res?.groups ?? const <DailyMenuGroupItem>[]).map((g) => MapEntry(g.id, g.stock)));
@@ -147,6 +156,10 @@ class AdminInventoryViewModel extends ChangeNotifier {
       );
       open = false;
       showCloseModal = false;
+      // 영업 종료 시 남은 수량과 관계없이 0으로 표시
+      for (final id in _groupStocks.keys.toList()) {
+        _groupStocks[id] = 0;
+      }
     } on TimeoutException catch (e) {
       errorMessage = e.message ?? '처리 시간이 초과되었습니다. 네트워크를 확인해 주세요.';
     } catch (e) {

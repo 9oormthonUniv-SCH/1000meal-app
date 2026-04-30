@@ -28,7 +28,7 @@ class WeeklyMenuCard extends StatelessWidget {
       width: 164,
       height: 320,
       margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
+      padding: const EdgeInsets.fromLTRB(20, 6, 20, 4),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),

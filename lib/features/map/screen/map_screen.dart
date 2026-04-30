@@ -248,7 +248,7 @@ class _MapScreenState extends State<MapScreen> {
               if (vm.errorMessage != null && vm.items.isEmpty)
                 Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     child: Text(
                       vm.errorMessage!,
                       style: const TextStyle(color: AppColors.error),

@@ -74,7 +74,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                 Container(
                   color: AppColors.white,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                    horizontal: 20,
                     vertical: 14,
                   ),
                   child: RichText(
@@ -87,7 +87,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                         TextSpan(
                           text: formatted.weekday,
                           style: AppTypography.headline4.copyWith(
-                            color: AppColors.orange,
+                            color: AppColors.gray7,
                           ),
                         ),
                       ],
@@ -100,15 +100,15 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
                   child: Column(
                     children: [
-                      for (final g in groups) ...[
+                      for (int i = 0; i < groups.length; i++) ...[
                         _GroupStockCard(
-                          group: g,
+                          group: groups[i],
                           open: vm.open,
                           loading: vm.loading,
                           saving: vm.saving,
-                          stock: vm.groupStock(g.id),
+                          stock: vm.groupStock(groups[i].id),
                           controller: _controllers.putIfAbsent(
-                            g.id,
+                            groups[i].id,
                             () => TextEditingController(),
                           ),
                           onMinus: () {
@@ -117,7 +117,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                               vm.notifyListeners();
                               return;
                             }
-                            vm.deductGroupStock(g.id, DeductionUnit.single);
+                            vm.deductGroupStock(groups[i].id, DeductionUnit.single);
                           },
                           onPlus: () {
                             if (!vm.open) {
@@ -125,16 +125,16 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                               vm.notifyListeners();
                               return;
                             }
-                            vm.adjustGroupStock(g.id, 1);
+                            vm.adjustGroupStock(groups[i].id, 1);
                           },
-                          onChanged: (v) => vm.setGroupStockFromInput(g.id, v),
+                          onChanged: (v) => vm.setGroupStockFromInput(groups[i].id, v),
                           onCommit: () {
                             if (!vm.open) {
                               vm.showOpenModal = true;
                               vm.notifyListeners();
                               return;
                             }
-                            vm.commitGroupStock(g.id);
+                            vm.commitGroupStock(groups[i].id);
                           },
                           onDeduct: (DeductionUnit unit) {
                             if (!vm.open) {
@@ -142,16 +142,18 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
                               vm.notifyListeners();
                               return;
                             }
-                            vm.deductGroupStock(g.id, unit);
+                            vm.deductGroupStock(groups[i].id, unit);
                           },
                         ),
-                        const SizedBox(height: 28),
-                        const Divider(
-                          height: 1,
-                          thickness: 0.5,
-                          color: AppColors.gray5,
-                        ),
-                        const SizedBox(height: 22),
+                        if (i < groups.length - 1) ...[
+                          const SizedBox(height: 28),
+                          const Divider(
+                            height: 1,
+                            thickness: 0.5,
+                            color: AppColors.gray5,
+                          ),
+                          const SizedBox(height: 22),
+                        ],
                       ],
                       if (vm.errorMessage != null) ...[
                         const SizedBox(height: 12),
@@ -177,7 +179,7 @@ class _AdminInventoryScreenState extends State<AdminInventoryScreen> {
           if (vm.saving)
             Positioned.fill(
               child: Container(
-                color: AppColors.black.withValues(alpha: 0.2),
+                color: AppColors.black.withValues(alpha: 0.08),
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -398,10 +400,11 @@ class _GroupStockCard extends StatelessWidget {
     );
 
     final disabled = loading || saving;
-    // 영업 종료 시에는 시각만 비활성(회색). 탭/입력 시 모달이 뜨도록 stepper·차감 버튼은 동작 유지
+    // 영업 종료 시에도 버튼/입력은 비활성화하지 않음. 탭·입력 시 "영업중으로 바꾸겠어요?" 팝업 표시.
     final stepperEnabled = !disabled;
-    final deductEnabled = !disabled; // 영업 종료여도 탭 시 onDeduct에서 모달 표시
-    final titleColor = open ? AppColors.black : AppColors.gray5;
+    final deductEnabled = !disabled;
+    final labelColor = open ? AppColors.black : AppColors.gray5;
+    final valueColor = open ? AppColors.error : AppColors.gray5;
 
     return SizedBox(
       child: Column(
@@ -410,7 +413,7 @@ class _GroupStockCard extends StatelessWidget {
           Text(
             '[${group.name}]  현재 수량',
             style: AppTypography.headline4.copyWith(
-              color: titleColor,
+              color: labelColor,
               height: 1.6,
             ),
           ),
@@ -423,12 +426,12 @@ class _GroupStockCard extends StatelessWidget {
             onChanged: onChanged,
             onCommit: onCommit,
             enabled: stepperEnabled,
-            valueColor: titleColor,
+            valueColor: valueColor,
           ),
           const SizedBox(height: 28),
           AppDeductRow(
             labels: const ['10개', '5개', '1개'],
-            labelColor: titleColor,
+            labelColor: labelColor,
             enabledList: [
               deductEnabled && (open ? stock >= 10 : true),
               deductEnabled && (open ? stock >= 5 : true),

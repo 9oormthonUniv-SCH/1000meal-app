@@ -129,21 +129,6 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
           ),
         ],
       ),
-      floatingActionButton: _selectMode
-          ? null
-          : FloatingActionButton(
-              onPressed: () async {
-                await Navigator.of(context).pushNamed(
-                  AdminFrequentMenuEditScreen.routeName,
-                  arguments: {'groupId': widget.groupId},
-                );
-                if (!context.mounted) return;
-                context.read<AdminFrequentMenuViewModel>().refresh();
-              },
-              backgroundColor: AppColors.gray4,
-              child: Icon(Icons.add, color: AppColors.white),
-            ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: Container(
         color: AppColors.gray1,
         child: vm.loading && vm.groups.isEmpty
@@ -168,7 +153,7 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                               physics: const AlwaysScrollableScrollPhysics(
                                 parent: BouncingScrollPhysics(),
                               ),
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
                               itemCount: vm.groups.length,
                               itemBuilder: (context, index) {
                                 final group = vm.groups[index];
@@ -198,11 +183,38 @@ class _AdminFrequentMenuScreenState extends State<AdminFrequentMenuScreen> {
                             ),
                           ),
                   ),
+                  if (!_selectMode)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await Navigator.of(context).pushNamed(
+                              AdminFrequentMenuEditScreen.routeName,
+                              arguments: {'groupId': widget.groupId},
+                            );
+                            if (!context.mounted) return;
+                            context.read<AdminFrequentMenuViewModel>().refresh();
+                          },
+                          icon: const Icon(Icons.add, size: 20),
+                          label: const Text('자주 쓰는 메뉴 추가'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.orange,
+                            foregroundColor: AppColors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   if (vm.errorMessage != null)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 20,
                         vertical: 10,
                       ),
                       color: AppColors.error.withValues(alpha: 0.08),
@@ -236,41 +248,52 @@ class _FrequentMenuRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 1),
-      decoration: const BoxDecoration(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
         color: AppColors.white,
-        border: Border(bottom: BorderSide(color: AppColors.gray3, width: 1)),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withValues(alpha: 0.07),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          height: 50,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  group.preview.isNotEmpty
-                      ? group.preview
-                      : group.menus.join(', '),
-                  style: AppTypography.body4.copyWith(color: AppColors.black),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    group.preview.isNotEmpty
+                        ? group.preview
+                        : group.menus.join(', '),
+                    style: AppTypography.body4.copyWith(color: AppColors.black),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              if (selectMode)
-                Checkbox(
-                  value: isSelected,
-                  onChanged: (_) => onTap(),
-                  activeColor: AppColors.orange,
-                )
-              else
-                Icon(
-                  Icons.chevron_right,
-                  color: AppColors.gray6,
-                  size: 25,
-                ),
-            ],
+                if (selectMode)
+                  Checkbox(
+                    value: isSelected,
+                    onChanged: (_) => onTap(),
+                    activeColor: AppColors.orange,
+                  )
+                else
+                  Icon(
+                    Icons.chevron_right,
+                    color: AppColors.gray6,
+                    size: 25,
+                  ),
+              ],
+            ),
           ),
         ),
       ),

@@ -56,7 +56,7 @@ class AdminSquareCard extends StatelessWidget {
               ),
               Positioned(
                 bottom: 6,
-                right: 6,
+                right: 12,
                 child: trailing ?? const SizedBox.shrink(),
               ),
             ],

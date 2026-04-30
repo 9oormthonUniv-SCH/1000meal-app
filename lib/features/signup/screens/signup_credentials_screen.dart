@@ -316,7 +316,7 @@ class _InputEmail extends StatelessWidget {
                 cursorColor: AppColors.orange,
                 style: AppTypography.body2.copyWith(color: AppColors.black),
                 decoration: InputDecoration(
-                  hintText: '예) cheonbab@cheon.ac.kr',
+                  hintText: '예) cheonbab@sch.ac.kr',
                   hintStyle: AppTypography.body2.copyWith(color: AppColors.gray5),
                   border: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray7)),
                   enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.gray3)),
@@ -369,6 +369,13 @@ class _InputEmail extends StatelessWidget {
             ),
           ],
         ),
+        if (email.trim().isNotEmpty && !isSch) ...[
+          const SizedBox(height: 8),
+          Text(
+            '학교 이메일(@sch.ac.kr)로 입력해 주세요.',
+            style: AppTypography.caption1.copyWith(color: AppColors.error),
+          ),
+        ],
         if (emailSent) ...[
           const SizedBox(height: 12),
           Text(

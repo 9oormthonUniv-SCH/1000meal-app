@@ -30,3 +30,6 @@ doc/api/
 
 .DS_Store
 **/.DS_Store
+# 작업 가이드 HTML (개인 작업 노트)
+fix_guide.html
+deploy_guide.html

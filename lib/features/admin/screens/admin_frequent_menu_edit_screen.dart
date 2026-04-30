@@ -171,7 +171,7 @@ class _AdminFrequentMenuEditScreenState
                   else
                     Expanded(
                       child: ListView(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                         children: [
                           _InputBar(
                             controller: _controller,

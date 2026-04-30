@@ -42,7 +42,7 @@ Future<bool?> _showOpenConfirmDialog(BuildContext context) {
                 ],
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 40),
             Row(
               children: [
                 Expanded(
@@ -97,7 +97,7 @@ Future<bool?> _showCloseConfirmDialog(BuildContext context) {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 40),
             Row(
               children: [
                 Expanded(
@@ -196,11 +196,14 @@ class _AdminDashboardBody extends StatelessWidget {
           Container(
             color: AppColors.white,
             padding: const EdgeInsets.only(bottom: 20),
-            child: AdminProfileCard(storeName: storeName),
+            child: AdminProfileCard(
+              storeName: storeName,
+              storeId: vm.store?.id,
+            ),
           ),
           const SizedBox(height: 14),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
                 Expanded(
@@ -243,7 +246,7 @@ class _AdminDashboardBody extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: AdminWideCard(
               title: '메뉴 관리',
               onTap: () => Navigator.of(context).pushNamed('/admin/menu'),
@@ -257,7 +260,7 @@ class _AdminDashboardBody extends StatelessWidget {
           if (vm.errorMessage != null) ...[
             const SizedBox(height: 12),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 vm.errorMessage!,
                 style: AppTypography.caption2.copyWith(
