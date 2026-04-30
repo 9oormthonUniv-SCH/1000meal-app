@@ -64,6 +64,7 @@ import 'features/signup/screens/signup_id_screen.dart';
 import 'features/signup/screens/signup_terms_screen.dart';
 import 'providers/auth_provider.dart';
 import 'package:meal_app/main_screen.dart';
+import 'common/update/app_update_checker.dart';
 
 /// FCM 백그라운드 수신 시 호출 (top-level 함수 필수)
 @pragma('vm:entry-point')
@@ -207,21 +208,50 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  /// refresh 만료 시 어디서든 로그인 화면으로 이동시키기 위한 글로벌 키.
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  /// 세션 만료 안내 SnackBar 등 화면 무관 메시지 출력용.
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
+
   @override
-  Widget build(BuildContext context) {
-    final tokenStorage = TokenStorage();
-    final loginPreferenceStorage = LoginPreferenceStorage();
-    final dioClient = DioClient.create();
-    final authApi = AuthApi(dioClient);
-    final adminApi = AdminApi(dioClient);
-    final authRepo = AuthRepository(
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final TokenStorage tokenStorage;
+  late final LoginPreferenceStorage loginPreferenceStorage;
+  late final DioClient dioClient;
+  late final AuthApi authApi;
+  late final AdminApi adminApi;
+  late final AuthRepository authRepo;
+  late final AdminRepository adminRepo;
+  late final StoreApi storeApi;
+  late final StoreRepository storeRepo;
+  late final NoticeApi noticeApi;
+  late final NoticeRepository noticeRepo;
+  late final QrApi qrApi;
+  late final AuthProvider authProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    tokenStorage = TokenStorage();
+    loginPreferenceStorage = LoginPreferenceStorage();
+    dioClient = DioClient.create();
+    authApi = AuthApi(dioClient);
+    adminApi = AdminApi(dioClient);
+    authRepo = AuthRepository(
       api: authApi,
       tokenStorage: tokenStorage,
       loginPreferenceStorage: loginPreferenceStorage,
     );
+    authProvider = AuthProvider();
+
     dioClient.setOn401Refresh(() async {
       try {
         return await authRepo.refreshAccessToken();
@@ -229,13 +259,52 @@ class MyApp extends StatelessWidget {
         return null;
       }
     });
-    final adminRepo = AdminRepository(authRepo: authRepo, api: adminApi);
-    final storeApi = StoreApi(dioClient);
-    final storeRepo = StoreRepository(storeApi, authRepo);
-    final noticeApi = NoticeApi(dioClient);
-    final noticeRepo = NoticeRepository(authRepo: authRepo, api: noticeApi);
-    final qrApi = QrApi(dioClient);
 
+    // refresh도 실패해서 세션이 끝났을 때: 토큰 정리 → 전역 신호 → 로그인 화면 강제 이동.
+    // 단, 이미 로그인 화면에 있으면 중복 push로 깜빡임 / 자동로그인 시도 중단을 막기 위해 이동 생략.
+    dioClient.setOnSessionExpired((err) async {
+      try {
+        await authRepo.logout();
+      } catch (_) {
+        // 토큰 정리 실패해도 화면 이동은 진행
+      }
+      authProvider.notifySessionExpired(message: err.message);
+      final nav = MyApp.navigatorKey.currentState;
+      String? currentRouteName;
+      if (nav != null) {
+        nav.popUntil((route) {
+          currentRouteName ??= route.settings.name;
+          return true;
+        });
+        if (currentRouteName != LoginScreen.routeName) {
+          nav.pushNamedAndRemoveUntil(LoginScreen.routeName, (_) => false);
+        }
+      }
+      // 사용자에게 만료 안내. ScaffoldMessenger 글로벌 키로 어떤 화면에서든 표시 가능.
+      final messenger = MyApp.scaffoldMessengerKey.currentState;
+      if (messenger != null) {
+        messenger.removeCurrentSnackBar();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              authProvider.expiredReasonMessage ?? '세션이 만료되었습니다. 다시 로그인해주세요.',
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    });
+
+    adminRepo = AdminRepository(authRepo: authRepo, api: adminApi);
+    storeApi = StoreApi(dioClient);
+    storeRepo = StoreRepository(storeApi, authRepo);
+    noticeApi = NoticeApi(dioClient);
+    noticeRepo = NoticeRepository(authRepo: authRepo, api: noticeApi);
+    qrApi = QrApi(dioClient);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         Provider.value(value: authRepo),
@@ -252,7 +321,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FindAccountViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => MyPageViewModel(authRepo)),
         ChangeNotifierProvider(create: (_) => ChangeEmailViewModel(authRepo)),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(
           create: (_) => AdminHomeViewModel(authRepo, adminApi),
         ),
@@ -267,7 +336,10 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ],
-      child: MaterialApp(
+      child: _UpdateGate(
+        child: MaterialApp(
+        navigatorKey: MyApp.navigatorKey,
+        scaffoldMessengerKey: MyApp.scaffoldMessengerKey,
         title: '1000meal App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -452,7 +524,34 @@ class MyApp extends StatelessWidget {
           },
           FindAccountScreen.routeName: (_) => const FindAccountScreen(),
         },
+        ),
       ),
     );
   }
+}
+
+class _UpdateGate extends StatefulWidget {
+  const _UpdateGate({required this.child});
+  final Widget child;
+
+  @override
+  State<_UpdateGate> createState() => _UpdateGateState();
+}
+
+class _UpdateGateState extends State<_UpdateGate> {
+  bool _checked = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_checked) return;
+    _checked = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      AppUpdateChecker.checkAndPromptIfNeeded(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

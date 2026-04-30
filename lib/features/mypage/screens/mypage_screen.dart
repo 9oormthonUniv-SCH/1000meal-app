@@ -96,16 +96,34 @@ class _MyPageScreenState extends State<MyPageScreen> {
       );
     }
 
-    // 로그아웃 직후: me는 null인데 _hasToken이 아직 true면 토큰 재확인 후 게스트로 전환
+    // 로그아웃 직후: me는 null인데 _hasToken이 아직 true면 토큰 재확인 후 게스트로 전환.
+    // (단, 이미 vm.shouldRelogin/errorMessage가 잡혀있으면 게스트로 즉시 전환해 무한 루프 차단.)
     if (widget.fromMainTab && vm.me == null && _hasToken == true) {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!mounted) return;
-        final token = await context.read<AuthRepository>().getAccessToken();
-        if (!mounted) return;
-        setState(() {
-          _hasToken = token != null && token.isNotEmpty;
+      if (vm.shouldRelogin || vm.errorMessage != null) {
+        // 인증 만료 등으로 me 로딩 실패 → 토큰 재확인 루프 대신 즉시 게스트 화면.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() {
+            _hasToken = false;
+          });
         });
-      });
+        return _buildScaffold(
+          context,
+          showBack: showBack,
+          body: const _GuestMyPageBody(),
+        );
+      }
+      // 로딩 중이 아니면 재확인을 한 번만 시도하고, 결과가 같으면 게스트로 폴백.
+      if (!vm.loading) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!mounted) return;
+          final token = await context.read<AuthRepository>().getAccessToken();
+          if (!mounted) return;
+          setState(() {
+            _hasToken = (token != null && token.isNotEmpty) ? false : false;
+          });
+        });
+      }
       return _buildScaffold(
         context,
         showBack: showBack,
@@ -114,6 +132,30 @@ class _MyPageScreenState extends State<MyPageScreen> {
     }
 
     if (vm.me == null) {
+      // me 로딩 실패 + me==null. 로딩 중이 아니면 게스트 UI로 전환해 무한 스피너 방지.
+      if (!vm.loading) {
+        if (widget.fromMainTab) {
+          return _buildScaffold(
+            context,
+            showBack: showBack,
+            body: const _GuestMyPageBody(),
+          );
+        }
+        // 백버튼이 있는 진입(상세 마이페이지)에선 에러 표시.
+        return _buildScaffold(
+          context,
+          showBack: showBack,
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                vm.errorMessage ?? '정보를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        );
+      }
       return _buildScaffold(
         context,
         showBack: showBack,

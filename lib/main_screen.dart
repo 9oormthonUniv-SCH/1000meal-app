@@ -56,12 +56,20 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _loadRole() async {
     final repo = context.read<AuthRepository>();
-    String? token = await repo.getAccessToken();
+    String? token;
+    try {
+      token = await repo.getAccessToken().timeout(const Duration(seconds: 6), onTimeout: () => null);
+    } catch (_) {
+      token = null;
+    }
 
-    // 토큰 없으면 Refresh Token으로 재발급 시도
+    // 토큰 없으면 Refresh Token으로 재발급 시도. 어떤 단계든 무한 hang 방지.
     if (token == null || token.isEmpty) {
       try {
-        token = await repo.refreshAccessToken();
+        token = await repo
+            .refreshAccessToken()
+            .timeout(const Duration(seconds: 12), onTimeout: () => '');
+        if (token.isEmpty) token = null;
       } catch (_) {
         token = null;
       }
@@ -70,24 +78,32 @@ class _MainScreenState extends State<MainScreen> {
     // 여전히 없으면 자동 로그인 ON일 때 저장된 아이디/비밀번호로 로그인 시도
     if ((token == null || token.isEmpty) && mounted) {
       final prefs = context.read<LoginPreferenceStorage>();
-      final data = await prefs.load();
-      if (data.autoLogin &&
-          data.savedUserId != null &&
-          data.savedUserId!.trim().isNotEmpty &&
-          data.savedPassword != null &&
-          data.savedPassword!.isNotEmpty &&
-          data.savedRoleKey != null &&
-          data.savedRoleKey!.isNotEmpty) {
-        try {
-          await repo.login(
-            role: RoleApi.fromApi(data.savedRoleKey!),
-            userId: data.savedUserId!.trim(),
-            password: data.savedPassword!,
-          );
-          token = await repo.getAccessToken();
-        } catch (_) {
-          token = null;
+      try {
+        final data = await prefs.load().timeout(const Duration(seconds: 6));
+        if (data.autoLogin &&
+            data.savedUserId != null &&
+            data.savedUserId!.trim().isNotEmpty &&
+            data.savedPassword != null &&
+            data.savedPassword!.isNotEmpty &&
+            data.savedRoleKey != null &&
+            data.savedRoleKey!.isNotEmpty) {
+          try {
+            await repo
+                .login(
+                  role: RoleApi.fromApi(data.savedRoleKey!),
+                  userId: data.savedUserId!.trim(),
+                  password: data.savedPassword!,
+                )
+                .timeout(const Duration(seconds: 15));
+            token = await repo
+                .getAccessToken()
+                .timeout(const Duration(seconds: 6), onTimeout: () => null);
+          } catch (_) {
+            token = null;
+          }
         }
+      } catch (_) {
+        // prefs 로드 실패해도 게스트 모드로 진행
       }
     }
 

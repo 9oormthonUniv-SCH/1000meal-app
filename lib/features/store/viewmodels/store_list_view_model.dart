@@ -48,9 +48,12 @@ class StoreListViewModel extends ChangeNotifier {
     if (loading) return;
     loading = true;
     notifyListeners();
-    await _fetchStoreList();
-    loading = false;
-    notifyListeners();
+    try {
+      await _fetchStoreList();
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
   }
 
   DateTime? _lastRefreshTime; // 중복 새로고침 방지 (5초 이내 연타 방지)
