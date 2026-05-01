@@ -17,6 +17,7 @@ import 'util/typography.dart';
 import 'common/notification/fcm_notification_storage.dart';
 import 'common/notification/push_notification_handler.dart';
 import 'common/dio/dio_client.dart';
+import 'common/storage/app_bootstrap.dart';
 import 'common/storage/token_storage.dart';
 import 'common/storage/login_preference_storage.dart';
 import 'features/auth/data/auth_api.dart';
@@ -187,6 +188,10 @@ Future<void> main() async {
 
   // AppConfig 로드
   await AppConfig.load();
+
+  // iOS Keychain 보존 문제 대응: 재설치(=첫 실행) 시 stale 토큰을 강제 정리해
+  // 만료된 refresh token으로 인한 무한 로딩을 차단한다. 정상 업데이트에는 영향 없음.
+  await AppBootstrap.clearStaleSecureStorageOnFirstLaunch();
 
   // WebView 초기화
   if (WebViewPlatform.instance == null) {
